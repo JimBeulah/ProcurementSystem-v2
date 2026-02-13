@@ -45,6 +45,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // BOQ
     Route::get('/projects/{project}/boq', [BoqController::class, 'index'])->name('projects.boq');
     Route::post('/projects/{project}/boq', [BoqController::class, 'store'])->name('projects.boq.store');
+    Route::post('/projects/{project}/boq/bulk', [BoqController::class, 'bulkStore'])->name('projects.boq.bulk');
+    Route::delete('/projects/{project}/boq/{boqItem}', [BoqController::class, 'destroy'])->name('projects.boq.destroy');
+
 
     // Material Requests
     Route::get('/projects/{project}/material-requests', [MaterialRequestController::class, 'index'])->name('projects.material-requests');

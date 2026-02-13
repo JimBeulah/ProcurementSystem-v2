@@ -19,7 +19,7 @@ export default function Login({ status, canResetPassword }) {
     };
 
     return (
-        <GuestLayout>
+        <GuestLayout bgImage="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2670&auto=format&fit=crop">
             <Head title="Sign In" />
 
             <div className="space-y-6">
@@ -55,7 +55,7 @@ export default function Login({ status, canResetPassword }) {
                                 value={data.email}
                                 onChange={(e) => setData('email', e.target.value)}
                                 className="w-full pl-10 pr-4 py-3 bg-foreground/[0.03] border border-border rounded-xl text-sm text-foreground placeholder-muted/50 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 outline-none transition-all"
-                                placeholder="you@company.com"
+                                placeholder="Enter your email"
                                 autoFocus
                                 autoComplete="username"
                                 required
