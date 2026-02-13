@@ -1,5 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { Hexagon } from 'lucide-react';
+import { Toaster } from 'sonner';
+import FlashNotifications from '@/Components/FlashNotifications';
 
 export default function GuestLayout({ children }) {
     return (
@@ -78,6 +80,8 @@ export default function GuestLayout({ children }) {
                     {children}
                 </div>
             </div>
+            <Toaster position="top-right" richColors closeButton />
+            <FlashNotifications />
         </div>
     );
 }

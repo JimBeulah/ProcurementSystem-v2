@@ -109,3 +109,7 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__ . '/auth.php';
+
+Route::get('/test-flash', function () {
+    return redirect()->route('login')->with('success', 'Sonner is working perfectly!');
+});

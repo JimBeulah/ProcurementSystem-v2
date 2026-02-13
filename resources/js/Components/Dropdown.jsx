@@ -1,4 +1,4 @@
-import { Transition } from '@headlessui/react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Link } from '@inertiajs/react';
 import { createContext, useContext, useState } from 'react';
 
@@ -58,17 +58,13 @@ const Content = ({
     }
 
     return (
-        <>
-            <Transition
-                show={open}
-                enter="transition ease-out duration-200"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="transition ease-in duration-75"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
-            >
-                <div
+        <AnimatePresence>
+            {open && (
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
                     className={`absolute z-50 mt-2 rounded-md shadow-lg ${alignmentClasses} ${widthClasses}`}
                     onClick={() => setOpen(false)}
                 >
@@ -80,9 +76,9 @@ const Content = ({
                     >
                         {children}
                     </div>
-                </div>
-            </Transition>
-        </>
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
 };
 

@@ -3,6 +3,8 @@ import Sidebar, { SPRING_TRANSITION } from '@/Components/Layout/Sidebar';
 import Header from '@/Components/Layout/Header';
 import { motion } from 'framer-motion';
 import { usePage } from '@inertiajs/react';
+import { Toaster } from 'sonner';
+import FlashNotifications from '@/Components/FlashNotifications';
 
 export default function AuthenticatedLayout({ children }) {
     const { auth } = usePage().props;
@@ -42,6 +44,8 @@ export default function AuthenticatedLayout({ children }) {
 
                     {children}
                 </main>
+                <Toaster position="top-right" richColors closeButton />
+                <FlashNotifications />
             </motion.div>
         </div>
     );

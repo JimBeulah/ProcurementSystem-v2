@@ -38,7 +38,7 @@ class BoqController extends Controller
 
         BoqItem::create($validated);
 
-        return redirect()->back();
+        return redirect()->back()->with('success', 'BOQ item added successfully.');
     }
 
     public function destroy(Project $project, BoqItem $boqItem)
@@ -50,6 +50,6 @@ class BoqController extends Controller
         $boqItem->components()->delete();
         $boqItem->delete();
 
-        return redirect()->back();
+        return redirect()->back()->with('success', 'BOQ item deleted successfully.');
     }
 }

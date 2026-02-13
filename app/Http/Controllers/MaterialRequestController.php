@@ -60,6 +60,6 @@ class MaterialRequestController extends Controller
             ]);
         }
 
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Material request submitted successfully.');
     }
 }

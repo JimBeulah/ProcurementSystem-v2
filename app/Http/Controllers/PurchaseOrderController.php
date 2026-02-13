@@ -84,7 +84,7 @@ class PurchaseOrderController extends Controller
             ]);
         }
 
-        return redirect()->route('purchasing.orders.index');
+        return redirect()->route('purchasing.orders.index')->with('success', 'Purchase order created successfully.');
     }
 
     public function approve(PurchaseOrder $order)
@@ -94,6 +94,6 @@ class PurchaseOrderController extends Controller
             'approver_id' => auth()->id(),
         ]);
 
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Purchase order approved successfully.');
     }
 }
