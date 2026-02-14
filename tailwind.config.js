@@ -13,8 +13,23 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Inter', 'Outfit', ...defaultTheme.fontFamily.sans],
-                heading: ['Plus Jakarta Sans', 'Inter', ...defaultTheme.fontFamily.sans],
+                sans: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Text', 'SF Pro Display', 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'sans-serif'],
+                heading: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'sans-serif'],
+            },
+            borderRadius: {
+                'xl': '12px',
+                '2xl': '18px',
+                '3xl': '24px',
+                'card': '20px',
+            },
+            boxShadow: {
+                'apple': '0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02)',
+                'apple-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04)',
+                'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+            },
+            letterSpacing: {
+                'tight': '-0.02em',
+                'tighter': '-0.04em',
             },
             colors: {
                 background: 'var(--background)',

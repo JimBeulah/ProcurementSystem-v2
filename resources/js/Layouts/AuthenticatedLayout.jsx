@@ -11,7 +11,19 @@ export default function AuthenticatedLayout({ children }) {
     const user = auth.user;
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('sidebarCollapsed');
+            return saved === 'true';
+        }
+        return false;
+    });
+
+    const toggleCollapse = () => {
+        const newState = !isCollapsed;
+        setIsCollapsed(newState);
+        localStorage.setItem('sidebarCollapsed', String(newState));
+    };
 
     return (
         <div className="flex h-screen bg-background overflow-hidden transition-colors duration-300">
@@ -21,14 +33,14 @@ export default function AuthenticatedLayout({ children }) {
                 isOpen={sidebarOpen}
                 isCollapsed={isCollapsed}
                 onClose={() => setSidebarOpen(false)}
-                toggleCollapse={() => setIsCollapsed(!isCollapsed)}
+                toggleCollapse={toggleCollapse}
             />
 
             {/* Main Content */}
             <motion.div
                 layout
                 initial={false}
-                animate={{ marginLeft: isCollapsed ? "5rem" : "18rem" }}
+                animate={{ marginLeft: isCollapsed ? "4rem" : "16rem" }}
                 transition={SPRING_TRANSITION}
                 className="flex-1 flex flex-col h-screen overflow-hidden"
             >
@@ -39,7 +51,7 @@ export default function AuthenticatedLayout({ children }) {
 
                 <main className="flex-1 overflow-y-auto p-4 md:p-8 relative z-10 w-full overflow-x-hidden">
                     {/* Ambient glows */}
-                    <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
+                    <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
                     <div className="fixed bottom-0 right-[20%] w-[400px] h-[400px] bg-purple-500/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
 
                     {children}

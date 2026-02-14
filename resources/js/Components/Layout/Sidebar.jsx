@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, usePage } from '@inertiajs/react';
 import {
     Building2, ShoppingCart, FileText, CreditCard, Package,
@@ -26,13 +27,17 @@ export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleColl
     };
 
     const sidebarVariants = {
-        expanded: { width: "18rem", x: 0, transition: SPRING_TRANSITION },
-        collapsed: { width: "5rem", x: 0, transition: SPRING_TRANSITION },
+        expanded: { width: "16rem", x: 0, transition: SPRING_TRANSITION },
+        collapsed: { width: "4rem", x: 0, transition: SPRING_TRANSITION },
         hidden: { x: "-100%", transition: { ...SPRING_TRANSITION, damping: 30 } },
     };
 
+    const [activeTooltip, setActiveTooltip] = useState(null);
+
     return (
         <>
+            {/* Tooltip Portal */}
+            <SidebarTooltip activeTooltip={activeTooltip} />
             {/* Mobile Overlay */}
             <AnimatePresence>
                 {isOpen && (
@@ -47,7 +52,7 @@ export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleColl
             </AnimatePresence>
 
             <motion.div
-                className="fixed left-0 top-0 h-full bg-background border-r border-border z-50 font-sans flex flex-col md:translate-x-0"
+                className="fixed left-0 top-0 h-full bg-background/80 backdrop-blur-2xl saturate-180 border-r border-black/5 dark:border-white/5 z-50 font-sans flex flex-col md:translate-x-0 transition-colors"
                 variants={sidebarVariants}
                 animate={
                     (typeof window !== 'undefined' && window.innerWidth < 768 && !isOpen)
@@ -57,25 +62,27 @@ export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleColl
                 initial="hidden"
             >
                 {/* Logo */}
-                <div className={`flex items-center h-16 px-4 border-b border-border relative ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+                <div className={`flex items-center h-14 px-4 border-b border-black/5 dark:border-white/5 relative ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
                     <div className="flex items-center gap-3 overflow-hidden">
-                        <motion.div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-cyan-500/20 shrink-0">
-                            <Hexagon className="text-white fill-white/20" size={18} />
-                        </motion.div>
-                        <AnimatePresence>
-                            {!isCollapsed && (
-                                <motion.div
-                                    initial={{ opacity: 0, width: 0 }}
-                                    animate={{ opacity: 1, width: "auto" }}
-                                    exit={{ opacity: 0, width: 0 }}
-                                    className="overflow-hidden"
-                                >
-                                    <h1 className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-foreground to-muted whitespace-nowrap">
-                                        ProcureFlow
-                                    </h1>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                        <Link href="/dashboard" className="flex items-center gap-3">
+                            <motion.div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20">
+                                <Hexagon className="text-white fill-white/20" size={18} />
+                            </motion.div>
+                            <AnimatePresence>
+                                {!isCollapsed && (
+                                    <motion.div
+                                        initial={{ opacity: 0, width: 0 }}
+                                        animate={{ opacity: 1, width: "auto" }}
+                                        exit={{ opacity: 0, width: 0 }}
+                                        className="overflow-hidden"
+                                    >
+                                        <h1 className="text-lg font-bold text-foreground tracking-tight whitespace-nowrap">
+                                            ProcureFlow
+                                        </h1>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </Link>
                     </div>
 
                     {/* Collapse toggle */}
@@ -83,41 +90,41 @@ export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleColl
                         onClick={toggleCollapse}
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.95 }}
-                        className="hidden md:flex p-1.5 rounded-lg text-muted hover:text-foreground hover:bg-muted/10 transition-colors absolute -right-3 top-20 bg-card border border-border shadow-xl rounded-full z-50"
+                        className="hidden md:flex p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/10 transition-colors absolute -right-3 top-20 bg-card border border-border shadow-sm z-50"
                     >
                         {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={16} />}
                     </motion.button>
 
                     {/* Mobile close */}
-                    <button onClick={onClose} className="md:hidden p-1 text-muted hover:text-foreground absolute right-4">
+                    <button onClick={onClose} className="md:hidden p-1 text-muted-foreground hover:text-foreground absolute right-4">
                         <X size={20} />
                     </button>
                 </div>
 
                 {/* Navigation */}
-                <nav className="flex-1 overflow-y-auto overscroll-contain overflow-x-hidden p-2 space-y-0.5 no-scrollbar">
-                    <NavItem href="/dashboard" icon={<LayoutDashboard />} label="Dashboard" isActive={url === '/dashboard'} isCollapsed={isCollapsed} onClick={handleLinkClick} />
+                <nav className="flex-1 overflow-y-auto overscroll-contain overflow-x-hidden px-3 py-3 space-y-1 no-scrollbar" onMouseLeave={() => setActiveTooltip(null)}>
+                    <NavItem href="/dashboard" icon={<LayoutDashboard />} label="Dashboard" isActive={url === '/dashboard'} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />
 
                     <NavGroup label="Procurement" isCollapsed={isCollapsed}>
-                        <NavItem href="/clients" icon={<Users />} label="Clients" isActive={url.startsWith('/clients')} isCollapsed={isCollapsed} onClick={handleLinkClick} />
-                        <NavItem href="/projects" icon={<Briefcase />} label="Projects" isActive={url.startsWith('/projects')} isCollapsed={isCollapsed} onClick={handleLinkClick} />
-                        <NavItem href="/purchasing/rfq" icon={<FileText />} label="RFQ" isActive={url.startsWith('/purchasing/rfq')} isCollapsed={isCollapsed} onClick={handleLinkClick} />
-                        <NavItem href="/purchasing/requests" icon={<FileText />} label="Requests" isActive={url.startsWith('/purchasing/requests')} isCollapsed={isCollapsed} onClick={handleLinkClick} />
-                        <NavItem href="/purchasing/orders" icon={<ShoppingCart />} label="Orders" isActive={url.startsWith('/purchasing/orders')} isCollapsed={isCollapsed} onClick={handleLinkClick} />
-                        <NavItem href="/inventory/receiving" icon={<ArrowDownCircle />} label="Receive Goods" isActive={url.startsWith('/inventory/receiving')} isCollapsed={isCollapsed} onClick={handleLinkClick} />
-                        <NavItem href="/purchasing/approvals" icon={<Shield />} label="Approvals" isActive={url.startsWith('/purchasing/approvals')} isCollapsed={isCollapsed} onClick={handleLinkClick} />
+                        <NavItem href="/clients" icon={<Users />} label="Clients" isActive={url.startsWith('/clients')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />
+                        <NavItem href="/projects" icon={<Briefcase />} label="Projects" isActive={url.startsWith('/projects')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />
+                        <NavItem href="/purchasing/rfq" icon={<FileText />} label="RFQ" isActive={url.startsWith('/purchasing/rfq')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />
+                        <NavItem href="/purchasing/requests" icon={<FileText />} label="Requests" isActive={url.startsWith('/purchasing/requests')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />
+                        <NavItem href="/purchasing/orders" icon={<ShoppingCart />} label="Orders" isActive={url.startsWith('/purchasing/orders')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />
+                        <NavItem href="/inventory/receiving" icon={<ArrowDownCircle />} label="Receive Goods" isActive={url.startsWith('/inventory/receiving')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />
+                        <NavItem href="/purchasing/approvals" icon={<Shield />} label="Approvals" isActive={url.startsWith('/purchasing/approvals')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />
                     </NavGroup>
 
                     <NavGroup label="Operations" isCollapsed={isCollapsed}>
-                        <NavItem href="/inventory" icon={<Package />} label="Inventory" isActive={url === '/inventory'} isCollapsed={isCollapsed} onClick={handleLinkClick} />
-                        <NavItem href="/receiving" icon={<Building2 />} label="Receiving" isActive={url === '/receiving'} isCollapsed={isCollapsed} onClick={handleLinkClick} />
-                        <NavItem href="/site-release" icon={<Truck />} label="Site Release" isActive={url.startsWith('/site-release')} isCollapsed={isCollapsed} onClick={handleLinkClick} />
+                        <NavItem href="/inventory" icon={<Package />} label="Inventory" isActive={url === '/inventory'} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />
+                        <NavItem href="/receiving" icon={<Building2 />} label="Receiving" isActive={url === '/receiving'} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />
+                        <NavItem href="/site-release" icon={<Truck />} label="Site Release" isActive={url.startsWith('/site-release')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />
                     </NavGroup>
 
                     <NavGroup label="Finance" isCollapsed={isCollapsed}>
-                        <NavItem href="/finance/invoices" icon={<FileText />} label="Invoices" isActive={url.startsWith('/finance/invoices')} isCollapsed={isCollapsed} onClick={handleLinkClick} />
-                        <NavItem href="/finance/disbursements" icon={<CreditCard />} label="Disbursements" isActive={url.startsWith('/finance/disbursements')} isCollapsed={isCollapsed} onClick={handleLinkClick} />
-                        <NavItem href="/finance/reports" icon={<PieChart />} label="Reports" isActive={url.startsWith('/finance/reports')} isCollapsed={isCollapsed} onClick={handleLinkClick} />
+                        <NavItem href="/finance/invoices" icon={<FileText />} label="Invoices" isActive={url.startsWith('/finance/invoices')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />
+                        <NavItem href="/finance/disbursements" icon={<CreditCard />} label="Disbursements" isActive={url.startsWith('/finance/disbursements')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />
+                        <NavItem href="/finance/reports" icon={<PieChart />} label="Reports" isActive={url.startsWith('/finance/reports')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />
                     </NavGroup>
                 </nav>
             </motion.div>
@@ -158,40 +165,46 @@ function NavGroup({ label, children, isCollapsed }) {
     );
 }
 
-function NavItem({ href, icon, label, isActive, isCollapsed, onClick }) {
+function NavItem({ href, icon, label, isActive, isCollapsed, onClick, onHover }) {
+    const handleMouseEnter = (e) => {
+        if (isCollapsed && onHover) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            onHover({ label, rect });
+        }
+    };
+
     return (
-        <Link href={href} onClick={onClick} title={isCollapsed ? label : undefined} className="block">
+        <Link
+            href={href}
+            onClick={onClick}
+            onMouseEnter={handleMouseEnter}
+            className="block group/item relative mb-0.5"
+        >
             <motion.div
                 className={`
-                    group flex items-center gap-2 px-2.5 py-1.5 rounded-lg relative overflow-hidden
-                    ${isActive ? 'bg-blue-600/10 text-blue-400' : 'text-muted hover:text-foreground hover:bg-muted/10'}
-                    ${isCollapsed ? 'justify-center' : ''}
+                    flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-200
+                    ${isActive
+                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25 font-medium'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/10'}
+                    ${isCollapsed ? 'justify-center px-2' : ''}
                 `}
                 whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                whileTap={{ scale: 0.98 }}
             >
-                {isActive && (
-                    <motion.div
-                        layoutId="active-indicator"
-                        className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full"
-                    />
-                )}
-
                 <span className={`
-                    transition-colors duration-200 relative z-10
-                    ${isActive ? 'text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]' : 'group-hover:text-cyan-300'}
+                    transition-colors duration-200 relative z-10 flex items-center justify-center
+                    ${isActive ? 'text-white' : 'group-hover/item:text-foreground'}
                 `}>
-                    {React.cloneElement(icon, { size: 16 })}
+                    {React.cloneElement(icon, { size: isCollapsed ? 20 : 18, strokeWidth: isActive ? 2.5 : 2 })}
                 </span>
 
                 <AnimatePresence>
                     {!isCollapsed && (
                         <motion.span
-                            initial={{ opacity: 0, x: -10 }}
+                            initial={{ opacity: 0, x: -5 }}
                             animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -10 }}
-                            className="text-[13px] font-medium whitespace-nowrap"
+                            exit={{ opacity: 0, x: -5 }}
+                            className="text-[13px] whitespace-nowrap tracking-tight"
                         >
                             {label}
                         </motion.span>
@@ -199,5 +212,30 @@ function NavItem({ href, icon, label, isActive, isCollapsed, onClick }) {
                 </AnimatePresence>
             </motion.div>
         </Link>
+    );
+}
+
+function SidebarTooltip({ activeTooltip }) {
+    if (!activeTooltip) return null;
+
+    const { label, rect } = activeTooltip;
+
+    if (typeof document === 'undefined') return null;
+
+    return createPortal(
+        <motion.div
+            initial={{ opacity: 0, x: -10, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: -10, scale: 0.95 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            style={{
+                top: rect.top + rect.height / 2,
+                left: rect.right + 8,
+            }}
+            className="fixed z-[100] -translate-y-1/2 px-2.5 py-1.5 bg-foreground text-background text-xs font-medium rounded-md shadow-xl pointer-events-none whitespace-nowrap"
+        >
+            {label}
+        </motion.div>,
+        document.body
     );
 }
