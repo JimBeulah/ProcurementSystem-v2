@@ -56,19 +56,20 @@ export default function Header({ user, onMenuClick }) {
 
                 <div className="flex items-center gap-3">
                     {/* Search - Spotlight Style */}
+                    {/* Search - Spotlight Style */}
                     <motion.div
                         initial={false}
-                        className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 border border-transparent focus-within:bg-background focus-within:border-blue-500/30 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all w-64 group shadow-sm hover:shadow-md"
+                        className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/[0.03] dark:bg-white/[0.05] border border-black/[0.05] dark:border-white/[0.05] focus-within:bg-white/80 dark:focus-within:bg-white/[0.1] focus-within:shadow-sm focus-within:ring-2 focus-within:ring-black/[0.05] dark:focus-within:ring-white/[0.05] transition-all duration-300 w-64 group backdrop-blur-sm"
                     >
-                        <Search size={14} className="text-muted-foreground group-focus-within:text-blue-500 transition-colors" />
+                        <Search size={14} className="text-muted-foreground/60 group-focus-within:text-foreground/80 transition-colors" />
                         <input
                             type="text"
                             placeholder="Search..."
-                            className="bg-transparent border-none outline-none text-sm text-foreground placeholder-muted-foreground/70 w-full focus:ring-0 p-0 h-auto font-medium"
+                            className="bg-transparent border-none outline-none text-[13px] text-foreground placeholder:text-muted-foreground/50 w-full focus:ring-0 p-0 h-auto font-medium"
                         />
-                        <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded bg-background/50 border border-border/50 px-1.5 font-mono text-[10px] font-bold text-muted-foreground opacity-70 sm:flex">
+                        <div className="pointer-events-none hidden h-5 select-none items-center gap-0.5 rounded bg-white/50 dark:bg-black/20 border border-black/[0.08] dark:border-white/[0.08] border-b-[2px] px-1.5 font-mono text-[10px] font-bold text-muted-foreground/70 opacity-70 group-hover:opacity-100 transition-opacity sm:flex shadow-sm">
                             <span className="text-xs">⌘</span>K
-                        </kbd>
+                        </div>
                     </motion.div>
 
                     <div className="h-6 w-px bg-border/40 mx-1" />

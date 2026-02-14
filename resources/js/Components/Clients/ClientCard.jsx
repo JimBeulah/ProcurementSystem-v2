@@ -1,41 +1,38 @@
 import React from 'react';
 import { Card } from '@/Components/UI/Card';
-import { Building2, Phone, FileText, ChevronRight, Hash, Clock, Edit2, Trash2, Users } from 'lucide-react';
+import { Building2, FileText, ChevronRight, Clock, Edit2, Trash2, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export function ClientCard({ client, onEdit, onDelete }) {
     return (
         <motion.div
             layout
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
-            <Card hoverEffect className="group relative overflow-hidden h-full p-4 bg-card shadow-sm hover:shadow-md transition-all rounded-xl border border-border/40">
-                {/* Background Accent - Smaller & Subtler */}
-                <div className="absolute -right-6 -top-6 w-20 h-20 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-colors pointer-events-none" />
+            <Card hoverEffect className="group relative overflow-hidden h-full p-5 rounded-2xl border-none">
+                {/* Subtle gradient accent on hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-2xl" />
 
                 <div className="relative z-10 flex flex-col h-full">
-                    {/* Header */}
-                    <div className="flex justify-between items-start mb-3">
-                        <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600 group-hover:bg-blue-500/20 transition-colors">
-                            <Building2 size={16} />
+                    {/* Header Row */}
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="w-10 h-10 rounded-[14px] bg-blue-500/10 dark:bg-blue-400/10 flex items-center justify-center group-hover:bg-blue-500/15 transition-colors">
+                            <Building2 size={18} className="text-blue-600 dark:text-blue-400" />
                         </div>
-                        <div className="flex items-center gap-1 relative z-20">
-                            <span className="text-[10px] font-mono font-medium text-muted-foreground bg-muted/30 px-1.5 py-0.5 rounded mr-1">
-                                #{client.id}
-                            </span>
+                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                             <button
                                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit?.(client); }}
-                                className="p-1.5 hover:bg-blue-500/10 text-muted-foreground hover:text-blue-600 rounded-lg transition-colors"
+                                className="p-2 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] text-black/40 dark:text-white/40 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition-all duration-150 cursor-pointer"
                                 title="Edit"
                             >
                                 <Edit2 size={14} />
                             </button>
                             <button
                                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete?.(client.id); }}
-                                className="p-1.5 hover:bg-red-500/10 text-muted-foreground hover:text-red-500 rounded-lg transition-colors"
+                                className="p-2 hover:bg-red-500/10 text-black/40 dark:text-white/40 hover:text-red-500 rounded-lg transition-all duration-150 cursor-pointer"
                                 title="Delete"
                             >
                                 <Trash2 size={14} />
@@ -43,45 +40,41 @@ export function ClientCard({ client, onEdit, onDelete }) {
                         </div>
                     </div>
 
-                    {/* Content */}
-                    <div className="mb-3">
-                        <h3 className="text-base font-bold text-foreground mb-0.5 group-hover:text-blue-600 transition-colors line-clamp-1 tracking-tight">
+                    {/* Title & Contact */}
+                    <div className="mb-4">
+                        <h3 className="text-[15px] font-semibold text-foreground mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1 tracking-[-0.01em]">
                             {client.name}
                         </h3>
-                        {client.contact_person && (
-                            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium">
-                                <Users size={12} className="text-blue-500/60" />
-                                <span className="truncate">{client.contact_person}</span>
-                            </div>
-                        )}
+                        <div className="flex items-center gap-1.5 text-xs text-black/40 dark:text-white/40">
+                            <Users size={12} />
+                            <span className="truncate">{client.contact_person || 'No contact'}</span>
+                        </div>
                     </div>
 
-                    {/* Footer Details */}
-                    <div className="grid grid-cols-2 gap-2 pt-3 mt-auto border-t border-border/30">
-                        <div className="space-y-0.5">
-                            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider opacity-70">Contract</p>
-                            <div className="flex items-center gap-1">
-                                <FileText size={12} className="text-blue-500/60" />
-                                <span className="text-[11px] font-semibold text-foreground truncate">{client.contract_type}</span>
+                    {/* Footer — Contract & Terms */}
+                    <div className="grid grid-cols-2 gap-3 pt-3 mt-auto border-t border-black/[0.04] dark:border-white/[0.04]">
+                        <div>
+                            <p className="text-[10px] font-medium text-black/30 dark:text-white/30 uppercase tracking-wider mb-0.5">Contract</p>
+                            <div className="flex items-center gap-1.5">
+                                <FileText size={12} className="text-black/25 dark:text-white/25" />
+                                <span className="text-xs font-medium text-foreground">{client.contract_type}</span>
                             </div>
                         </div>
-                        <div className="space-y-0.5 text-right">
-                            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider opacity-70">Terms</p>
-                            <div className="flex items-center gap-1 justify-end">
-                                <Clock size={12} className="text-emerald-500/60" />
-                                <span className="text-[11px] font-semibold text-foreground truncate">{client.payment_terms}</span>
+                        <div className="text-right">
+                            <p className="text-[10px] font-medium text-black/30 dark:text-white/30 uppercase tracking-wider mb-0.5">Terms</p>
+                            <div className="flex items-center gap-1.5 justify-end">
+                                <Clock size={12} className="text-black/25 dark:text-white/25" />
+                                <span className="text-xs font-medium text-foreground">{client.payment_terms}</span>
                             </div>
                         </div>
                     </div>
 
-                    {/* Stats Badge */}
+                    {/* Projects Badge */}
                     <div className="mt-3 flex items-center justify-between">
-                        <div className="px-2 py-1 rounded-md bg-blue-500/5 group-hover:bg-blue-500/10 transition-colors">
-                            <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wide">
-                                {client.projects_count || 0} Project{client.projects_count !== 1 && 's'}
-                            </span>
-                        </div>
-                        <ChevronRight size={14} className="text-muted-foreground/50 group-hover:text-foreground transition-colors" />
+                        <span className="text-[11px] font-medium text-blue-600/80 dark:text-blue-400/80 bg-blue-500/[0.06] px-2.5 py-1 rounded-full">
+                            {client.projects_count || 0} Project{client.projects_count !== 1 && 's'}
+                        </span>
+                        <ChevronRight size={14} className="text-black/15 dark:text-white/15 group-hover:text-black/40 dark:group-hover:text-white/40 group-hover:translate-x-0.5 transition-all" />
                     </div>
                 </div>
             </Card>

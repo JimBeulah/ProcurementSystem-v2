@@ -4,11 +4,12 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { Card } from '@/Components/UI/Card';
 import { ClientCard } from '@/Components/Clients/ClientCard';
 import Modal from '@/Components/UI/Modal';
+import Select from '@/Components/UI/Select';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    Users, Plus, Search, Building2, Phone, FileText, Filter,
+    Users, Plus, Search, Building2, FileText, Filter,
     LayoutGrid, List as ListIcon, TrendingUp, ShieldCheck,
-    CreditCard, Loader2, ChevronRight, Edit2, Trash2,
+    CreditCard, Loader2, Edit2, Trash2,
 } from 'lucide-react';
 
 export default function ClientsIndex() {
@@ -100,104 +101,119 @@ export default function ClientsIndex() {
         <AuthenticatedLayout>
             <Head title="Clients" />
 
-            <div className="space-y-8 max-w-7xl mx-auto px-4 md:px-0">
-                {/* Stats - Compact Row */}
+            <div className="space-y-6 max-w-7xl mx-auto px-4 md:px-0">
+                {/* Stats Row — macOS widget style */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <StatCard
                         title="Total Clients"
                         value={clients.length.toString()}
-                        icon={<Users className="text-blue-500" size={18} />}
-                        trend="Total"
-                        color="bg-blue-500/10 text-blue-600"
+                        icon={<Users size={18} />}
+                        color="blue"
                     />
                     <StatCard
                         title="Active Contracts"
                         value={activeContracts.toString()}
-                        icon={<TrendingUp className="text-emerald-500" size={18} />}
-                        trend="Active"
-                        color="bg-emerald-500/10 text-emerald-600"
+                        icon={<TrendingUp size={18} />}
+                        color="emerald"
                     />
                     <StatCard
                         title="Lump Sum"
                         value={lsumContracts.toString()}
-                        icon={<ShieldCheck className="text-orange-500" size={18} />}
-                        trend="Standard"
-                        color="bg-orange-500/10 text-orange-600"
+                        icon={<ShieldCheck size={18} />}
+                        color="orange"
                     />
                 </div>
 
-                {/* Controls */}
+                {/* macOS-style Toolbar */}
                 <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
-                    <div className="relative w-full md:w-96 group">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-blue-500 transition-colors" size={16} />
+                    {/* Search */}
+                    <div className="relative w-full md:w-80 group">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-black/30 dark:text-white/30 group-focus-within:text-blue-500 transition-colors duration-150" size={15} />
                         <input
                             type="text"
                             placeholder="Search clients..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-9 pr-4 py-2.5 bg-card border border-border/50 focus:border-blue-500/50 rounded-xl outline-none ring-0 focus:ring-2 focus:ring-blue-500/20 text-sm text-foreground placeholder:text-muted transition-all font-medium shadow-sm"
+                            className="w-full pl-9 pr-4 py-2 bg-black/[0.03] dark:bg-white/[0.04] border-none focus:bg-white dark:focus:bg-white/[0.08] rounded-lg outline-none ring-0 focus:ring-2 focus:ring-blue-500/25 text-[13px] text-foreground placeholder:text-black/30 dark:placeholder:text-white/30 transition-all duration-200 font-medium"
                         />
                     </div>
+
+                    {/* Right Controls */}
                     <div className="flex items-center gap-2 w-full md:w-auto">
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
+                        {/* Add Button */}
+                        <button
                             onClick={() => {
                                 setEditingClient(null);
                                 resetForm();
                                 setShowModal(true);
                             }}
-                            className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-lg shadow-blue-500/20 font-bold transition-all text-sm whitespace-nowrap"
+                            className="bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-semibold transition-all duration-150 text-[13px] whitespace-nowrap shadow-sm cursor-pointer"
                         >
-                            <Plus size={16} /> Add Client
-                        </motion.button>
+                            <Plus size={15} strokeWidth={2.5} /> Add Client
+                        </button>
+
+                        {/* Filter */}
                         <div className="relative flex-1 md:flex-none">
-                            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={14} />
-                            <select
+                            <Select
                                 value={filterType}
-                                onChange={(e) => setFilterType(e.target.value)}
-                                className="w-full md:w-auto pl-9 pr-8 py-2.5 bg-card border border-border/50 focus:border-blue-500/50 rounded-xl outline-none ring-0 focus:ring-2 focus:ring-blue-500/20 text-xs font-semibold text-foreground cursor-pointer appearance-none transition-all shadow-sm"
-                            >
-                                <option value="All" className="bg-card text-foreground">All Types</option>
-                                <option value="Lump Sum" className="bg-card text-foreground">Lump Sum</option>
-                                <option value="Cost Plus" className="bg-card text-foreground">Cost Plus</option>
-                                <option value="Unit Price" className="bg-card text-foreground">Unit Price</option>
-                            </select>
+                                onChange={setFilterType}
+                                options={[
+                                    { value: "All", label: "All Types" },
+                                    { value: "Lump Sum", label: "Lump Sum" },
+                                    { value: "Cost Plus", label: "Cost Plus" },
+                                    { value: "Unit Price", label: "Unit Price" },
+                                ]}
+                                icon={Filter}
+                                className="w-full md:w-auto min-w-[160px]"
+                            />
                         </div>
-                        <div className="flex items-center bg-card border border-border/50 p-1 rounded-xl shadow-sm">
+
+                        {/* View Toggle — segmented control */}
+                        <div className="flex items-center bg-black/[0.03] dark:bg-white/[0.04] p-0.5 rounded-lg">
                             <button
                                 onClick={() => setViewMode('grid')}
-                                className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-background text-foreground shadow-sm' : 'text-muted hover:text-foreground'}`}
+                                className={`p-1.5 rounded-md transition-all duration-150 cursor-pointer ${viewMode === 'grid'
+                                    ? 'bg-white dark:bg-white/[0.1] text-foreground shadow-sm'
+                                    : 'text-black/40 dark:text-white/40 hover:text-foreground'
+                                    }`}
                                 title="Grid View"
                             >
-                                <LayoutGrid size={16} />
+                                <LayoutGrid size={15} />
                             </button>
                             <button
                                 onClick={() => setViewMode('list')}
-                                className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-background text-foreground shadow-sm' : 'text-muted hover:text-foreground'}`}
+                                className={`p-1.5 rounded-md transition-all duration-150 cursor-pointer ${viewMode === 'list'
+                                    ? 'bg-white dark:bg-white/[0.1] text-foreground shadow-sm'
+                                    : 'text-black/40 dark:text-white/40 hover:text-foreground'
+                                    }`}
                                 title="List View"
                             >
-                                <ListIcon size={16} />
+                                <ListIcon size={15} />
                             </button>
                         </div>
                     </div>
                 </div>
 
-                {/* Client Grid/List */}
+                {/* Client Grid / List */}
                 {filtered.length === 0 ? (
-                    <div className="text-center py-24 rounded-3xl bg-muted/10">
-                        <div className="bg-background w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
-                            <Users className="text-muted-foreground" size={40} />
+                    <div className="text-center py-20 rounded-2xl">
+                        <div className="w-16 h-16 rounded-2xl bg-black/[0.03] dark:bg-white/[0.04] flex items-center justify-center mx-auto mb-5">
+                            <Users className="text-black/20 dark:text-white/20" size={28} />
                         </div>
-                        <h3 className="text-xl font-bold text-foreground mb-2">No clients found</h3>
-                        <p className="text-muted-foreground max-w-sm mx-auto">Try adjusting your search or add a new client to get started.</p>
+                        <h3 className="text-base font-semibold text-foreground mb-1">No clients found</h3>
+                        <p className="text-[13px] text-black/40 dark:text-white/40 max-w-xs mx-auto">
+                            Try adjusting your search or add a new client to get started.
+                        </p>
                     </div>
                 ) : viewMode === 'grid' ? (
                     <motion.div
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
                         initial="hidden"
                         animate="visible"
-                        variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.05 } } }}
+                        variants={{
+                            hidden: { opacity: 0 },
+                            visible: { opacity: 1, transition: { staggerChildren: 0.04 } }
+                        }}
                     >
                         <AnimatePresence mode="popLayout">
                             {filtered.map(client => (
@@ -206,47 +222,47 @@ export default function ClientsIndex() {
                         </AnimatePresence>
                     </motion.div>
                 ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                         <AnimatePresence mode="popLayout">
                             {filtered.map(client => (
                                 <motion.div
                                     key={client.id}
                                     layout
-                                    initial={{ opacity: 0, scale: 0.98 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.98 }}
-                                    className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-card rounded-2xl shadow-sm hover:shadow-md transition-all group gap-4 border border-border/50"
+                                    initial={{ opacity: 0, y: 4 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -4 }}
+                                    className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-white/70 dark:bg-white/[0.03] backdrop-blur-xl rounded-xl hover:bg-white/90 dark:hover:bg-white/[0.05] transition-all duration-200 group gap-4 cursor-pointer"
                                 >
                                     <div className="flex items-center gap-4">
-                                        <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-600 group-hover:scale-110 transition-transform">
-                                            <Building2 size={24} />
+                                        <div className="w-10 h-10 rounded-[14px] bg-blue-500/10 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:bg-blue-500/15 transition-colors">
+                                            <Building2 size={18} />
                                         </div>
                                         <div>
-                                            <h3 className="text-base font-bold text-foreground group-hover:text-blue-600 transition-colors">{client.name}</h3>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <span className="text-xs font-mono px-2 py-0.5 rounded-md bg-muted/50 text-muted-foreground">ID: {client.id}</span>
-                                                <span className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                                                    <Users size={12} /> {client.contact_person || 'No contact'}
+                                            <h3 className="text-[14px] font-semibold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{client.name}</h3>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <span className="text-[11px] font-mono text-black/30 dark:text-white/30">#{client.id}</span>
+                                                <span className="text-[11px] text-black/40 dark:text-white/40 flex items-center gap-1">
+                                                    <Users size={11} /> {client.contact_person || 'No contact'}
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center justify-between md:justify-end gap-8 w-full md:w-auto pt-4 md:pt-0 border-t md:border-t-0 border-border/50">
+                                    <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto pt-3 md:pt-0 border-t md:border-t-0 border-black/[0.04] dark:border-white/[0.04]">
                                         <div className="text-left md:text-right">
-                                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Contract</p>
-                                            <p className="text-sm font-semibold text-foreground">{client.contract_type}</p>
+                                            <p className="text-[10px] text-black/30 dark:text-white/30 uppercase font-medium tracking-wider">Contract</p>
+                                            <p className="text-[13px] font-medium text-foreground">{client.contract_type}</p>
                                         </div>
                                         <div className="text-left md:text-right">
-                                            <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Terms</p>
-                                            <p className="text-sm font-semibold text-foreground">{client.payment_terms}</p>
+                                            <p className="text-[10px] text-black/30 dark:text-white/30 uppercase font-medium tracking-wider">Terms</p>
+                                            <p className="text-[13px] font-medium text-foreground">{client.payment_terms}</p>
                                         </div>
-                                        <div className="flex items-center gap-2 pl-4 md:border-l border-border/50">
-                                            <button onClick={() => handleEdit(client)} className="p-2 hover:bg-blue-500/10 text-muted-foreground hover:text-blue-600 rounded-xl transition-colors" title="Edit">
-                                                <Edit2 size={18} />
+                                        <div className="flex items-center gap-1 pl-3 md:border-l border-black/[0.04] dark:border-white/[0.04] opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button onClick={() => handleEdit(client)} className="p-2 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] text-black/40 dark:text-white/40 hover:text-blue-600 rounded-lg transition-all cursor-pointer" title="Edit">
+                                                <Edit2 size={15} />
                                             </button>
-                                            <button onClick={() => confirmDelete(client)} className="p-2 hover:bg-red-500/10 text-muted-foreground hover:text-red-500 rounded-xl transition-colors" title="Delete">
-                                                <Trash2 size={18} />
+                                            <button onClick={() => confirmDelete(client)} className="p-2 hover:bg-red-500/10 text-black/40 dark:text-white/40 hover:text-red-500 rounded-lg transition-all cursor-pointer" title="Delete">
+                                                <Trash2 size={15} />
                                             </button>
                                         </div>
                                     </div>
@@ -256,80 +272,62 @@ export default function ClientsIndex() {
                     </div>
                 )}
 
-                {/* Edit/Create Modal */}
+                {/* Create / Edit Modal */}
                 <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingClient(null); }} title={editingClient ? "Edit Client" : "New Client"}>
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">Company Name</label>
-                            <div className="relative">
-                                <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <FormField label="Company Name" icon={<Building2 size={16} />}>
+                            <input
+                                className="form-input-macos"
+                                placeholder="e.g. Acme Corp"
+                                value={formData.name}
+                                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                required
+                            />
+                        </FormField>
+
+                        <FormField label="Contact Person" icon={<Users size={16} />}>
+                            <input
+                                className="form-input-macos"
+                                placeholder="Full name of representative"
+                                value={formData.contact_person}
+                                onChange={e => setFormData({ ...formData, contact_person: e.target.value })}
+                            />
+                        </FormField>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <FormField label="Contract Type" icon={<FileText size={16} />}>
+                                <select
+                                    className="form-input-macos appearance-none cursor-pointer"
+                                    value={formData.contract_type}
+                                    onChange={e => setFormData({ ...formData, contract_type: e.target.value })}
+                                >
+                                    <option value="Lump Sum">Lump Sum</option>
+                                    <option value="Cost Plus">Cost Plus</option>
+                                    <option value="Unit Price">Unit Price</option>
+                                </select>
+                            </FormField>
+                            <FormField label="Payment Terms" icon={<CreditCard size={16} />}>
                                 <input
-                                    className="w-full bg-white/50 dark:bg-black/20 focus:bg-background border border-border/50 rounded-2xl pl-12 pr-4 py-3 text-sm text-foreground focus:ring-2 focus:ring-blue-500/10 outline-none transition-all placeholder:text-muted-foreground/50 shadow-sm"
-                                    placeholder="e.g. Acme Corp"
-                                    value={formData.name}
-                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                    required
+                                    className="form-input-macos"
+                                    placeholder="e.g. 30 Days"
+                                    value={formData.payment_terms}
+                                    onChange={e => setFormData({ ...formData, payment_terms: e.target.value })}
                                 />
-                            </div>
+                            </FormField>
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">Contact Person</label>
-                            <div className="relative">
-                                <Users className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-                                <input
-                                    className="w-full bg-white/50 dark:bg-black/20 focus:bg-background border border-border/50 rounded-2xl pl-12 pr-4 py-3 text-sm text-foreground focus:ring-2 focus:ring-blue-500/10 outline-none transition-all placeholder:text-muted-foreground/50 shadow-sm"
-                                    placeholder="Full name of representative"
-                                    value={formData.contact_person}
-                                    onChange={e => setFormData({ ...formData, contact_person: e.target.value })}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">Contract Type</label>
-                                <div className="relative">
-                                    <FileText className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-                                    <select
-                                        className="w-full bg-white/50 dark:bg-black/20 focus:bg-background border border-border/50 rounded-2xl pl-12 pr-8 py-3 text-sm text-foreground focus:ring-2 focus:ring-blue-500/10 outline-none transition-all appearance-none cursor-pointer shadow-sm"
-                                        value={formData.contract_type}
-                                        onChange={e => setFormData({ ...formData, contract_type: e.target.value })}
-                                    >
-                                        <option value="Lump Sum" className="bg-card text-foreground">Lump Sum</option>
-                                        <option value="Cost Plus" className="bg-card text-foreground">Cost Plus</option>
-                                        <option value="Unit Price" className="bg-card text-foreground">Unit Price</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">Payment Terms</label>
-                                <div className="relative">
-                                    <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-                                    <input
-                                        className="w-full bg-white/50 dark:bg-black/20 focus:bg-background border border-border/50 rounded-2xl pl-12 pr-4 py-3 text-sm text-foreground focus:ring-2 focus:ring-blue-500/10 outline-none transition-all placeholder:text-muted-foreground/50 shadow-sm"
-                                        placeholder="e.g. 30 Days"
-                                        value={formData.payment_terms}
-                                        onChange={e => setFormData({ ...formData, payment_terms: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col gap-3 pt-4">
-                            <motion.button
-                                whileHover={{ scale: 1.01 }}
-                                whileTap={{ scale: 0.99 }}
+                        <div className="flex flex-col gap-2.5 pt-3">
+                            <button
                                 type="submit"
                                 disabled={submitting}
-                                className="w-full bg-blue-600 py-3.5 rounded-2xl text-white font-bold hover:bg-blue-500 shadow-lg shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm transition-all"
+                                className="w-full bg-blue-600 hover:bg-blue-500 active:bg-blue-700 py-2.5 rounded-xl text-white font-semibold text-[13px] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all duration-150 shadow-sm cursor-pointer"
                             >
-                                {submitting ? <Loader2 className="animate-spin" size={20} /> : (editingClient ? 'Update Profile' : 'Establish Client')}
-                            </motion.button>
+                                {submitting ? <Loader2 className="animate-spin" size={16} /> : (editingClient ? 'Update Client' : 'Add Client')}
+                            </button>
                             <button
                                 type="button"
                                 onClick={() => setShowModal(false)}
-                                className="w-full py-3 text-muted-foreground hover:text-foreground font-semibold transition-colors text-sm"
+                                className="w-full py-2.5 text-black/40 dark:text-white/40 hover:text-foreground font-medium transition-colors text-[13px] cursor-pointer"
                             >
                                 Cancel
                             </button>
@@ -338,34 +336,33 @@ export default function ClientsIndex() {
                 </Modal>
 
                 {/* Delete Confirmation Modal */}
-                <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)} title="Confirm Deletion">
+                <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)} title="Delete Client" maxWidth="max-w-md">
                     <div className="space-y-4">
-                        <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-start gap-4">
-                            <div className="p-2 bg-red-500/20 text-red-600 rounded-xl">
-                                <Trash2 size={24} />
+                        <div className="p-4 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-start gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-500/20 text-red-600 flex items-center justify-center shrink-0">
+                                <Trash2 size={18} />
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-red-600">Delete Client?</h3>
-                                <p className="text-sm text-red-600/80 mt-1">
-                                    Are you sure you want to delete <span className="font-bold">{clientToDelete?.name}</span>? This action cannot be undone.
+                                <p className="text-[13px] font-semibold text-red-700 dark:text-red-400">
+                                    Are you sure you want to delete <span className="font-bold">{clientToDelete?.name}</span>?
+                                </p>
+                                <p className="text-[12px] text-red-600/70 dark:text-red-400/70 mt-1">
+                                    This action cannot be undone. Deletion will fail if the client has linked projects.
                                 </p>
                             </div>
                         </div>
-                        <p className="text-sm text-muted">
-                            Note: Deletion will fail if the client has existing projects linked to them. Please remove linked projects first.
-                        </p>
-                        <div className="flex gap-3 pt-2">
+                        <div className="flex gap-2.5 pt-1">
                             <button
                                 onClick={() => setShowDeleteModal(false)}
-                                className="flex-1 py-3 bg-muted/20 hover:bg-muted/30 text-foreground font-semibold rounded-xl transition-colors"
+                                className="flex-1 py-2.5 bg-black/[0.04] dark:bg-white/[0.04] hover:bg-black/[0.06] dark:hover:bg-white/[0.08] text-foreground font-medium rounded-xl transition-all text-[13px] cursor-pointer"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleDelete}
-                                className="flex-1 py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl shadow-lg shadow-red-500/20 transition-all"
+                                className="flex-1 py-2.5 bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-semibold rounded-xl transition-all text-[13px] shadow-sm cursor-pointer"
                             >
-                                Delete Client
+                                Delete
                             </button>
                         </div>
                     </div>
@@ -375,19 +372,45 @@ export default function ClientsIndex() {
     );
 }
 
-function StatCard({ title, value, icon, trend, color }) {
+/* ── macOS-style Stat Widget ─────────────────────────────── */
+const colorMap = {
+    blue: { bg: 'bg-blue-500/10 dark:bg-blue-400/10', text: 'text-blue-600 dark:text-blue-400' },
+    emerald: { bg: 'bg-emerald-500/10 dark:bg-emerald-400/10', text: 'text-emerald-600 dark:text-emerald-400' },
+    orange: { bg: 'bg-orange-500/10 dark:bg-orange-400/10', text: 'text-orange-600 dark:text-orange-400' },
+};
+
+function StatCard({ title, value, icon, color }) {
+    const c = colorMap[color] || colorMap.blue;
     return (
-        <Card className="relative overflow-hidden group bg-card p-4 shadow-sm hover:shadow-md transition-all rounded-2xl border-none">
-            <div className="flex justify-between items-start mb-3">
-                <div className={`p-2.5 rounded-xl ${color} transition-colors`}>
+        <Card className="p-5 rounded-2xl border-none">
+            <div className="flex items-center gap-4">
+                <div className={`w-10 h-10 rounded-[14px] ${c.bg} ${c.text} flex items-center justify-center`}>
                     {icon}
                 </div>
-                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg ${color}`}>{trend}</span>
-            </div>
-            <div>
-                <h3 className="text-2xl font-extrabold text-foreground mb-0.5 tracking-tight font-heading">{value}</h3>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide opacity-80">{title}</p>
+                <div>
+                    <p className="text-2xl font-bold text-foreground tracking-tight leading-none">{value}</p>
+                    <p className="text-[11px] font-medium text-black/40 dark:text-white/40 mt-1 uppercase tracking-wider">{title}</p>
+                </div>
             </div>
         </Card>
+    );
+}
+
+/* ── macOS Form Field wrapper ────────────────────────────── */
+function FormField({ label, icon, children }) {
+    return (
+        <div className="space-y-1.5">
+            <label className="text-[11px] font-medium text-black/40 dark:text-white/40 uppercase tracking-wider ml-0.5">{label}</label>
+            <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-black/25 dark:text-white/25 pointer-events-none">
+                    {icon}
+                </div>
+                {React.Children.map(children, child =>
+                    React.cloneElement(child, {
+                        className: `${child.props.className || ''} w-full pl-10 pr-4 py-2.5 bg-black/[0.03] dark:bg-white/[0.04] border-none rounded-xl text-[13px] text-foreground focus:ring-2 focus:ring-blue-500/20 outline-none transition-all duration-150 placeholder:text-black/25 dark:placeholder:text-white/25 font-medium`.trim()
+                    })
+                )}
+            </div>
+        </div>
     );
 }

@@ -163,7 +163,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={handleClose} title="Add BOQ Item" maxWidth="2xl">
+        <Modal isOpen={isOpen} onClose={handleClose} title="Add BOQ Item" maxWidth="max-w-2xl">
             {/* Stepper Header */}
             <div className="flex items-center justify-between mb-6 -mt-1 px-1">
                 {STEPS.map((s, i) => {
