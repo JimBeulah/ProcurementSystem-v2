@@ -78,28 +78,30 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
         if (!validateStep(0)) { setStep(0); return; }
         setSubmitting(true);
 
-        // Pass the item to the parent - ensure consistent casing
-        // Backend likely expects snake_case or specific fields
         const payload = {
-            ...item,
+            item_description: item.itemDescription,
+            unit: item.unit,
             quantity: Number(item.quantity),
             material_unit_price: item.materialUnitPrice,
             labor_unit_price: item.laborUnitPrice,
+            is_carport: item.isCarport,
+            components: item.components
         };
 
-        const success = await onSubmit(payload);
-        setSubmitting(false);
-        // If onSubmit returns a promise that resolves to true/false, use that.
-        // If it void, we assume success? 
-        // In Boq.jsx, handleWizardSubmit is async.
+        try {
+            await onSubmit(payload);
+            setSubmitting(false);
 
-        if (success !== false) {
             if (batchMode) {
                 resetForm();
+                // Keep modal open
             } else {
                 resetForm();
                 onClose();
             }
+        } catch (error) {
+            setSubmitting(false);
+            // Keep modal open and let user fix errors
         }
     };
 
@@ -454,7 +456,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                     </div>
 
                     {/* Batch Mode Toggle */}
-                    <label className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <label className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" onClick={(e) => { e.preventDefault(); setBatchMode(!batchMode); }}>
                         <div className={`w-9 h-5 rounded-full flex items-center transition-colors ${batchMode ? 'bg-orange-500 justify-end' : 'bg-slate-200 dark:bg-slate-700 justify-start'}`}>
                             <div className="w-4 h-4 bg-white rounded-full shadow mx-0.5" />
                         </div>

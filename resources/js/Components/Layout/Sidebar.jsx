@@ -37,7 +37,12 @@ export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleColl
     return (
         <>
             {/* Tooltip Portal */}
-            <SidebarTooltip activeTooltip={activeTooltip} />
+            <AnimatePresence>
+                {activeTooltip && (
+                    <SidebarTooltip key={activeTooltip.label} activeTooltip={activeTooltip} />
+                )}
+            </AnimatePresence>
+
             {/* Mobile Overlay */}
             <AnimatePresence>
                 {isOpen && (
@@ -216,25 +221,34 @@ function NavItem({ href, icon, label, isActive, isCollapsed, onClick, onHover })
 }
 
 function SidebarTooltip({ activeTooltip }) {
-    if (!activeTooltip) return null;
-
     const { label, rect } = activeTooltip;
 
     if (typeof document === 'undefined') return null;
 
     return createPortal(
         <motion.div
-            initial={{ opacity: 0, x: -10, scale: 0.95 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: -10, scale: 0.95 }}
-            transition={{ duration: 0.15, ease: "easeOut" }}
+            initial={{ opacity: 0, x: -10, y: "-50%", scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, y: "-50%", scale: 1 }}
+            exit={{ opacity: 0, x: -10, y: "-50%", scale: 0.95 }}
+            transition={{
+                type: "spring",
+                stiffness: 500,
+                damping: 30,
+                mass: 0.5
+            }}
             style={{
                 top: rect.top + rect.height / 2,
-                left: rect.right + 8,
+                left: rect.right + 12,
             }}
-            className="fixed z-[100] -translate-y-1/2 px-2.5 py-1.5 bg-foreground text-background text-xs font-medium rounded-md shadow-xl pointer-events-none whitespace-nowrap"
+            className="fixed z-[100] flex items-center group pointer-events-none"
         >
-            {label}
+            {/* Tooltip Arrow */}
+            <div className="w-2.5 h-2.5 bg-slate-900 absolute -left-1 top-1/2 -translate-y-1/2 rotate-45 border-l border-b border-white/10" />
+
+            {/* Tooltip Content */}
+            <div className="relative px-3 py-1.5 bg-slate-900/95 backdrop-blur-md text-white text-[11px] font-semibold rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.5)] whitespace-nowrap border border-white/10 tracking-tight">
+                {label}
+            </div>
         </motion.div>,
         document.body
     );

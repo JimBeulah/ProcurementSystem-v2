@@ -9,11 +9,21 @@ export default function Header({ user, onMenuClick }) {
     const { url } = usePage();
 
     // Generate breadcrumbs from URL
+    const { project } = usePage().props;
     const segments = url.split('/').filter(Boolean);
-    const breadcrumbs = segments.map((seg, i) => ({
-        label: seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' '),
-        href: '/' + segments.slice(0, i + 1).join('/'),
-    }));
+    const breadcrumbs = segments.map((seg, i) => {
+        let label = seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' ');
+
+        // If segment is numeric and matches project ID, use project name
+        if (project && !isNaN(seg) && parseInt(seg) === project.id) {
+            label = project.name;
+        }
+
+        return {
+            label: label,
+            href: '/' + segments.slice(0, i + 1).join('/'),
+        };
+    });
 
     const handleLogout = (e) => {
         e.preventDefault();

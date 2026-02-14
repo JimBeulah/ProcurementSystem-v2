@@ -23,18 +23,22 @@ export default function ProjectBoq() {
     }, [initialItems]);
 
     const handleWizardSubmit = (payload) => {
-        setLoading(true);
-        router.post(`/projects/${project.id}/boq`, payload, {
-            onSuccess: () => {
-                toast.success('BOQ Item Added');
-                setIsWizardOpen(false);
-                setLoading(false);
-            },
-            onError: (errors) => {
-                toast.error('Failed to add item');
-                console.error(errors);
-                setLoading(false);
-            }
+        return new Promise((resolve, reject) => {
+            setLoading(true);
+            router.post(`/projects/${project.id}/boq`, payload, {
+                onSuccess: () => {
+                    toast.success('BOQ Item Added');
+                    setIsWizardOpen(false);
+                    setLoading(false);
+                    resolve(true);
+                },
+                onError: (errors) => {
+                    toast.error('Failed to add item');
+                    console.error(errors);
+                    setLoading(false);
+                    reject(errors);
+                }
+            });
         });
     };
 
@@ -411,8 +415,8 @@ export default function ProjectBoq() {
                                                                             <tr key={comp.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                                                                                 <td className="p-2 pl-4">
                                                                                     <span className={`inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider w-16 ${comp.resource_type === 'MATERIAL' ? 'bg-cyan-100 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-400' :
-                                                                                            comp.resource_type === 'LABOR' ? 'bg-purple-100 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400' :
-                                                                                                'bg-orange-100 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400'
+                                                                                        comp.resource_type === 'LABOR' ? 'bg-purple-100 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400' :
+                                                                                            'bg-orange-100 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400'
                                                                                         }`}>
                                                                                         {comp.resource_type.substring(0, 3)}
                                                                                     </span>
