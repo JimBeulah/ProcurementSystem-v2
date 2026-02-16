@@ -98,4 +98,41 @@ class MaterialRequestController extends Controller
 
         return redirect()->back()->with('success', 'Material request submitted successfully.');
     }
+
+    public function approve(MaterialRequest $materialRequest)
+    {
+        if (!in_array(auth()->user()->role, ['ADMIN', 'PROJECT_MANAGER'])) {
+            abort(403, 'Unauthorized. Only Admins and Project Managers can approve requests.');
+        }
+
+        if ($materialRequest->status !== 'PENDING') {
+            return redirect()->back()->with('error', 'This request has already been processed.');
+        }
+
+        $materialRequest->update([
+            'status' => 'APPROVED',
+            'approver_id' => auth()->id(),
+        ]);
+
+        return redirect()->back()->with('success', "Material Request MR-{$materialRequest->id} approved successfully.");
+    }
+
+    public function reject(Request $request, MaterialRequest $materialRequest)
+    {
+        if (!in_array(auth()->user()->role, ['ADMIN', 'PROJECT_MANAGER'])) {
+            abort(403, 'Unauthorized. Only Admins and Project Managers can reject requests.');
+        }
+
+        if ($materialRequest->status !== 'PENDING') {
+            return redirect()->back()->with('error', 'This request has already been processed.');
+        }
+
+        $materialRequest->update([
+            'status' => 'REJECTED',
+            'approver_id' => auth()->id(),
+            'remarks' => $request->input('remarks', $materialRequest->remarks),
+        ]);
+
+        return redirect()->back()->with('success', "Material Request MR-{$materialRequest->id} rejected.");
+    }
 }

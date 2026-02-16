@@ -65,7 +65,7 @@ class BoqController extends Controller
             'components.*.name' => 'required|string|max:255',
             'components.*.quantityFactor' => 'required|numeric|min:0',
             'components.*.unitRate' => 'required|numeric|min:0',
-            'components.*.noOfPersons' => 'nullable|numeric|min:1',
+            'components.*.noOfPersons' => 'nullable|numeric|min:0',
             'components.*.hours' => 'nullable|numeric|min:0',
         ]);
 
@@ -93,13 +93,11 @@ class BoqController extends Controller
                 $boqItem->components()->create([
                     'resource_type' => $comp['resourceType'],
                     'name' => $comp['name'],
-                    'quantity_factor' => $comp['quantityFactor'], // or quantity_factor
+                    'quantity_factor' => $comp['quantityFactor'],
                     'unit_rate' => $comp['unitRate'],
-                    'no_of_persons' => $comp['noOfPersons'] ?? 1,
-                    'hours' => $comp['hours'] ?? null,
-                    'total_component_cost' => ($comp['resourceType'] === 'LABOR')
-                        ? ($comp['unitRate'] * ($comp['noOfPersons'] ?? 1) * ($comp['hours'] ?? 0))
-                        : ($comp['unitRate'] * $comp['quantityFactor'])
+                    'no_of_persons' => $comp['noOfPersons'] ?? 0,
+                    'hours' => $comp['hours'] ?? 0,
+                    'total_component_cost' => $comp['unitRate'] * $comp['quantityFactor']
                 ]);
             }
         }
@@ -142,11 +140,9 @@ class BoqController extends Controller
                         'name' => $comp['name'],
                         'quantity_factor' => $comp['quantityFactor'],
                         'unit_rate' => $comp['unitRate'],
-                        'no_of_persons' => $comp['noOfPersons'] ?? 1,
-                        'hours' => $comp['hours'] ?? null,
-                        'total_component_cost' => ($comp['resourceType'] === 'LABOR')
-                            ? ($comp['unitRate'] * ($comp['noOfPersons'] ?? 1) * ($comp['hours'] ?? 0))
-                            : ($comp['unitRate'] * $comp['quantityFactor'])
+                        'no_of_persons' => $comp['noOfPersons'] ?? 0,
+                        'hours' => $comp['hours'] ?? 0,
+                        'total_component_cost' => $comp['unitRate'] * $comp['quantityFactor']
                     ]);
                 }
             }
@@ -219,23 +215,18 @@ class BoqController extends Controller
             'name' => 'required|string|max:255',
             'quantityFactor' => 'required|numeric|min:0',
             'unitRate' => 'required|numeric|min:0',
-            'noOfPersons' => 'nullable|numeric|min:1',
+            'noOfPersons' => 'nullable|numeric|min:0',
             'hours' => 'nullable|numeric|min:0',
         ]);
-
-        // Calculate Cost
-        $totalCost = ($validated['resourceType'] === 'LABOR')
-            ? ($validated['unitRate'] * ($validated['noOfPersons'] ?? 1) * ($validated['hours'] ?? 0))
-            : ($validated['unitRate'] * $validated['quantityFactor']);
 
         $boqItem->components()->create([
             'resource_type' => $validated['resourceType'],
             'name' => $validated['name'],
             'quantity_factor' => $validated['quantityFactor'],
             'unit_rate' => $validated['unitRate'],
-            'no_of_persons' => $validated['noOfPersons'] ?? 1,
-            'hours' => $validated['hours'] ?? null,
-            'total_component_cost' => $totalCost
+            'no_of_persons' => $validated['noOfPersons'] ?? 0,
+            'hours' => $validated['hours'] ?? 0,
+            'total_component_cost' => $validated['unitRate'] * $validated['quantityFactor']
         ]);
 
         return redirect()->back()->with('success', 'Resource added successfully.');
@@ -254,22 +245,18 @@ class BoqController extends Controller
             'name' => 'required|string|max:255',
             'quantityFactor' => 'required|numeric|min:0',
             'unitRate' => 'required|numeric|min:0',
-            'noOfPersons' => 'nullable|numeric|min:1',
+            'noOfPersons' => 'nullable|numeric|min:0',
             'hours' => 'nullable|numeric|min:0',
         ]);
-
-        $totalCost = ($validated['resourceType'] === 'LABOR')
-            ? ($validated['unitRate'] * ($validated['noOfPersons'] ?? 1) * ($validated['hours'] ?? 0))
-            : ($validated['unitRate'] * $validated['quantityFactor']);
 
         $boqComponent->update([
             'resource_type' => $validated['resourceType'],
             'name' => $validated['name'],
             'quantity_factor' => $validated['quantityFactor'],
             'unit_rate' => $validated['unitRate'],
-            'no_of_persons' => $validated['noOfPersons'] ?? 1,
-            'hours' => $validated['hours'] ?? null,
-            'total_component_cost' => $totalCost
+            'no_of_persons' => $validated['noOfPersons'] ?? 0,
+            'hours' => $validated['hours'] ?? 0,
+            'total_component_cost' => $validated['unitRate'] * $validated['quantityFactor']
         ]);
 
         return redirect()->back()->with('success', 'Resource updated successfully.');

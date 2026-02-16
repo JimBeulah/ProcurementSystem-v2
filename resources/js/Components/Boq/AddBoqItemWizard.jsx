@@ -85,7 +85,13 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
             material_unit_price: item.materialUnitPrice,
             labor_unit_price: item.laborUnitPrice,
             is_carport: item.isCarport,
-            components: item.components
+            components: item.components.map(c => ({
+                ...c,
+                quantityFactor: Number(c.quantityFactor) || 0,
+                unitRate: Number(c.unitRate) || 0,
+                noOfPersons: Number(c.noOfPersons) || 0,
+                hours: Number(c.hours) || 0,
+            }))
         };
 
         try {
