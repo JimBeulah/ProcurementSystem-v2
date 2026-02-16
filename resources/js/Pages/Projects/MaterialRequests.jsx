@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import Modal from '@/Components/UI/Modal';
-import { Truck, Plus } from 'lucide-react';
+import Select from '@/Components/UI/Select';
+import { Truck, Plus, Package, Box } from 'lucide-react';
 
 export default function ProjectMaterialRequests() {
     const { project, materialRequests: initialMRs, boqItems } = usePage().props;
@@ -12,7 +13,10 @@ export default function ProjectMaterialRequests() {
     const [submitting, setSubmitting] = useState(false);
 
     // Cart state
-    const [selectedMaterial, setSelectedMaterial] = useState('');
+    const [selectedBoqItemId, setSelectedBoqItemId] = useState('');
+    const [selectedComponentId, setSelectedComponentId] = useState('');
+    const [itemDescription, setItemDescription] = useState('');
+
     const [requestQty, setRequestQty] = useState('');
     const [requestUnit, setRequestUnit] = useState('');
     const [materialUnitPrice, setMaterialUnitPrice] = useState('');
@@ -20,13 +24,34 @@ export default function ProjectMaterialRequests() {
     const [remarks, setRemarks] = useState('');
     const [cart, setCart] = useState([]);
 
+    // Derived state for budget
+    const selectedBoqItem = boqItems?.find(b => b.id === Number(selectedBoqItemId));
+    const selectedComponent = selectedBoqItem?.components?.find(c => c.id === Number(selectedComponentId));
+
+    const maxBudgetQty = selectedBoqItem && selectedComponent
+        ? (Number(selectedBoqItem.quantity) * Number(selectedComponent.quantity_factor))
+        : 0;
+
     const addToCart = () => {
-        if (!selectedMaterial || !requestQty || Number(requestQty) <= 0) return;
+        if (!itemDescription || !requestQty || Number(requestQty) <= 0) return;
         setCart([...cart, {
-            item_description: selectedMaterial, quantity: Number(requestQty), unit: requestUnit,
-            material_unit_price: Number(materialUnitPrice) || 0, labor_unit_price: Number(laborUnitPrice) || 0,
+            boq_item_id: selectedBoqItemId || null,
+            boq_item_component_id: selectedComponentId || null,
+            item_description: itemDescription,
+            quantity: Number(requestQty),
+            unit: requestUnit,
+            material_unit_price: Number(materialUnitPrice) || 0,
+            labor_unit_price: Number(laborUnitPrice) || 0,
         }]);
-        setSelectedMaterial(''); setRequestQty(''); setRequestUnit(''); setMaterialUnitPrice(''); setLaborUnitPrice('');
+
+        // Reset form
+        setSelectedBoqItemId('');
+        setSelectedComponentId('');
+        setItemDescription('');
+        setRequestQty('');
+        setRequestUnit('');
+        setMaterialUnitPrice('');
+        setLaborUnitPrice('');
     };
 
     const handleSubmit = () => {
@@ -38,16 +63,37 @@ export default function ProjectMaterialRequests() {
         });
     };
 
-    const handleMaterialSelect = (e) => {
-        const matName = e.target.value;
-        setSelectedMaterial(matName);
-        const boqItem = (boqItems || []).find(b => b.item_description === matName);
-        if (boqItem) {
+    const handleBoqItemChange = (val) => {
+        const id = val;
+        setSelectedBoqItemId(id);
+        setSelectedComponentId('');
+        setItemDescription('');
+        setRequestUnit('');
+        setMaterialUnitPrice('');
+        setLaborUnitPrice('');
+    };
+
+    const handleComponentChange = (val) => {
+        const id = val;
+        setSelectedComponentId(id);
+
+        const boqItem = boqItems.find(b => b.id === Number(selectedBoqItemId));
+        const component = boqItem?.components?.find(c => c.id === Number(id));
+
+        if (component) {
+            setItemDescription(component.name);
             setRequestUnit(boqItem.unit);
-            setMaterialUnitPrice(Number(boqItem.material_unit_price).toString());
-            setLaborUnitPrice(Number(boqItem.labor_unit_price).toString());
+            setMaterialUnitPrice(Number(component.unit_rate).toString());
+            setLaborUnitPrice('0');
         }
     };
+
+    // Helper to calculate total value
+    const calculateTotal = (items) => items.reduce((acc, item) => {
+        const mat = (Number(item.material_unit_price) || 0) * Number(item.quantity);
+        const lab = (Number(item.labor_unit_price) || 0) * Number(item.quantity);
+        return acc + mat + lab;
+    }, 0);
 
     return (
         <AuthenticatedLayout>
@@ -116,7 +162,10 @@ export default function ProjectMaterialRequests() {
                                             <tr key={item.id} className="border-b border-slate-100 dark:border-slate-700/30 hover:bg-slate-50 dark:hover:bg-slate-700/20 transition-colors">
                                                 <td className="p-4 pl-8 text-slate-900 dark:text-white relative">
                                                     <div className="absolute left-4 top-1/2 -translate-y-1/2 w-2 h-2 border-l border-b border-slate-300 dark:border-slate-600 rounded-bl-sm"></div>
-                                                    {item.item_description}
+                                                    <div className="flex flex-col">
+                                                        <span>{item.item_description}</span>
+                                                        {item.boq_item_component && <span className="text-[9px] text-slate-400 uppercase tracking-tighter">Ref: {item.boq_item?.item_description}</span>}
+                                                    </div>
                                                 </td>
                                                 <td className="p-4 text-center text-slate-500 uppercase">{item.unit}</td>
                                                 <td className="p-4 text-center font-mono text-cyan-600">{item.quantity}</td>
@@ -145,22 +194,64 @@ export default function ProjectMaterialRequests() {
                     <div className="space-y-4">
                         {/* Item Entry */}
                         <div className="bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
-                            <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-3 items-end">
-                                <div className="md:col-span-2 lg:col-span-3">
-                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block tracking-wider">Item Description</label>
-                                    <input list="boq-suggestions" className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white text-xs focus:border-blue-500 outline-none h-9" value={selectedMaterial} onChange={handleMaterialSelect} placeholder="Type or select material..." />
-                                    <datalist id="boq-suggestions">
-                                        {(boqItems || []).map(item => <option key={item.id} value={item.item_description}>{item.quantity} {item.unit}</option>)}
-                                    </datalist>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block tracking-wider">Select BOQ Item</label>
+                                    <Select
+                                        value={selectedBoqItemId}
+                                        onChange={handleBoqItemChange}
+                                        options={(boqItems || []).map(item => ({
+                                            value: item.id.toString(),
+                                            label: item.item_description
+                                        }))}
+                                        placeholder="Select BOQ Item"
+                                        icon={Package}
+                                    />
                                 </div>
-                                <div className="lg:col-span-1"><label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Unit</label><input className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white text-xs h-9" value={requestUnit} onChange={e => setRequestUnit(e.target.value)} /></div>
-                                <div className="lg:col-span-1"><label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Qty</label><input type="number" step="0.01" className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white text-xs h-9" value={requestQty} onChange={e => setRequestQty(e.target.value)} /></div>
-                                <div className="lg:col-span-1"><label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Mat. Unit</label><input type="number" step="0.01" className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white text-xs h-9" value={materialUnitPrice} onChange={e => setMaterialUnitPrice(e.target.value)} /></div>
-                                <div className="lg:col-span-1"><label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Lab. Unit</label><input type="number" step="0.01" className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white text-xs h-9" value={laborUnitPrice} onChange={e => setLaborUnitPrice(e.target.value)} /></div>
+                                <div>
+                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block tracking-wider">Select Resource (Component)</label>
+                                    <Select
+                                        value={selectedComponentId}
+                                        onChange={handleComponentChange}
+                                        options={(selectedBoqItem?.components || []).map(comp => ({
+                                            value: comp.id.toString(),
+                                            label: `${comp.name} (${comp.resource_type})`
+                                        }))}
+                                        placeholder="Select Resource"
+                                        icon={Box}
+                                        disabled={!selectedBoqItemId}
+                                    />
+                                </div>
                             </div>
-                            <div className="flex justify-end mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-                                <button type="button" onClick={addToCart} className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded font-black text-[10px] uppercase transition-all active:scale-95 shadow-lg shadow-blue-600/20">Add Line Item</button>
+
+                            <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+                                <div className="md:col-span-2">
+                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block tracking-wider">Item Description</label>
+                                    <input className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white text-xs focus:border-blue-500 outline-none h-9" value={itemDescription} onChange={e => setItemDescription(e.target.value)} placeholder="Item description" />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Unit</label>
+                                    <input className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white text-xs h-9" value={requestUnit} onChange={e => setRequestUnit(e.target.value)} />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">
+                                        Qty
+                                        {maxBudgetQty > 0 && <span className="ml-1 text-emerald-500 text-[9px]">(Max: {maxBudgetQty.toFixed(2)})</span>}
+                                    </label>
+                                    <input type="number" step="0.01" className={`w-full bg-white dark:bg-slate-900 border rounded p-2 text-slate-900 dark:text-white text-xs h-9 ${maxBudgetQty > 0 && Number(requestQty) > maxBudgetQty ? 'border-red-500 text-red-600' : 'border-slate-200 dark:border-slate-700'}`} value={requestQty} onChange={e => setRequestQty(e.target.value)} />
+                                </div>
+                                <div className="hidden">
+                                    {/* Hidden price inputs, autofilled but editable if needed next time */}
+                                    <input type="number" value={materialUnitPrice} onChange={e => setMaterialUnitPrice(e.target.value)} />
+                                    <input type="number" value={laborUnitPrice} onChange={e => setLaborUnitPrice(e.target.value)} />
+                                </div>
+                                <div>
+                                    <button type="button" onClick={addToCart} className="w-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded font-black text-[10px] uppercase transition-all active:scale-95 shadow-lg shadow-blue-600/20 h-9">Add</button>
+                                </div>
                             </div>
+                            {maxBudgetQty > 0 && Number(requestQty) > maxBudgetQty && (
+                                <p className="text-red-500 text-[10px] mt-1 font-bold">⚠️ Warning: Reduces exceeds calculated budget ({maxBudgetQty.toFixed(2)}). Admin will be notified.</p>
+                            )}
                         </div>
 
                         {/* Cart */}
@@ -168,27 +259,25 @@ export default function ProjectMaterialRequests() {
                             <table className="w-full text-[10px] text-left">
                                 <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-500 uppercase font-black tracking-widest text-[9px]">
                                     <tr>
-                                        <th className="p-3 pl-4">Material / Item</th>
+                                        <th className="p-3 pl-4">Item</th>
                                         <th className="p-3 text-center">Unit</th>
                                         <th className="p-3 text-center">Qty</th>
-                                        <th className="p-3 text-right">Mat. Total</th>
-                                        <th className="p-3 text-right">Lab. Total</th>
-                                        <th className="p-3 text-right">Total</th>
+                                        <th className="p-3 text-right">Est. Cost</th>
                                         <th className="p-3 text-center w-8"></th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                                     {cart.map((item, idx) => {
-                                        const matTotal = (item.material_unit_price || 0) * item.quantity;
-                                        const labTotal = (item.labor_unit_price || 0) * item.quantity;
+                                        const total = ((item.material_unit_price || 0) + (item.labor_unit_price || 0)) * item.quantity;
                                         return (
                                             <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-700/30">
-                                                <td className="p-3 pl-4 text-slate-900 dark:text-white font-medium">{item.item_description}</td>
+                                                <td className="p-3 pl-4">
+                                                    <div className="font-medium text-slate-900 dark:text-white">{item.item_description}</div>
+                                                    {item.boq_item_id && <div className="text-[9px] text-slate-400">BOQ Linked</div>}
+                                                </td>
                                                 <td className="p-3 text-center text-slate-500">{item.unit}</td>
                                                 <td className="p-3 text-center text-cyan-600 font-mono">{item.quantity}</td>
-                                                <td className="p-3 text-right text-slate-500 font-mono">{matTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                                <td className="p-3 text-right text-slate-500 font-mono">{labTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                                <td className="p-3 text-right text-blue-600 font-black font-mono">{(matTotal + labTotal).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                                <td className="p-3 text-right text-slate-500 font-mono">{total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                                                 <td className="p-3 text-center"><button onClick={() => setCart(cart.filter((_, i) => i !== idx))} className="text-slate-400 hover:text-red-500 transition-colors font-bold text-base">&times;</button></td>
                                             </tr>
                                         );

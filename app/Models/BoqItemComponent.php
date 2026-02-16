@@ -32,4 +32,9 @@ class BoqItemComponent extends Model
     {
         return $this->belongsTo(BoqItem::class);
     }
+
+    public function materialRequestItems()
+    {
+        return $this->hasMany(MaterialRequestItem::class);
+    }
 }

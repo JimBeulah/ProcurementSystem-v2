@@ -10,6 +10,8 @@ class MaterialRequestItem extends Model
 
     protected $fillable = [
         'material_request_id',
+        'boq_item_id',
+        'boq_item_component_id',
         'item_description',
         'description',
         'quantity',
@@ -30,5 +32,15 @@ class MaterialRequestItem extends Model
     public function materialRequest()
     {
         return $this->belongsTo(MaterialRequest::class);
+    }
+
+    public function boqItem()
+    {
+        return $this->belongsTo(BoqItem::class);
+    }
+
+    public function boqItemComponent()
+    {
+        return $this->belongsTo(BoqItemComponent::class);
     }
 }

@@ -295,16 +295,17 @@ export default function ClientsIndex() {
                         </FormField>
 
                         <div className="grid grid-cols-2 gap-3">
-                            <FormField label="Contract Type" icon={<FileText size={16} />}>
-                                <select
-                                    className="form-input-macos appearance-none cursor-pointer"
+                            <FormField label="Contract Type">
+                                <Select
                                     value={formData.contract_type}
-                                    onChange={e => setFormData({ ...formData, contract_type: e.target.value })}
-                                >
-                                    <option value="Lump Sum">Lump Sum</option>
-                                    <option value="Cost Plus">Cost Plus</option>
-                                    <option value="Unit Price">Unit Price</option>
-                                </select>
+                                    onChange={val => setFormData({ ...formData, contract_type: val })}
+                                    options={[
+                                        { value: "Lump Sum", label: "Lump Sum" },
+                                        { value: "Cost Plus", label: "Cost Plus" },
+                                        { value: "Unit Price", label: "Unit Price" },
+                                    ]}
+                                    icon={FileText}
+                                />
                             </FormField>
                             <FormField label="Payment Terms" icon={<CreditCard size={16} />}>
                                 <input
@@ -398,18 +399,24 @@ function StatCard({ title, value, icon, color }) {
 
 /* ── macOS Form Field wrapper ────────────────────────────── */
 function FormField({ label, icon, children }) {
+    const hasIcon = !!icon;
     return (
         <div className="space-y-1.5">
             <label className="text-[11px] font-medium text-black/40 dark:text-white/40 uppercase tracking-wider ml-0.5">{label}</label>
             <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-black/25 dark:text-white/25 pointer-events-none">
-                    {icon}
-                </div>
-                {React.Children.map(children, child =>
-                    React.cloneElement(child, {
-                        className: `${child.props.className || ''} w-full pl-10 pr-4 py-2.5 bg-black/[0.03] dark:bg-white/[0.04] border-none rounded-xl text-[13px] text-foreground focus:ring-2 focus:ring-blue-500/20 outline-none transition-all duration-150 placeholder:text-black/25 dark:placeholder:text-white/25 font-medium`.trim()
-                    })
+                {icon && (
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-black/25 dark:text-white/25 pointer-events-none z-10">
+                        {icon}
+                    </div>
                 )}
+                {React.Children.map(children, child => {
+                    // Don't inject styles if it's a custom component (like our Select)
+                    if (typeof child.type !== 'string') return child;
+
+                    return React.cloneElement(child, {
+                        className: `${child.props.className || ''} w-full ${hasIcon ? 'pl-10' : 'pl-4'} pr-4 py-2.5 bg-black/[0.03] dark:bg-white/[0.04] border-none rounded-xl text-[13px] text-foreground focus:ring-2 focus:ring-blue-500/20 outline-none transition-all duration-150 placeholder:text-black/25 dark:placeholder:text-white/25 font-medium`.trim()
+                    });
+                })}
             </div>
         </div>
     );

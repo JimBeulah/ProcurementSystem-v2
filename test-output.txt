@@ -1,0 +1,8 @@
+﻿
+   PASS  Tests\Feature\MaterialRequestBudgetTest
+  Γ£ô user can cΓÇª 1.21s  
+  Γ£ô user getsΓÇª  0.04s  
+
+  Tests:    2 passed (5 assertions)
+  Duration: 1.51s
+

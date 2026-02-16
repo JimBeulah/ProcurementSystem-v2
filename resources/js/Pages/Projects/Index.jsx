@@ -4,8 +4,9 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import Modal from '@/Components/UI/Modal';
 import {
     Briefcase, Plus, MapPin, DollarSign, Building, Edit2, Trash2,
-    Search, LayoutGrid, List as ListIcon
+    Search, LayoutGrid, List as ListIcon, Building2, Layers
 } from 'lucide-react';
+import Select from '@/Components/UI/Select';
 
 export default function ProjectsIndex() {
     const { projects: initialProjects, clients } = usePage().props;
@@ -260,18 +261,26 @@ export default function ProjectsIndex() {
                             </div>
                             <div>
                                 <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Client</label>
-                                <select className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-900 dark:text-white focus:border-cyan-500 outline-none transition-all" value={formData.client_id} onChange={e => setFormData({ ...formData, client_id: e.target.value })} required>
-                                    <option value="">Select Client</option>
-                                    {(clients || []).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                </select>
+                                <Select
+                                    value={formData.client_id}
+                                    onChange={val => setFormData({ ...formData, client_id: val })}
+                                    options={(clients || []).map(c => ({ value: c.id.toString(), label: c.name }))}
+                                    placeholder="Select Client"
+                                    icon={Building2}
+                                />
                             </div>
                             <div>
                                 <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Project Type</label>
-                                <select className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-900 dark:text-white focus:border-cyan-500 outline-none transition-all" value={formData.project_type} onChange={e => setFormData({ ...formData, project_type: e.target.value })}>
-                                    <option value="BUILDING">BUILDING</option>
-                                    <option value="INFRASTRUCTURE">INFRASTRUCTURE</option>
-                                    <option value="MAINTENANCE">MAINTENANCE</option>
-                                </select>
+                                <Select
+                                    value={formData.project_type}
+                                    onChange={val => setFormData({ ...formData, project_type: val })}
+                                    options={[
+                                        { value: "BUILDING", label: "BUILDING" },
+                                        { value: "INFRASTRUCTURE", label: "INFRASTRUCTURE" },
+                                        { value: "MAINTENANCE", label: "MAINTENANCE" },
+                                    ]}
+                                    icon={Layers}
+                                />
                             </div>
                             <div>
                                 <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Budget (PhP)</label>
