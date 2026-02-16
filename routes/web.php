@@ -46,7 +46,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/projects/{project}/boq', [BoqController::class, 'index'])->name('projects.boq');
     Route::post('/projects/{project}/boq', [BoqController::class, 'store'])->name('projects.boq.store');
     Route::post('/projects/{project}/boq/bulk', [BoqController::class, 'bulkStore'])->name('projects.boq.bulk');
+    Route::put('/projects/{project}/boq/{boqItem}', [BoqController::class, 'update'])->name('projects.boq.update');
     Route::delete('/projects/{project}/boq/{boqItem}', [BoqController::class, 'destroy'])->name('projects.boq.destroy');
+    Route::post('/projects/{project}/boq/approve', [BoqController::class, 'approve'])->name('projects.boq.approve');
+
+    // BOQ Components / DUPA
+    Route::post('/projects/{project}/boq/{boqItem}/components', [BoqController::class, 'storeComponent'])->name('projects.boq.components.store');
+    Route::put('/projects/{project}/boq/components/{boqComponent}', [BoqController::class, 'updateComponent'])->name('projects.boq.components.update');
+    Route::delete('/projects/{project}/boq/components/{boqComponent}', [BoqController::class, 'destroyComponent'])->name('projects.boq.components.destroy');
 
 
     // Material Requests

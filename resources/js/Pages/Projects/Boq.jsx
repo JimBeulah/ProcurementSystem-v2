@@ -6,17 +6,24 @@ import AddBoqItemWizard from '@/Components/Boq/AddBoqItemWizard'; // Import the 
 import { toast } from 'sonner';
 import {
     ClipboardList, Plus, RefreshCcw, Upload, FileDown, Search, Home, Car, TrendingUp,
-    ChevronDown, ChevronRight, Calculator, Trash2, Settings, AlertTriangle
+    ChevronDown, ChevronRight, Calculator, Trash2, Settings, AlertTriangle, Pencil, MoreHorizontal
 } from 'lucide-react';
 
 export default function ProjectBoq() {
-    const { project, boqItems: initialItems, materials, units } = usePage().props;
+    const { project, boqItems: initialItems, materials, units, isApproved, auth } = usePage().props;
+
     const [items, setItems] = useState(initialItems || []);
     const [searchTerm, setSearchTerm] = useState('');
     const [expandedRows, setExpandedRows] = useState(new Set());
     const [isWizardOpen, setIsWizardOpen] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [loading, setLoading] = useState(false);
+
+    // Edit Item State
+    const [editItem, setEditItem] = useState(null);
+
+    // Resource State
+    const [resourceModal, setResourceModal] = useState({ open: false, mode: 'add', parentItem: null, data: null });
 
     useEffect(() => {
         setItems(initialItems);
@@ -50,6 +57,74 @@ export default function ProjectBoq() {
                 setDeleteTarget(null);
             }
         });
+    };
+
+    const handleApprove = () => {
+        if (confirm('Are you sure you want to approve this BOQ? This will lock all items from further editing.')) {
+            router.post(`/projects/${project.id}/boq/approve`, {}, {
+                onSuccess: () => toast.success('BOQ Approved & Locked'),
+                onError: () => toast.error('Failed to approve BOQ')
+            });
+        }
+    };
+
+    const handleUpdateItem = (e) => {
+        e.preventDefault();
+        setLoading(true);
+        router.put(`/projects/${project.id}/boq/${editItem.id}`, editItem, {
+            onSuccess: () => {
+                toast.success('Item Updated');
+                setEditItem(null);
+                setLoading(false);
+            },
+            onError: () => {
+                toast.error('Failed to update item');
+                setLoading(false);
+            }
+        });
+    };
+
+    const handleResourceSubmit = (e) => {
+        e.preventDefault();
+        setLoading(true);
+        const { mode, parentItem, data } = resourceModal;
+
+        const payload = {
+            resourceType: data.resource_type,
+            name: data.name,
+            quantityFactor: data.quantity_factor,
+            unitRate: data.unit_rate,
+            noOfPersons: data.no_of_persons,
+            hours: data.hours,
+        };
+
+        if (mode === 'add') {
+            router.post(`/projects/${project.id}/boq/${parentItem.id}/components`, payload, {
+                onSuccess: () => {
+                    toast.success('Resource Added');
+                    setResourceModal({ ...resourceModal, open: false });
+                    setLoading(false);
+                },
+                onError: () => setLoading(false)
+            });
+        } else {
+            router.put(`/projects/${project.id}/boq/components/${data.id}`, payload, {
+                onSuccess: () => {
+                    toast.success('Resource Updated');
+                    setResourceModal({ ...resourceModal, open: false });
+                    setLoading(false);
+                },
+                onError: () => setLoading(false)
+            });
+        }
+    };
+
+    const handleDeleteResource = (component) => {
+        if (confirm('Delete this resource?')) {
+            router.delete(`/projects/${project.id}/boq/components/${component.id}`, {
+                onSuccess: () => toast.success('Resource Deleted'),
+            });
+        }
     };
 
     const toggleRow = (id) => {
@@ -197,11 +272,31 @@ export default function ProjectBoq() {
                             <ClipboardList className="text-orange-500" size={24} />
                             <span className="hidden md:inline">Bill of Quantities: </span>
                             <span className="text-orange-600 dark:text-orange-400">{project.name}</span>
+                            {isApproved && (
+                                <span className="ml-2 text-[10px] bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase font-bold tracking-wider flex items-center gap-1">
+                                    Approved
+                                </span>
+                            )}
                         </h1>
                         <p className="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black opacity-60">Project ID: #{project.id}</p>
                     </div>
 
                     <div className="flex items-center gap-2">
+                        {isApproved ? (
+                            <div className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-lg text-xs font-bold flex items-center gap-2 border border-slate-200 dark:border-slate-700">
+                                <span className="w-2 h-2 rounded-full bg-slate-400"></span> Locked
+                            </div>
+                        ) : (
+                            ['ADMIN', 'PROJECT_MANAGER'].includes(auth.user.role) && (
+                                <>
+                                    <button onClick={handleApprove} className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs font-bold transition-all shadow-lg shadow-emerald-600/20 active:scale-95">
+                                        Approve BOQ
+                                    </button>
+                                    <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
+                                </>
+                            )
+                        )}
+
                         <div className="relative group max-w-xs">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan-500 transition-colors" size={14} />
                             <input
@@ -213,9 +308,11 @@ export default function ProjectBoq() {
                             />
                         </div>
 
-                        <button onClick={() => setIsWizardOpen(true)} className="bg-orange-600 hover:bg-orange-500 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs font-bold transition-all shadow-lg shadow-orange-600/20 active:scale-95">
-                            <Plus size={16} /> <span className="hidden sm:inline">Add Item</span>
-                        </button>
+                        {!isApproved && (
+                            <button onClick={() => setIsWizardOpen(true)} className="bg-orange-600 hover:bg-orange-500 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs font-bold transition-all shadow-lg shadow-orange-600/20 active:scale-95">
+                                <Plus size={16} /> <span className="hidden sm:inline">Add Item</span>
+                            </button>
+                        )}
 
                         <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
 
@@ -226,10 +323,12 @@ export default function ProjectBoq() {
                             <button onClick={downloadTemplate} className="p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Template">
                                 <FileDown size={16} />
                             </button>
-                            <label className="p-1.5 text-cyan-500 hover:bg-cyan-500/10 rounded-lg cursor-pointer transition-colors" title="Bulk Upload">
-                                <Upload size={16} />
-                                <input type="file" accept=".csv" className="hidden" onChange={handleBulkUpload} disabled={loading} />
-                            </label>
+                            {!isApproved && (
+                                <label className="p-1.5 text-cyan-500 hover:bg-cyan-500/10 rounded-lg cursor-pointer transition-colors" title="Bulk Upload">
+                                    <Upload size={16} />
+                                    <input type="file" accept=".csv" className="hidden" onChange={handleBulkUpload} disabled={loading} />
+                                </label>
+                            )}
                         </div>
                     </div>
                 </header>
@@ -380,12 +479,24 @@ export default function ProjectBoq() {
                                                     {rowTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                                 </td>
                                                 <td className="py-2 px-3 text-center">
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); setDeleteTarget(item); }}
-                                                        className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-red-50 text-red-400 hover:text-red-500 rounded-md transition-all duration-200"
-                                                    >
-                                                        <Trash2 size={14} />
-                                                    </button>
+                                                    <td className="py-2 px-3 text-center">
+                                                        {!isApproved && (
+                                                            <div className="flex items-center justify-center gap-1">
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); setEditItem(item); }}
+                                                                    className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-cyan-50 text-cyan-400 hover:text-cyan-500 rounded-md transition-all duration-200"
+                                                                >
+                                                                    <Pencil size={14} />
+                                                                </button>
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); setDeleteTarget(item); }}
+                                                                    className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-red-50 text-red-400 hover:text-red-500 rounded-md transition-all duration-200"
+                                                                >
+                                                                    <Trash2 size={14} />
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </td>
                                                 </td>
                                             </tr>
                                             {isExpanded && hasComponents && (
@@ -397,7 +508,17 @@ export default function ProjectBoq() {
                                                                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
                                                                         <Calculator size={12} /> Detailed Cost Breakdown
                                                                     </p>
-                                                                    <span className="text-[10px] text-slate-400">Unit: {item.unit}</span>
+                                                                    <div className="flex items-center gap-3">
+                                                                        <span className="text-[10px] text-slate-400">Unit: {item.unit}</span>
+                                                                        {!isApproved && (
+                                                                            <button
+                                                                                onClick={() => setResourceModal({ open: true, mode: 'add', parentItem: item, data: { resource_type: 'MATERIAL', quantity_factor: 1, unit_rate: 0, no_of_persons: 1, hours: 0 } })}
+                                                                                className="text-[10px] flex items-center gap-1 font-bold text-cyan-600 hover:text-cyan-500 bg-cyan-500/10 hover:bg-cyan-500/20 px-2 py-1 rounded transition-colors"
+                                                                            >
+                                                                                <Plus size={12} /> Add Resource
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
                                                                 <table className="w-full text-xs">
                                                                     <thead className="bg-slate-50 dark:bg-slate-900 text-slate-400 uppercase text-[9px] font-medium">
@@ -408,11 +529,12 @@ export default function ProjectBoq() {
                                                                             <th className="p-2 text-center w-24">Factor</th>
                                                                             <th className="p-2 text-right w-32">Unit Rate</th>
                                                                             <th className="p-2 text-right w-32 pr-6">Cost/Unit</th>
+                                                                            <th className="p-2 w-16"></th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
                                                                         {item.components.map(comp => (
-                                                                            <tr key={comp.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                                                                            <tr key={comp.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group/row">
                                                                                 <td className="p-2 pl-4">
                                                                                     <span className={`inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider w-16 ${comp.resource_type === 'MATERIAL' ? 'bg-cyan-100 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-400' :
                                                                                         comp.resource_type === 'LABOR' ? 'bg-purple-100 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400' :
@@ -430,6 +552,24 @@ export default function ProjectBoq() {
                                                                                 <td className="p-2 text-center font-mono text-slate-500 tabular-nums text-[10px]">{Number(comp.quantity_factor).toFixed(4)}</td>
                                                                                 <td className="p-2 text-right font-mono text-slate-500 tabular-nums">₱ {Number(comp.unit_rate).toLocaleString()}</td>
                                                                                 <td className="p-2 text-right pr-6 font-mono font-bold text-slate-900 dark:text-white tabular-nums bg-slate-50/50 dark:bg-slate-900/20">₱ {Number(comp.total_component_cost).toLocaleString()}</td>
+                                                                                <td className="p-2 text-center">
+                                                                                    {!isApproved && (
+                                                                                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
+                                                                                            <button
+                                                                                                onClick={() => setResourceModal({ open: true, mode: 'edit', parentItem: item, data: comp })}
+                                                                                                className="p-1 text-slate-400 hover:text-cyan-500 hover:bg-cyan-50 rounded"
+                                                                                            >
+                                                                                                <Pencil size={12} />
+                                                                                            </button>
+                                                                                            <button
+                                                                                                onClick={() => handleDeleteResource(comp)}
+                                                                                                className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded"
+                                                                                            >
+                                                                                                <Trash2 size={12} />
+                                                                                            </button>
+                                                                                        </div>
+                                                                                    )}
+                                                                                </td>
                                                                             </tr>
                                                                         ))}
                                                                     </tbody>
@@ -476,10 +616,167 @@ export default function ProjectBoq() {
                             </div>
                         </div>
                         <div className="flex justify-end gap-3">
-                            <button onClick={() => setDeleteTarget(null)} className="px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all">Cancel</button>
+                            <button onClick={() => setDeleteTarget(null)} className="px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-all">Cancel</button>
                             <button onClick={handleDelete} className="px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white bg-red-600 hover:bg-red-500 shadow-lg shadow-red-600/20 rounded-xl transition-all flex items-center gap-2"><Trash2 size={14} /> Delete Item</button>
                         </div>
                     </div>
+                </Modal>
+
+                {/* Edit Item Modal */}
+                <Modal isOpen={!!editItem} onClose={() => setEditItem(null)} title="Edit BOQ Item">
+                    <form onSubmit={handleUpdateItem} className="space-y-4">
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Description</label>
+                            <input
+                                type="text"
+                                required
+                                value={editItem?.item_description || ''}
+                                onChange={e => setEditItem({ ...editItem, item_description: e.target.value })}
+                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500"
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Unit</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={editItem?.unit || ''}
+                                    onChange={e => setEditItem({ ...editItem, unit: e.target.value })}
+                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Quantity</label>
+                                <input
+                                    type="number"
+                                    step="0.0001"
+                                    required
+                                    value={editItem?.quantity || ''}
+                                    onChange={e => setEditItem({ ...editItem, quantity: e.target.value })}
+                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500"
+                                />
+                            </div>
+                        </div>
+                        {editItem?.components && editItem.components.length === 0 && (
+                            <div className="grid grid-cols-2 gap-4 border-t border-slate-100 dark:border-slate-700/50 pt-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Mat. Unit Price</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={editItem?.material_unit_price || ''}
+                                        onChange={e => setEditItem({ ...editItem, material_unit_price: e.target.value })}
+                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Lab. Unit Price</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={editItem?.labor_unit_price || ''}
+                                        onChange={e => setEditItem({ ...editItem, labor_unit_price: e.target.value })}
+                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                        <div className="flex items-center gap-2 pt-2">
+                            <input
+                                type="checkbox"
+                                id="isCarport"
+                                checked={editItem?.is_carport || false}
+                                onChange={e => setEditItem({ ...editItem, is_carport: e.target.checked })}
+                                className="rounded border-slate-300 dark:border-slate-600 text-cyan-600 focus:ring-cyan-500 bg-white dark:bg-slate-800"
+                            />
+                            <label htmlFor="isCarport" className="text-sm font-medium text-slate-700 dark:text-slate-300">Is Carport Area?</label>
+                        </div>
+                        <div className="flex justify-end gap-3 pt-4">
+                            <button type="button" onClick={() => setEditItem(null)} className="px-4 py-2 text-xs font-bold uppercase text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">Cancel</button>
+                            <button type="submit" disabled={loading} className="px-4 py-2 text-xs font-bold uppercase text-white bg-cyan-600 hover:bg-cyan-500 rounded-lg shadow-lg shadow-cyan-600/20">Save Changes</button>
+                        </div>
+                    </form>
+                </Modal>
+
+                {/* Resource Modal */}
+                <Modal isOpen={resourceModal.open} onClose={() => setResourceModal({ ...resourceModal, open: false })} title={`${resourceModal.mode === 'add' ? 'Add' : 'Edit'} Resource`}>
+                    <form onSubmit={handleResourceSubmit} className="space-y-4">
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Resource Type</label>
+                            <select
+                                value={resourceModal.data?.resource_type || 'MATERIAL'}
+                                onChange={e => setResourceModal({ ...resourceModal, data: { ...resourceModal.data, resource_type: e.target.value } })}
+                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500"
+                            >
+                                <option value="MATERIAL">MATERIAL</option>
+                                <option value="LABOR">LABOR</option>
+                                <option value="EQUIPMENT">EQUIPMENT</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Name / Description</label>
+                            <input
+                                type="text"
+                                required
+                                value={resourceModal.data?.name || ''}
+                                onChange={e => setResourceModal({ ...resourceModal, data: { ...resourceModal.data, name: e.target.value } })}
+                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500"
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Unit Rate</label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    required
+                                    value={resourceModal.data?.unit_rate || ''}
+                                    onChange={e => setResourceModal({ ...resourceModal, data: { ...resourceModal.data, unit_rate: e.target.value } })}
+                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">
+                                    {resourceModal.data?.resource_type === 'MATERIAL' ? 'Quantity Factor' : 'No. of Persons'}
+                                </label>
+                                <input
+                                    type="number"
+                                    step="0.0001"
+                                    required
+                                    value={resourceModal.data?.resource_type === 'MATERIAL' ? (resourceModal.data?.quantity_factor || '') : (resourceModal.data?.no_of_persons || '')}
+                                    onChange={e => {
+                                        const val = e.target.value;
+                                        if (resourceModal.data?.resource_type === 'MATERIAL') {
+                                            setResourceModal({ ...resourceModal, data: { ...resourceModal.data, quantity_factor: val } });
+                                        } else {
+                                            setResourceModal({ ...resourceModal, data: { ...resourceModal.data, no_of_persons: val } });
+                                        }
+                                    }}
+                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500"
+                                />
+                            </div>
+                        </div>
+
+                        {resourceModal.data?.resource_type !== 'MATERIAL' && (
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Hours</label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    required
+                                    value={resourceModal.data?.hours || ''}
+                                    onChange={e => setResourceModal({ ...resourceModal, data: { ...resourceModal.data, hours: e.target.value } })}
+                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500"
+                                />
+                            </div>
+                        )}
+
+                        <div className="flex justify-end gap-3 pt-4">
+                            <button type="button" onClick={() => setResourceModal({ ...resourceModal, open: false })} className="px-4 py-2 text-xs font-bold uppercase text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">Cancel</button>
+                            <button type="submit" disabled={loading} className="px-4 py-2 text-xs font-bold uppercase text-white bg-cyan-600 hover:bg-cyan-500 rounded-lg shadow-lg shadow-cyan-600/20">Save</button>
+                        </div>
+                    </form>
                 </Modal>
             </div>
         </AuthenticatedLayout>

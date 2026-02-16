@@ -201,7 +201,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
             {step === 0 && (
                 <div className="space-y-4">
                     <div>
-                        <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block">Item Description</label>
+                        <label className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-black mb-1 block">Item Description</label>
                         <input
                             ref={descRef}
                             list="wiz-material-suggestions"
@@ -227,7 +227,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block">Quantity</label>
+                            <label className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-black mb-1 block">Quantity</label>
                             <input
                                 type="number" step="0.01"
                                 className={`w-full bg-slate-50 dark:bg-slate-900 border rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-orange-500 outline-none ${errors.quantity ? 'border-red-500/60' : 'border-slate-200 dark:border-slate-700'}`}
@@ -240,7 +240,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                             {errors.quantity && <p className="text-[10px] text-red-500 mt-1 font-bold">{errors.quantity}</p>}
                         </div>
                         <div>
-                            <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block">Unit</label>
+                            <label className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-black mb-1 block">Unit</label>
                             <input
                                 list="wiz-unit-suggestions"
                                 className={`w-full bg-slate-50 dark:bg-slate-900 border rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-orange-500 outline-none ${errors.unit ? 'border-red-500/60' : 'border-slate-200 dark:border-slate-700'}`}
@@ -287,7 +287,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                             <div key={idx} className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3 border border-slate-200 dark:border-slate-700 relative group/row">
                                 <div className="grid grid-cols-12 gap-2 items-center">
                                     <div className="col-span-3">
-                                        <label className="text-[8px] text-slate-500 uppercase font-bold mb-0.5 block">Type</label>
+                                        <label className="text-[8px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-0.5 block">Type</label>
                                         <select
                                             className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-1.5 text-[10px] text-slate-900 dark:text-white outline-none focus:border-orange-500"
                                             value={comp.resourceType}
@@ -299,7 +299,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                                         </select>
                                     </div>
                                     <div className="col-span-4">
-                                        <label className="text-[8px] text-slate-500 uppercase font-bold mb-0.5 block">Name</label>
+                                        <label className="text-[8px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-0.5 block">Name</label>
                                         <input
                                             type="text"
                                             placeholder="Resource Name"
@@ -309,7 +309,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                                         />
                                     </div>
                                     <div className="col-span-2">
-                                        <label className="text-[8px] text-slate-500 uppercase font-bold mb-0.5 block">Factor</label>
+                                        <label className="text-[8px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-0.5 block">Factor</label>
                                         <input
                                             type="number" step="0.0001"
                                             placeholder="Qty Factor"
@@ -321,7 +321,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                                     {comp.resourceType !== 'MATERIAL' && (
                                         <>
                                             <div className="col-span-1">
-                                                <label className="text-[8px] text-slate-500 uppercase font-bold mb-0.5 block">P</label>
+                                                <label className="text-[8px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-0.5 block">P</label>
                                                 <input
                                                     type="number"
                                                     title="No. of Persons"
@@ -331,7 +331,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                                                 />
                                             </div>
                                             <div className="col-span-1">
-                                                <label className="text-[8px] text-slate-500 uppercase font-bold mb-0.5 block">H</label>
+                                                <label className="text-[8px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-0.5 block">H</label>
                                                 <input
                                                     type="number"
                                                     title="No. of Hours"
@@ -343,7 +343,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                                         </>
                                     )}
                                     <div className={comp.resourceType === 'MATERIAL' ? 'col-span-2' : 'col-span-2'}>
-                                        <label className="text-[8px] text-slate-500 uppercase font-bold mb-0.5 block">Rate</label>
+                                        <label className="text-[8px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-0.5 block">Rate</label>
                                         <input
                                             type="number" step="0.01"
                                             placeholder="Rate"

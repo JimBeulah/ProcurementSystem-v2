@@ -21,6 +21,8 @@ class Project extends Model
         'project_component_id',
         'net_length',
         'project_type',
+        'approved_by',
+        'approved_at',
     ];
 
     protected function casts(): array
@@ -31,12 +33,18 @@ class Project extends Model
             'carport_area' => 'decimal:2',
             'appropriation' => 'decimal:2',
             'net_length' => 'decimal:2',
+            'approved_at' => 'datetime',
         ];
     }
 
     public function client()
     {
         return $this->belongsTo(Client::class);
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 
     public function teamMembers()
