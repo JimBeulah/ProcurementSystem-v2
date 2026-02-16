@@ -52,5 +52,7 @@ class DatabaseSeeder extends Seeder
             'contract_type' => 'Lump Sum',
             'payment_terms' => 'Net 30',
         ]);
+
+        $this->call(RolesAndPermissionsSeeder::class);
     }
 }
