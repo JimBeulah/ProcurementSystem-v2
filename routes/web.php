@@ -30,73 +30,90 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Clients
-    Route::get('/clients', [ClientController::class, 'index'])->name('clients.index');
-    Route::post('/clients', [ClientController::class, 'store'])->name('clients.store');
-    Route::put('/clients/{client}', [ClientController::class, 'update'])->name('clients.update');
-    Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
+    Route::middleware(['can:view clients'])->group(function () {
+        Route::get('/clients', [ClientController::class, 'index'])->name('clients.index');
+        Route::post('/clients', [ClientController::class, 'store'])->name('clients.store')->middleware('can:manage clients');
+        Route::put('/clients/{client}', [ClientController::class, 'update'])->name('clients.update')->middleware('can:manage clients');
+        Route::delete('/clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy')->middleware('can:manage clients');
+    });
 
     // Projects
-    Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
-    Route::post('/projects', [ProjectController::class, 'store'])->name('projects.store');
-    Route::get('/projects/{project}', [ProjectController::class, 'show'])->name('projects.show');
-    Route::put('/projects/{project}', [ProjectController::class, 'update'])->name('projects.update');
-    Route::delete('/projects/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy');
+    Route::middleware(['can:view projects'])->group(function () {
+        Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
+        Route::get('/projects/{project}', [ProjectController::class, 'show'])->name('projects.show');
+
+        Route::post('/projects', [ProjectController::class, 'store'])->name('projects.store')->middleware('can:create projects');
+        Route::put('/projects/{project}', [ProjectController::class, 'update'])->name('projects.update')->middleware('can:edit projects');
+        Route::delete('/projects/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy')->middleware('can:delete projects');
+    });
 
     // BOQ
-    Route::get('/projects/{project}/boq', [BoqController::class, 'index'])->name('projects.boq');
-    Route::post('/projects/{project}/boq', [BoqController::class, 'store'])->name('projects.boq.store');
-    Route::post('/projects/{project}/boq/bulk', [BoqController::class, 'bulkStore'])->name('projects.boq.bulk');
-    Route::put('/projects/{project}/boq/{boqItem}', [BoqController::class, 'update'])->name('projects.boq.update');
-    Route::delete('/projects/{project}/boq/{boqItem}', [BoqController::class, 'destroy'])->name('projects.boq.destroy');
-    Route::post('/projects/{project}/boq/approve', [BoqController::class, 'approve'])->name('projects.boq.approve');
+    Route::middleware(['can:view boq'])->group(function () {
+        Route::get('/projects/{project}/boq', [BoqController::class, 'index'])->name('projects.boq');
 
-    // BOQ Components / DUPA
-    Route::post('/projects/{project}/boq/{boqItem}/components', [BoqController::class, 'storeComponent'])->name('projects.boq.components.store');
-    Route::put('/projects/{project}/boq/components/{boqComponent}', [BoqController::class, 'updateComponent'])->name('projects.boq.components.update');
-    Route::delete('/projects/{project}/boq/components/{boqComponent}', [BoqController::class, 'destroyComponent'])->name('projects.boq.components.destroy');
+        Route::middleware(['can:manage boq'])->group(function () {
+            Route::post('/projects/{project}/boq', [BoqController::class, 'store'])->name('projects.boq.store');
+            Route::post('/projects/{project}/boq/bulk', [BoqController::class, 'bulkStore'])->name('projects.boq.bulk');
+            Route::put('/projects/{project}/boq/{boqItem}', [BoqController::class, 'update'])->name('projects.boq.update');
+            Route::delete('/projects/{project}/boq/{boqItem}', [BoqController::class, 'destroy'])->name('projects.boq.destroy');
+            Route::post('/projects/{project}/boq/{boqItem}/components', [BoqController::class, 'storeComponent'])->name('projects.boq.components.store');
+            Route::put('/projects/{project}/boq/components/{boqComponent}', [BoqController::class, 'updateComponent'])->name('projects.boq.components.update');
+            Route::delete('/projects/{project}/boq/components/{boqComponent}', [BoqController::class, 'destroyComponent'])->name('projects.boq.components.destroy');
+        });
+
+        Route::post('/projects/{project}/boq/approve', [BoqController::class, 'approve'])->name('projects.boq.approve')->middleware('can:approve boq');
+    });
 
 
     // Material Requests
-    Route::get('/projects/{project}/material-requests', [MaterialRequestController::class, 'index'])->name('projects.material-requests');
-    Route::post('/projects/{project}/material-requests', [MaterialRequestController::class, 'store'])->name('projects.material-requests.store');
-    Route::post('/material-requests/{materialRequest}/approve', [MaterialRequestController::class, 'approve'])->name('material-requests.approve');
-    Route::post('/material-requests/{materialRequest}/reject', [MaterialRequestController::class, 'reject'])->name('material-requests.reject');
+    Route::middleware(['can:view material requests'])->group(function () {
+        Route::get('/projects/{project}/material-requests', [MaterialRequestController::class, 'index'])->name('projects.material-requests');
+        Route::post('/projects/{project}/material-requests', [MaterialRequestController::class, 'store'])->name('projects.material-requests.store')->middleware('can:create material requests');
+        Route::post('/material-requests/{materialRequest}/approve', [MaterialRequestController::class, 'approve'])->name('material-requests.approve')->middleware('can:approve material requests');
+        Route::post('/material-requests/{materialRequest}/reject', [MaterialRequestController::class, 'reject'])->name('material-requests.reject')->middleware('can:reject material requests');
+    });
 
     // Purchase Orders
-    Route::get('/purchasing/orders', [PurchaseOrderController::class, 'index'])->name('purchasing.orders.index');
-    Route::get('/purchasing/orders/create', [PurchaseOrderController::class, 'create'])->name('purchasing.orders.create');
-    Route::post('/purchasing/orders', [PurchaseOrderController::class, 'store'])->name('purchasing.orders.store');
-    Route::get('/purchasing/orders/{order}', [PurchaseOrderController::class, 'show'])->name('purchasing.orders.show');
-    Route::post('/purchasing/orders/{order}/approve', [PurchaseOrderController::class, 'approve'])->name('purchasing.orders.approve');
+    Route::middleware(['can:view purchase orders'])->group(function () {
+        Route::get('/purchasing/orders', [PurchaseOrderController::class, 'index'])->name('purchasing.orders.index');
+        Route::get('/purchasing/orders/create', [PurchaseOrderController::class, 'create'])->name('purchasing.orders.create')->middleware('can:create purchase orders');
+        Route::post('/purchasing/orders', [PurchaseOrderController::class, 'store'])->name('purchasing.orders.store')->middleware('can:create purchase orders');
+        Route::get('/purchasing/orders/{order}', [PurchaseOrderController::class, 'show'])->name('purchasing.orders.show');
+        Route::post('/purchasing/orders/{order}/approve', [PurchaseOrderController::class, 'approve'])->name('purchasing.orders.approve')->middleware('can:approve purchase orders');
+    });
 
     // RFQ
-    Route::get('/purchasing/rfq', [RfqController::class, 'index'])->name('purchasing.rfq.index');
-    Route::get('/purchasing/rfq/create', [RfqController::class, 'create'])->name('purchasing.rfq.create');
-    Route::post('/purchasing/rfq', [RfqController::class, 'store'])->name('purchasing.rfq.store');
-    Route::get('/purchasing/rfq/{rfq}', [RfqController::class, 'show'])->name('purchasing.rfq.show');
-    Route::post('/purchasing/rfq/{rfq}/quotation', [RfqController::class, 'addQuotation'])->name('purchasing.rfq.quotation');
-    Route::post('/purchasing/rfq/{rfq}/award/{quotation}', [RfqController::class, 'award'])->name('purchasing.rfq.award');
+    Route::middleware(['can:view rfq'])->group(function () {
+        Route::get('/purchasing/rfq', [RfqController::class, 'index'])->name('purchasing.rfq.index');
+        Route::get('/purchasing/rfq/create', [RfqController::class, 'create'])->name('purchasing.rfq.create')->middleware('can:manage rfq');
+        Route::post('/purchasing/rfq', [RfqController::class, 'store'])->name('purchasing.rfq.store')->middleware('can:manage rfq');
+        Route::get('/purchasing/rfq/{rfq}', [RfqController::class, 'show'])->name('purchasing.rfq.show');
+        Route::post('/purchasing/rfq/{rfq}/quotation', [RfqController::class, 'addQuotation'])->name('purchasing.rfq.quotation')->middleware('can:manage rfq');
+        Route::post('/purchasing/rfq/{rfq}/award/{quotation}', [RfqController::class, 'award'])->name('purchasing.rfq.award')->middleware('can:award rfq');
+    });
 
     // Purchase Requests
     Route::get('/purchasing/requests', [PurchaseRequestController::class, 'index'])->name('purchasing.requests.index');
 
     // Inventory
-    Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
+    Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index')->middleware('can:view inventory');
 
     // Receiving / GRN
-    Route::get('/inventory/receiving', [ReceivingController::class, 'index'])->name('receiving.index');
+    Route::get('/inventory/receiving', [ReceivingController::class, 'index'])->name('receiving.index')->middleware('can:view receiving');
 
     // Finance
-    Route::get('/finance/invoices', [FinanceController::class, 'invoices'])->name('finance.invoices');
-    Route::get('/finance/disbursements', [FinanceController::class, 'disbursements'])->name('finance.disbursements');
-    Route::get('/finance/reports', [FinanceController::class, 'reports'])->name('finance.reports');
+    Route::get('/finance/invoices', [FinanceController::class, 'invoices'])->name('finance.invoices')->middleware('can:view invoices');
+    Route::get('/finance/disbursements', [FinanceController::class, 'disbursements'])->name('finance.disbursements')->middleware('can:view disbursements');
+    Route::get('/finance/reports', [FinanceController::class, 'reports'])->name('finance.reports')->middleware('can:view financial reports');
 
     // Approvals
     Route::get('/purchasing/approvals', [ApprovalController::class, 'index'])->name('purchasing.approvals');
 
     // Receiving Create
-    Route::get('/inventory/receiving/create', [ReceivingFormController::class, 'create'])->name('receiving.create');
-    Route::post('/inventory/receiving', [ReceivingFormController::class, 'store'])->name('receiving.store');
+    Route::middleware(['can:create receiving'])->group(function () {
+        Route::get('/inventory/receiving/create', [ReceivingFormController::class, 'create'])->name('receiving.create');
+        Route::post('/inventory/receiving', [ReceivingFormController::class, 'store'])->name('receiving.store');
+    });
 
     // Finance Forms
     Route::get('/finance/invoices/create', [FinanceFormController::class, 'createInvoice'])->name('finance.invoices.create');
@@ -105,13 +122,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/finance/disbursements', [FinanceFormController::class, 'storeDisbursement'])->name('finance.disbursements.store');
 
     // Site Release
-    Route::get('/site-release', [SiteReleaseController::class, 'index'])->name('site-release.index');
+    Route::get('/site-release', [SiteReleaseController::class, 'index'])->name('site-release.index')->middleware('can:view site release');
 
     // Settings
-    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
-    Route::get('/settings/users', [SettingsController::class, 'users'])->name('settings.users');
-    Route::get('/settings/master-data', [SettingsController::class, 'masterData'])->name('settings.master-data');
-    Route::get('/settings/workflows', [SettingsController::class, 'workflows'])->name('settings.workflows');
+    Route::middleware(['can:view settings'])->group(function () {
+        Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+        Route::get('/settings/users', [SettingsController::class, 'users'])->name('settings.users')->middleware('can:manage users');
+        Route::get('/settings/master-data', [SettingsController::class, 'masterData'])->name('settings.master-data')->middleware('can:manage master data');
+        Route::get('/settings/workflows', [SettingsController::class, 'workflows'])->name('settings.workflows')->middleware('can:manage master data');
+    });
 });
 
 Route::middleware('auth')->group(function () {

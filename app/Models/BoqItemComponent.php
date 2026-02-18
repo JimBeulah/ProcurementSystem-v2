@@ -11,8 +11,10 @@ class BoqItemComponent extends Model
         'resource_type',
         'name',
         'quantity_factor',
-        'unit_rate',
-        'total_component_cost',
+        'client_unit_rate',
+        'client_total_cost',
+        'altapil_unit_rate',
+        'altapil_total_cost',
         'no_of_persons',
         'hours',
     ];
@@ -21,8 +23,10 @@ class BoqItemComponent extends Model
     {
         return [
             'quantity_factor' => 'decimal:4',
-            'unit_rate' => 'decimal:2',
-            'total_component_cost' => 'decimal:2',
+            'client_unit_rate' => 'decimal:2',
+            'client_total_cost' => 'decimal:2',
+            'altapil_unit_rate' => 'decimal:2',
+            'altapil_total_cost' => 'decimal:2',
             'no_of_persons' => 'decimal:2',
             'hours' => 'decimal:2',
         ];

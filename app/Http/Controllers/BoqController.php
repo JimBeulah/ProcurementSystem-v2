@@ -94,10 +94,13 @@ class BoqController extends Controller
                     'resource_type' => $comp['resourceType'],
                     'name' => $comp['name'],
                     'quantity_factor' => $comp['quantityFactor'],
-                    'unit_rate' => $comp['unitRate'],
+                    'client_unit_rate' => $comp['clientUnitRate'] ?? $comp['unitRate'], // Fallback for backward compatibility or if frontend not fully updated yet? No, plan says update frontend. But let's be safe.
+                    // actually, better to just enforce new key.
+                    'client_total_cost' => ($comp['clientUnitRate'] ?? $comp['unitRate']) * $comp['quantityFactor'],
+                    'altapil_unit_rate' => $comp['altapilUnitRate'] ?? 0,
+                    'altapil_total_cost' => ($comp['altapilUnitRate'] ?? 0) * $comp['quantityFactor'],
                     'no_of_persons' => $comp['noOfPersons'] ?? 0,
                     'hours' => $comp['hours'] ?? 0,
-                    'total_component_cost' => $comp['unitRate'] * $comp['quantityFactor']
                 ]);
             }
         }
@@ -139,10 +142,12 @@ class BoqController extends Controller
                         'resource_type' => $comp['resourceType'],
                         'name' => $comp['name'],
                         'quantity_factor' => $comp['quantityFactor'],
-                        'unit_rate' => $comp['unitRate'],
+                        'client_unit_rate' => $comp['clientUnitRate'] ?? $comp['unitRate'] ?? 0,
+                        'client_total_cost' => ($comp['clientUnitRate'] ?? $comp['unitRate'] ?? 0) * $comp['quantityFactor'],
+                        'altapil_unit_rate' => $comp['altapilUnitRate'] ?? 0,
+                        'altapil_total_cost' => ($comp['altapilUnitRate'] ?? 0) * $comp['quantityFactor'],
                         'no_of_persons' => $comp['noOfPersons'] ?? 0,
                         'hours' => $comp['hours'] ?? 0,
-                        'total_component_cost' => $comp['unitRate'] * $comp['quantityFactor']
                     ]);
                 }
             }
@@ -214,7 +219,8 @@ class BoqController extends Controller
             'resourceType' => 'required|string|in:MATERIAL,LABOR,EQUIPMENT',
             'name' => 'required|string|max:255',
             'quantityFactor' => 'required|numeric|min:0',
-            'unitRate' => 'required|numeric|min:0',
+            'clientUnitRate' => 'required|numeric|min:0',
+            'altapilUnitRate' => 'nullable|numeric|min:0',
             'noOfPersons' => 'nullable|numeric|min:0',
             'hours' => 'nullable|numeric|min:0',
         ]);
@@ -223,10 +229,12 @@ class BoqController extends Controller
             'resource_type' => $validated['resourceType'],
             'name' => $validated['name'],
             'quantity_factor' => $validated['quantityFactor'],
-            'unit_rate' => $validated['unitRate'],
+            'client_unit_rate' => $validated['clientUnitRate'],
+            'client_total_cost' => $validated['clientUnitRate'] * $validated['quantityFactor'],
+            'altapil_unit_rate' => $validated['altapilUnitRate'] ?? 0,
+            'altapil_total_cost' => ($validated['altapilUnitRate'] ?? 0) * $validated['quantityFactor'],
             'no_of_persons' => $validated['noOfPersons'] ?? 0,
             'hours' => $validated['hours'] ?? 0,
-            'total_component_cost' => $validated['unitRate'] * $validated['quantityFactor']
         ]);
 
         return redirect()->back()->with('success', 'Resource added successfully.');
@@ -244,7 +252,8 @@ class BoqController extends Controller
             'resourceType' => 'required|string|in:MATERIAL,LABOR,EQUIPMENT',
             'name' => 'required|string|max:255',
             'quantityFactor' => 'required|numeric|min:0',
-            'unitRate' => 'required|numeric|min:0',
+            'clientUnitRate' => 'required|numeric|min:0',
+            'altapilUnitRate' => 'nullable|numeric|min:0',
             'noOfPersons' => 'nullable|numeric|min:0',
             'hours' => 'nullable|numeric|min:0',
         ]);
@@ -253,10 +262,12 @@ class BoqController extends Controller
             'resource_type' => $validated['resourceType'],
             'name' => $validated['name'],
             'quantity_factor' => $validated['quantityFactor'],
-            'unit_rate' => $validated['unitRate'],
+            'client_unit_rate' => $validated['clientUnitRate'],
+            'client_total_cost' => $validated['clientUnitRate'] * $validated['quantityFactor'],
+            'altapil_unit_rate' => $validated['altapilUnitRate'] ?? 0,
+            'altapil_total_cost' => ($validated['altapilUnitRate'] ?? 0) * $validated['quantityFactor'],
             'no_of_persons' => $validated['noOfPersons'] ?? 0,
             'hours' => $validated['hours'] ?? 0,
-            'total_component_cost' => $validated['unitRate'] * $validated['quantityFactor']
         ]);
 
         return redirect()->back()->with('success', 'Resource updated successfully.');

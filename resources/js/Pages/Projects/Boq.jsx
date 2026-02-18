@@ -93,7 +93,8 @@ export default function ProjectBoq() {
             resourceType: data.resource_type,
             name: data.name,
             quantityFactor: data.quantity_factor,
-            unitRate: data.unit_rate,
+            clientUnitRate: data.client_unit_rate || data.unit_rate, // Support both for now, but UI will set client_unit_rate
+            altapilUnitRate: data.altapil_unit_rate,
             noOfPersons: data.no_of_persons,
             hours: data.hours,
         };
@@ -512,7 +513,7 @@ export default function ProjectBoq() {
                                                                         <span className="text-[10px] text-slate-400">Unit: {item.unit}</span>
                                                                         {!isApproved && (
                                                                             <button
-                                                                                onClick={() => setResourceModal({ open: true, mode: 'add', parentItem: item, data: { resource_type: 'MATERIAL', quantity_factor: 1, unit_rate: 0, no_of_persons: 1, hours: 0 } })}
+                                                                                onClick={() => setResourceModal({ open: true, mode: 'add', parentItem: item, data: { resource_type: 'MATERIAL', quantity_factor: 1, client_unit_rate: 0, altapil_unit_rate: 0, no_of_persons: 1, hours: 0 } })}
                                                                                 className="text-[10px] flex items-center gap-1 font-bold text-cyan-600 hover:text-cyan-500 bg-cyan-500/10 hover:bg-cyan-500/20 px-2 py-1 rounded transition-colors"
                                                                             >
                                                                                 <Plus size={12} /> Add Resource
@@ -523,12 +524,14 @@ export default function ProjectBoq() {
                                                                 <table className="w-full text-xs">
                                                                     <thead className="bg-slate-50 dark:bg-slate-900 text-slate-400 uppercase text-[9px] font-medium">
                                                                         <tr>
-                                                                            <th className="p-2 pl-4 text-left w-24">Type</th>
+                                                                            <th className="p-2 pl-4 text-left w-20">Type</th>
                                                                             <th className="p-2 text-left">Resource Name</th>
-                                                                            <th className="p-2 text-center w-32">Persons/Hours</th>
                                                                             <th className="p-2 text-center w-24">Factor</th>
-                                                                            <th className="p-2 text-right w-32">Unit Rate</th>
-                                                                            <th className="p-2 text-right w-32 pr-6">Cost/Unit</th>
+                                                                            <th className="p-2 text-right w-24 text-slate-500">Client Rate</th>
+                                                                            <th className="p-2 text-right w-28 text-slate-700 dark:text-slate-200">Client Total</th>
+                                                                            <th className="p-2 text-right w-24 text-orange-500">Altapil Rate</th>
+                                                                            <th className="p-2 text-right w-28 text-orange-600">Altapil Total</th>
+                                                                            <th className="p-2 text-right w-24 text-emerald-600">Profit</th>
                                                                             <th className="p-2 w-16"></th>
                                                                         </tr>
                                                                     </thead>
@@ -543,15 +546,33 @@ export default function ProjectBoq() {
                                                                                         {comp.resource_type.substring(0, 3)}
                                                                                     </span>
                                                                                 </td>
-                                                                                <td className="p-2 text-slate-700 dark:text-slate-300 font-medium">{comp.name}</td>
-                                                                                <td className="p-2 text-center font-mono text-slate-500 bg-slate-50 dark:bg-slate-900/30 text-[10px]">
-                                                                                    {comp.resource_type !== 'MATERIAL' ?
-                                                                                        <span className="opacity-80">{comp.no_of_persons}p × {comp.hours}h</span> :
-                                                                                        <span className="opacity-20">--</span>}
+                                                                                <td className="p-2 text-slate-700 dark:text-slate-300 font-medium">
+                                                                                    <div className="flex flex-col">
+                                                                                        <span>{comp.name}</span>
+                                                                                        {comp.resource_type !== 'MATERIAL' && (
+                                                                                            <span className="text-[8px] text-slate-400">{comp.no_of_persons}p × {comp.hours}h</span>
+                                                                                        )}
+                                                                                    </div>
                                                                                 </td>
                                                                                 <td className="p-2 text-center font-mono text-slate-500 tabular-nums text-[10px]">{Number(comp.quantity_factor).toFixed(4)}</td>
-                                                                                <td className="p-2 text-right font-mono text-slate-500 tabular-nums">₱ {Number(comp.unit_rate).toLocaleString()}</td>
-                                                                                <td className="p-2 text-right pr-6 font-mono font-bold text-slate-900 dark:text-white tabular-nums bg-slate-50/50 dark:bg-slate-900/20">₱ {Number(comp.total_component_cost).toLocaleString()}</td>
+
+                                                                                {/* Client Side */}
+                                                                                <td className="p-2 text-right font-mono text-slate-500 tabular-nums">₱ {Number(comp.client_unit_rate || comp.unit_rate || 0).toLocaleString()}</td>
+                                                                                <td className="p-2 text-right font-mono font-bold text-slate-900 dark:text-white tabular-nums bg-slate-50/50 dark:bg-slate-900/20">
+                                                                                    ₱ {Number(comp.client_total_cost || comp.total_component_cost || 0).toLocaleString()}
+                                                                                </td>
+
+                                                                                {/* Altapil Side */}
+                                                                                <td className="p-2 text-right font-mono text-orange-500 tabular-nums">₱ {Number(comp.altapil_unit_rate || 0).toLocaleString()}</td>
+                                                                                <td className="p-2 text-right font-mono font-medium text-orange-600 dark:text-orange-400 tabular-nums bg-orange-50/30 dark:bg-orange-900/10">
+                                                                                    ₱ {Number(comp.altapil_total_cost || 0).toLocaleString()}
+                                                                                </td>
+
+                                                                                {/* Profit */}
+                                                                                <td className="p-2 text-right font-mono font-bold text-emerald-600 tabular-nums bg-emerald-50/30 dark:bg-emerald-900/10">
+                                                                                    ₱ {(Number(comp.client_total_cost || comp.total_component_cost || 0) - Number(comp.altapil_total_cost || 0)).toLocaleString()}
+                                                                                </td>
+
                                                                                 <td className="p-2 text-center">
                                                                                     {!isApproved && (
                                                                                         <div className="flex items-center justify-end gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
@@ -726,16 +747,29 @@ export default function ProjectBoq() {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Unit Rate</label>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Client Unit Rate</label>
                                 <input
                                     type="number"
                                     step="0.01"
                                     required
-                                    value={resourceModal.data?.unit_rate || ''}
-                                    onChange={e => setResourceModal({ ...resourceModal, data: { ...resourceModal.data, unit_rate: e.target.value } })}
+                                    value={resourceModal.data?.client_unit_rate !== undefined ? resourceModal.data.client_unit_rate : (resourceModal.data?.unit_rate || '')}
+                                    onChange={e => setResourceModal({ ...resourceModal, data: { ...resourceModal.data, client_unit_rate: e.target.value } })}
                                     className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500"
                                 />
                             </div>
+                            <div>
+                                <label className="block text-xs font-bold text-orange-500 dark:text-orange-400 uppercase mb-1">Altapil Unit Rate</label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+
+                                    value={resourceModal.data?.altapil_unit_rate || ''}
+                                    onChange={e => setResourceModal({ ...resourceModal, data: { ...resourceModal.data, altapil_unit_rate: e.target.value } })}
+                                    className="w-full bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-900/30 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-orange-500"
+                                />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">
                                     {resourceModal.data?.resource_type === 'MATERIAL' ? 'Quantity Factor' : 'No. of Persons'}

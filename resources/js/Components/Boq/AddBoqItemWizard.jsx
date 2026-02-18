@@ -88,7 +88,8 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
             components: item.components.map(c => ({
                 ...c,
                 quantityFactor: Number(c.quantityFactor) || 0,
-                unitRate: Number(c.unitRate) || 0,
+                clientUnitRate: Number(c.unitRate) || 0,
+                altapilUnitRate: Number(c.altapilUnitRate) || 0,
                 noOfPersons: Number(c.noOfPersons) || 0,
                 hours: Number(c.hours) || 0,
             }))
@@ -115,7 +116,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
     const addComponent = () => {
         setItem(prev => ({
             ...prev,
-            components: [...prev.components, { resourceType: 'MATERIAL', name: '', quantityFactor: 0, unitRate: 0, noOfPersons: 0, hours: 0 }]
+            components: [...prev.components, { resourceType: 'MATERIAL', name: '', quantityFactor: 0, unitRate: 0, altapilUnitRate: 0, noOfPersons: 0, hours: 0 }]
         }));
         // Auto-scroll to bottom after React re-renders the new row
         setTimeout(() => {
@@ -348,14 +349,24 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                                             </div>
                                         </>
                                     )}
-                                    <div className={comp.resourceType === 'MATERIAL' ? 'col-span-2' : 'col-span-2'}>
-                                        <label className="text-[8px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-0.5 block">Rate</label>
+                                    <div className={comp.resourceType === 'MATERIAL' ? 'col-span-1' : 'col-span-1'}>
+                                        <label className="text-[8px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-0.5 block">Client Rate</label>
                                         <input
                                             type="number" step="0.01"
-                                            placeholder="Rate"
+                                            placeholder="Client Rate"
                                             className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-1.5 text-[10px] text-slate-900 dark:text-white outline-none text-right"
                                             value={comp.unitRate || ''}
                                             onChange={e => updateComponent(idx, 'unitRate', e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="col-span-1">
+                                        <label className="text-[8px] text-orange-500/80 uppercase font-bold mb-0.5 block">Altapil Rate</label>
+                                        <input
+                                            type="number" step="0.01"
+                                            placeholder="Target"
+                                            className="w-full bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-900/30 rounded p-1.5 text-[10px] text-slate-900 dark:text-white outline-none text-right focus:border-orange-500"
+                                            value={comp.altapilUnitRate || ''}
+                                            onChange={e => updateComponent(idx, 'altapilUnitRate', e.target.value)}
                                         />
                                     </div>
                                     <div className="col-span-1 flex items-end justify-end">

@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import Modal from '@/Components/UI/Modal';
 import Select from '@/Components/UI/Select';
-import { Truck, Plus, Package, Box } from 'lucide-react';
+import { Truck, Plus, Package, Box, AlertTriangle, Info, CheckCircle2 } from 'lucide-react';
+import { Toaster, toast } from 'sonner';
 
 export default function ProjectMaterialRequests() {
-    const { project, materialRequests: initialMRs, boqItems } = usePage().props;
+    const { project, materialRequests: initialMRs, boqItems, flash } = usePage().props;
     const requests = initialMRs || [];
 
     const [showModal, setShowModal] = useState(false);
@@ -24,16 +25,59 @@ export default function ProjectMaterialRequests() {
     const [remarks, setRemarks] = useState('');
     const [cart, setCart] = useState([]);
 
+    // Show Flash Messages
+    useEffect(() => {
+        if (flash?.success) toast.success(flash.success);
+        if (flash?.error) toast.error(flash.error);
+        if (flash?.warning) toast.warning(flash.warning);
+    }, [flash]);
+
     // Derived state for budget
     const selectedBoqItem = boqItems?.find(b => b.id === Number(selectedBoqItemId));
     const selectedComponent = selectedBoqItem?.components?.find(c => c.id === Number(selectedComponentId));
 
-    const maxBudgetQty = selectedBoqItem && selectedComponent
+    // Calculate Usage History (PENDING + APPROVED)
+    const usage = React.useMemo(() => {
+        if (!selectedComponent) return { qty: 0, cost: 0 };
+        return requests.reduce((acc, mr) => {
+            if (mr.status === 'REJECTED') return acc; // Ignore rejected
+            const item = mr.items?.find(i => i.boq_item_component_id === selectedComponent.id);
+            if (item) {
+                acc.qty += Number(item.quantity);
+                acc.cost += Number(item.quantity) * (Number(item.material_unit_price) + Number(item.labor_unit_price));
+            }
+            return acc;
+        }, { qty: 0, cost: 0 });
+    }, [requests, selectedComponent]);
+
+    // Budget Calculations
+    const totalBudgetQty = (selectedBoqItem && selectedComponent)
         ? (Number(selectedBoqItem.quantity) * Number(selectedComponent.quantity_factor))
         : 0;
 
+    // Altapil Budget = Total Qty * Altapil Unit Rate
+    const totalBudgetCost = (selectedComponent)
+        ? (totalBudgetQty * Number(selectedComponent.altapil_unit_rate || 0))
+        : 0;
+
+    const remainingQty = Math.max(0, totalBudgetQty - usage.qty);
+    const remainingCost = Math.max(0, totalBudgetCost - usage.cost);
+
+    // Current Request Calculations
+    const currentRequestCost = (Number(requestQty) || 0) * ((Number(materialUnitPrice) || 0) + (Number(laborUnitPrice) || 0));
+
+    // Validation flags
+    const isQtyExceeded = totalBudgetQty > 0 && Number(requestQty) > remainingQty;
+    const isCostExceeded = totalBudgetCost > 0 && currentRequestCost > remainingCost;
+    const hasAltapilBudget = totalBudgetCost > 0;
+
     const addToCart = () => {
         if (!itemDescription || !requestQty || Number(requestQty) <= 0) return;
+        if (isCostExceeded) {
+            toast.error("Cannot add: Request exceeds remaining budget.");
+            return;
+        }
+
         setCart([...cart, {
             boq_item_id: selectedBoqItemId || null,
             boq_item_component_id: selectedComponentId || null,
@@ -83,21 +127,18 @@ export default function ProjectMaterialRequests() {
         if (component) {
             setItemDescription(component.name);
             setRequestUnit(boqItem.unit);
-            setMaterialUnitPrice(Number(component.unit_rate).toString());
+            // Default to Client Rate for display/editing? Or Altapil? 
+            // Usually MR reflects actual purchase price. Let's pre-fill with Altapil Rate as a "Target"
+            setMaterialUnitPrice(Number(component.altapil_unit_rate || 0).toString());
             setLaborUnitPrice('0');
         }
     };
 
-    // Helper to calculate total value
-    const calculateTotal = (items) => items.reduce((acc, item) => {
-        const mat = (Number(item.material_unit_price) || 0) * Number(item.quantity);
-        const lab = (Number(item.labor_unit_price) || 0) * Number(item.quantity);
-        return acc + mat + lab;
-    }, 0);
-
     return (
         <AuthenticatedLayout>
             <Head title={`Material Requests - ${project.name}`} />
+            <Toaster position="top-right" richColors />
+
             <div className="p-6 space-y-6 max-w-7xl mx-auto">
 
                 {/* Breadcrumb + Header */}
@@ -116,7 +157,7 @@ export default function ProjectMaterialRequests() {
                         </h1>
                         <p className="text-slate-500">Request materials from warehouse or procurement.</p>
                     </div>
-                    <button onClick={() => setShowModal(true)} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors text-xs font-bold">
+                    <button onClick={() => setShowModal(true)} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors text-xs font-bold shadow-lg shadow-blue-600/20 active:scale-95">
                         <Plus size={18} /> Create Request
                     </button>
                 </header>
@@ -224,6 +265,9 @@ export default function ProjectMaterialRequests() {
                                 </div>
                             </div>
 
+                            {/* Budget Status Info - HIDDEN FOR BLIND BUDGETING */}
+                            {/* Logic remains for validation, but UI is removed */}
+
                             <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
                                 <div className="md:col-span-2">
                                     <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block tracking-wider">Item Description</label>
@@ -236,22 +280,52 @@ export default function ProjectMaterialRequests() {
                                 <div>
                                     <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">
                                         Qty
-                                        {maxBudgetQty > 0 && <span className="ml-1 text-emerald-500 text-[9px]">(Max: {maxBudgetQty.toFixed(2)})</span>}
                                     </label>
-                                    <input type="number" step="0.01" className={`w-full bg-white dark:bg-slate-900 border rounded p-2 text-slate-900 dark:text-white text-xs h-9 ${maxBudgetQty > 0 && Number(requestQty) > maxBudgetQty ? 'border-red-500 text-red-600' : 'border-slate-200 dark:border-slate-700'}`} value={requestQty} onChange={e => setRequestQty(e.target.value)} />
-                                </div>
-                                <div className="hidden">
-                                    {/* Hidden price inputs, autofilled but editable if needed next time */}
-                                    <input type="number" value={materialUnitPrice} onChange={e => setMaterialUnitPrice(e.target.value)} />
-                                    <input type="number" value={laborUnitPrice} onChange={e => setLaborUnitPrice(e.target.value)} />
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        className={`w-full bg-white dark:bg-slate-900 border rounded p-2 text-slate-900 dark:text-white text-xs h-9 ${isQtyExceeded || isCostExceeded ? 'border-red-500 text-red-600 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-cyan-500'}`}
+                                        value={requestQty}
+                                        onChange={e => setRequestQty(e.target.value)}
+                                        placeholder="0.00"
+                                    />
                                 </div>
                                 <div>
-                                    <button type="button" onClick={addToCart} className="w-full bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded font-black text-[10px] uppercase transition-all active:scale-95 shadow-lg shadow-blue-600/20 h-9">Add</button>
+                                    <button
+                                        type="button"
+                                        onClick={addToCart}
+                                        disabled={isQtyExceeded || isCostExceeded}
+                                        className={`w-full px-4 py-2 rounded font-black text-[10px] uppercase transition-all shadow-lg h-9 flex items-center justify-center gap-1
+                                            ${isQtyExceeded || isCostExceeded
+                                                ? 'bg-red-500/10 text-red-500 cursor-not-allowed border border-red-500/20'
+                                                : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/20 active:scale-95'}`}
+                                    >
+                                        {isQtyExceeded || isCostExceeded ? 'Limit Exceeded' : 'Add Item'}
+                                    </button>
                                 </div>
                             </div>
-                            {maxBudgetQty > 0 && Number(requestQty) > maxBudgetQty && (
-                                <p className="text-red-500 text-[10px] mt-1 font-bold">⚠️ Warning: Reduces exceeds calculated budget ({maxBudgetQty.toFixed(2)}). Admin will be notified.</p>
-                            )}
+
+                            {/* Detailed Validation Warnings - GENERIC FOR BLIND BUDGETING */}
+                            <div className="space-y-1 mt-2">
+                                {(isQtyExceeded || isCostExceeded) && (
+                                    <p className="text-red-500 text-[10px] font-bold flex items-center gap-1">
+                                        <AlertTriangle size={12} /> Request exceeds allocated limits. Please reduce quantity or contact Admin.
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Price Inputs - HIDDEN, Auto-Calculated via Altapil Rate */}
+                            <div className="hidden mt-2 grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Mat. Price</label>
+                                    <input type="number" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-2 text-xs text-slate-400" value={materialUnitPrice} readOnly placeholder="0.00" />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Lab. Price</label>
+                                    <input type="number" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-2 text-xs text-slate-400" value={laborUnitPrice} readOnly placeholder="0.00" />
+                                </div>
+                            </div>
+
                         </div>
 
                         {/* Cart */}
