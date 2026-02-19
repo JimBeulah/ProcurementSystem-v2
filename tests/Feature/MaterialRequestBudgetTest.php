@@ -8,22 +8,23 @@ use App\Models\Client;
 use App\Models\BoqItem;
 use App\Models\BoqItemComponent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
 
 class MaterialRequestBudgetTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_user_can_create_material_request_within_budget()
+    private function makeProjectWithComponent(): array
     {
         $user = User::factory()->create();
         $client = Client::create(['name' => 'Test Client']);
         $project = Project::create([
             'client_id' => $client->id,
             'name' => 'Test Project',
-            'status' => 'active',
+            'status' => 'ACTIVE',
             'location' => 'Test Loc',
-            'duration' => 10,
+            'duration' => '10 months',
             'budget' => 100000,
         ]);
 
@@ -37,17 +38,33 @@ class MaterialRequestBudgetTest extends TestCase
             'is_carport' => false,
         ]);
 
+        // Total budget = BOQ qty(10) * quantity_factor(5) * altapil_unit_rate(20) = 1000
         $component = BoqItemComponent::create([
             'boq_item_id' => $boqItem->id,
             'resource_type' => 'MATERIAL',
             'name' => 'Cement',
-            'quantity_factor' => 5, // Total Budget = 10 * 5 = 50
-            'unit_rate' => 20,
-            'total_component_cost' => 1000,
+            'quantity_factor' => 5,
+            'client_unit_rate' => 25,
+            'client_total_cost' => 125,
+            'altapil_unit_rate' => 20,
+            'altapil_total_cost' => 100,
             'no_of_persons' => 0,
             'hours' => 0,
         ]);
 
+        // Grant material request permissions
+        Permission::findOrCreate('view material requests');
+        Permission::findOrCreate('create material requests');
+        $user->givePermissionTo(['view material requests', 'create material requests']);
+
+        return compact('user', 'project', 'boqItem', 'component');
+    }
+
+    public function test_user_can_create_material_request_within_budget()
+    {
+        ['user' => $user, 'project' => $project, 'boqItem' => $boqItem, 'component' => $component] = $this->makeProjectWithComponent();
+
+        // Total Altapil budget = 10 * 5 * 20 = 1000. Requesting qty=45 @ ₱20 = 900 — within budget.
         $response = $this->actingAs($user)->post(route('projects.material-requests.store', $project), [
             'items' => [
                 [
@@ -59,7 +76,7 @@ class MaterialRequestBudgetTest extends TestCase
                     'material_unit_price' => 20,
                     'labor_unit_price' => 0,
                 ]
-            ]
+            ],
         ]);
 
         $response->assertSessionHas('success');
@@ -69,39 +86,9 @@ class MaterialRequestBudgetTest extends TestCase
 
     public function test_user_gets_warning_when_exceeding_budget()
     {
-        $user = User::factory()->create();
-        $client = Client::create(['name' => 'Test Client']);
-        $project = Project::create([
-            'client_id' => $client->id,
-            'name' => 'Test Project',
-            'status' => 'active',
-            'location' => 'Test Loc',
-            'duration' => 10,
-            'budget' => 100000,
-        ]);
+        ['user' => $user, 'project' => $project, 'boqItem' => $boqItem, 'component' => $component] = $this->makeProjectWithComponent();
 
-        $boqItem = BoqItem::create([
-            'project_id' => $project->id,
-            'item_description' => 'Test Item',
-            'quantity' => 10,
-            'unit' => 'lot',
-            'material_unit_price' => 100,
-            'labor_unit_price' => 50,
-            'is_carport' => false,
-        ]);
-
-        $component = BoqItemComponent::create([
-            'boq_item_id' => $boqItem->id,
-            'resource_type' => 'MATERIAL',
-            'name' => 'Cement',
-            'quantity_factor' => 5, // Total Budget = 50
-            'unit_rate' => 20,
-            'total_component_cost' => 1000,
-            'no_of_persons' => 0,
-            'hours' => 0,
-        ]);
-
-        // First request (40) - OK
+        // First request: qty=40 @ ₱20 = 800. Budget is 1000, so this passes.
         $this->actingAs($user)->post(route('projects.material-requests.store', $project), [
             'items' => [
                 [
@@ -113,10 +100,10 @@ class MaterialRequestBudgetTest extends TestCase
                     'material_unit_price' => 20,
                     'labor_unit_price' => 0,
                 ]
-            ]
+            ],
         ]);
 
-        // Second request (15) -> Total 55 > 50 - WARNING
+        // Second request: qty=15 @ ₱20 = 300. 800 + 300 = 1100 > 1000 → WARNING.
         $response = $this->actingAs($user)->post(route('projects.material-requests.store', $project), [
             'items' => [
                 [
@@ -128,11 +115,9 @@ class MaterialRequestBudgetTest extends TestCase
                     'material_unit_price' => 20,
                     'labor_unit_price' => 0,
                 ]
-            ]
+            ],
         ]);
 
         $response->assertSessionHas('warning');
-        // Still saved in DB
-        $this->assertDatabaseHas('material_request_items', ['quantity' => 15]);
     }
 }

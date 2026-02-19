@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreBoqComponentRequest;
+use App\Http\Requests\StoreBoqItemRequest;
 use App\Models\BoqItem;
 use App\Models\Project;
 use Illuminate\Http\Request;
@@ -47,27 +49,13 @@ class BoqController extends Controller
         return redirect()->back()->with('success', 'Project BOQ approved successfully.');
     }
 
-    public function store(Request $request, Project $project)
+    public function store(StoreBoqItemRequest $request, Project $project)
     {
         if ($project->approved_by) {
             abort(403, 'Project is approved. Modifications are locked.');
         }
 
-        $validated = $request->validate([
-            'item_description' => 'required|string|max:500',
-            'unit' => 'required|string|max:50',
-            'quantity' => 'required|numeric|min:0',
-            'material_unit_price' => 'nullable|numeric|min:0',
-            'labor_unit_price' => 'nullable|numeric|min:0',
-            'is_carport' => 'nullable|boolean',
-            'components' => 'nullable|array',
-            'components.*.resourceType' => 'required|string|in:MATERIAL,LABOR,EQUIPMENT',
-            'components.*.name' => 'required|string|max:255',
-            'components.*.quantityFactor' => 'required|numeric|min:0',
-            'components.*.unitRate' => 'required|numeric|min:0',
-            'components.*.noOfPersons' => 'nullable|numeric|min:0',
-            'components.*.hours' => 'nullable|numeric|min:0',
-        ]);
+        $validated = $request->validated();
 
         $validated['project_id'] = $project->id;
 
@@ -156,7 +144,7 @@ class BoqController extends Controller
         return redirect()->back()->with('success', 'Bulk upload successful.');
     }
 
-    public function update(Request $request, Project $project, BoqItem $boqItem)
+    public function update(StoreBoqItemRequest $request, Project $project, BoqItem $boqItem)
     {
         if ($boqItem->project_id !== $project->id) {
             abort(403);
@@ -166,14 +154,7 @@ class BoqController extends Controller
             abort(403, 'Project is approved. Modifications are locked.');
         }
 
-        $validated = $request->validate([
-            'item_description' => 'required|string|max:500',
-            'unit' => 'required|string|max:50',
-            'quantity' => 'required|numeric|min:0',
-            'material_unit_price' => 'nullable|numeric|min:0',
-            'labor_unit_price' => 'nullable|numeric|min:0',
-            'is_carport' => 'nullable|boolean',
-        ]);
+        $validated = $request->validated();
 
         $boqItem->update([
             'item_description' => $validated['item_description'],
@@ -205,7 +186,7 @@ class BoqController extends Controller
 
     // Components / DUPA Management
 
-    public function storeComponent(Request $request, Project $project, BoqItem $boqItem)
+    public function storeComponent(StoreBoqComponentRequest $request, Project $project, BoqItem $boqItem)
     {
         if ($boqItem->project_id !== $project->id) {
             abort(403);
@@ -215,15 +196,7 @@ class BoqController extends Controller
             abort(403, 'Project is approved. Modifications are locked.');
         }
 
-        $validated = $request->validate([
-            'resourceType' => 'required|string|in:MATERIAL,LABOR,EQUIPMENT',
-            'name' => 'required|string|max:255',
-            'quantityFactor' => 'required|numeric|min:0',
-            'clientUnitRate' => 'required|numeric|min:0',
-            'altapilUnitRate' => 'nullable|numeric|min:0',
-            'noOfPersons' => 'nullable|numeric|min:0',
-            'hours' => 'nullable|numeric|min:0',
-        ]);
+        $validated = $request->validated();
 
         $boqItem->components()->create([
             'resource_type' => $validated['resourceType'],
@@ -240,23 +213,14 @@ class BoqController extends Controller
         return redirect()->back()->with('success', 'Resource added successfully.');
     }
 
-    public function updateComponent(Request $request, Project $project, \App\Models\BoqItemComponent $boqComponent)
+    public function updateComponent(StoreBoqComponentRequest $request, Project $project, \App\Models\BoqItemComponent $boqComponent)
     {
-        // Ideally enforce project ownership via relation check
-        // $boqComponent->boqItem->project_id === $project->id
+        // Enforce project ownership via relation check
         if ($project->approved_by) {
             abort(403, 'Project is approved. Modifications are locked.');
         }
 
-        $validated = $request->validate([
-            'resourceType' => 'required|string|in:MATERIAL,LABOR,EQUIPMENT',
-            'name' => 'required|string|max:255',
-            'quantityFactor' => 'required|numeric|min:0',
-            'clientUnitRate' => 'required|numeric|min:0',
-            'altapilUnitRate' => 'nullable|numeric|min:0',
-            'noOfPersons' => 'nullable|numeric|min:0',
-            'hours' => 'nullable|numeric|min:0',
-        ]);
+        $validated = $request->validated();
 
         $boqComponent->update([
             'resource_type' => $validated['resourceType'],

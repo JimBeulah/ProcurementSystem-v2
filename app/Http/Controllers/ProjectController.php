@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreProjectRequest;
+use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Client;
 use App\Models\Project;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class ProjectController extends Controller
@@ -32,50 +33,16 @@ class ProjectController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreProjectRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'client_id' => 'required|exists:clients,id',
-            'location' => 'nullable|string|max:255',
-            'budget' => 'required|numeric|min:0',
-            'duration' => 'nullable|string|max:100',
-            'total_floor_area' => 'nullable|numeric|min:0',
-            'carport_area' => 'nullable|numeric|min:0',
-            'status' => 'nullable|string|in:ACTIVE,COMPLETED,ON_HOLD',
-            'project_type' => 'nullable|string|in:BUILDING,INFRASTRUCTURE,MAINTENANCE',
-            'appropriation' => 'nullable|numeric|min:0',
-            'source_of_fund' => 'nullable|string|max:255',
-            'contract_id' => 'nullable|string|max:100',
-            'project_component_id' => 'nullable|string|max:100',
-            'net_length' => 'nullable|numeric|min:0',
-        ]);
-
-        Project::create($validated);
+        Project::create($request->validated());
 
         return redirect()->route('projects.index')->with('success', 'Project created successfully.');
     }
 
-    public function update(Request $request, Project $project)
+    public function update(UpdateProjectRequest $request, Project $project)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'client_id' => 'required|exists:clients,id',
-            'location' => 'nullable|string|max:255',
-            'budget' => 'required|numeric|min:0',
-            'duration' => 'nullable|string|max:100',
-            'total_floor_area' => 'nullable|numeric|min:0',
-            'carport_area' => 'nullable|numeric|min:0',
-            'status' => 'nullable|string|in:ACTIVE,COMPLETED,ON_HOLD',
-            'project_type' => 'nullable|string|in:BUILDING,INFRASTRUCTURE,MAINTENANCE',
-            'appropriation' => 'nullable|numeric|min:0',
-            'source_of_fund' => 'nullable|string|max:255',
-            'contract_id' => 'nullable|string|max:100',
-            'project_component_id' => 'nullable|string|max:100',
-            'net_length' => 'nullable|numeric|min:0',
-        ]);
-
-        $project->update($validated);
+        $project->update($request->validated());
 
         return redirect()->route('projects.index')->with('success', 'Project updated successfully.');
     }

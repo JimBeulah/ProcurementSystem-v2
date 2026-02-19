@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreSiteReleaseRequest;
 use App\Models\InventoryItem;
 use App\Models\SiteRelease;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class SiteReleaseController extends Controller
@@ -28,15 +28,9 @@ class SiteReleaseController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreSiteReleaseRequest $request)
     {
-        $validated = $request->validate([
-            'inventory_item_id' => 'required|exists:inventory_items,id',
-            'quantity_released' => 'required|numeric|min:0.01',
-            'issued_to' => 'required|string|max:255',
-            'purpose' => 'nullable|string|max:500',
-        ]);
-
+        $validated = $request->validated();
         $item = InventoryItem::findOrFail($validated['inventory_item_id']);
 
         if ($validated['quantity_released'] > $item->quantity) {
@@ -54,7 +48,6 @@ class SiteReleaseController extends Controller
             'release_date' => now(),
         ]);
 
-        // Deduct from inventory
         $item->decrement('quantity', $validated['quantity_released']);
 
         return redirect()->back()->with('success', "Released {$validated['quantity_released']} {$item->unit} of {$item->material_name}.");
