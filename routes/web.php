@@ -94,6 +94,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Purchase Requests
     Route::get('/purchasing/requests', [PurchaseRequestController::class, 'index'])->name('purchasing.requests.index');
+    Route::post('/purchasing/requests', [PurchaseRequestController::class, 'store'])->name('purchasing.requests.store');
+    Route::post('/purchasing/requests/{purchaseRequest}/approve', [PurchaseRequestController::class, 'approve'])->name('purchasing.requests.approve');
+    Route::post('/purchasing/requests/{purchaseRequest}/decline', [PurchaseRequestController::class, 'decline'])->name('purchasing.requests.decline');
+    Route::delete('/purchasing/requests/{purchaseRequest}', [PurchaseRequestController::class, 'destroy'])->name('purchasing.requests.destroy');
 
     // Inventory
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index')->middleware('can:view inventory');
@@ -123,6 +127,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Site Release
     Route::get('/site-release', [SiteReleaseController::class, 'index'])->name('site-release.index')->middleware('can:view site release');
+    Route::post('/site-release', [SiteReleaseController::class, 'store'])->name('site-release.store');
 
     // Settings
     Route::middleware(['can:view settings'])->group(function () {

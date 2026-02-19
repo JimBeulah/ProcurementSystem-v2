@@ -293,7 +293,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                         {item.components.map((comp, idx) => (
                             <div key={idx} className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3 border border-slate-200 dark:border-slate-700 relative group/row">
                                 <div className="grid grid-cols-12 gap-2 items-center">
-                                    <div className="col-span-3">
+                                    <div className="col-span-2">
                                         <label className="text-[8px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-0.5 block">Type</label>
                                         <select
                                             className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-1.5 text-[10px] text-slate-900 dark:text-white outline-none focus:border-orange-500"
@@ -305,7 +305,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                                             <option value="EQUIPMENT">EQUIPMENT</option>
                                         </select>
                                     </div>
-                                    <div className="col-span-4">
+                                    <div className={comp.resourceType === 'MATERIAL' ? 'col-span-5' : 'col-span-3'}>
                                         <label className="text-[8px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-0.5 block">Name</label>
                                         <input
                                             type="text"
@@ -349,7 +349,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                                             </div>
                                         </>
                                     )}
-                                    <div className={comp.resourceType === 'MATERIAL' ? 'col-span-1' : 'col-span-1'}>
+                                    <div className="col-span-1">
                                         <label className="text-[8px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-0.5 block">Client Rate</label>
                                         <input
                                             type="number" step="0.01"

@@ -6,7 +6,8 @@ import AddBoqItemWizard from '@/Components/Boq/AddBoqItemWizard'; // Import the 
 import { toast } from 'sonner';
 import {
     ClipboardList, Plus, RefreshCcw, Upload, FileDown, Search, Home, Car, TrendingUp,
-    ChevronDown, ChevronRight, Calculator, Trash2, Settings, AlertTriangle, Pencil, MoreHorizontal
+    ChevronDown, ChevronRight, Calculator, Trash2, Settings, AlertTriangle, Pencil, MoreHorizontal,
+    Box, Layers, Hammer, Truck
 } from 'lucide-react';
 
 export default function ProjectBoq() {
@@ -145,7 +146,7 @@ export default function ProjectBoq() {
         const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
         const parts = text.split(regex);
         return parts.map((part, i) =>
-            regex.test(part) ? <mark key={i} className="bg-orange-500/30 text-foreground rounded px-0.5">{part}</mark> : part
+            regex.test(part) ? <mark key={i} className="bg-amber-400/30 text-amber-900 dark:text-amber-100 rounded px-0.5">{part}</mark> : part
         );
     };
 
@@ -204,22 +205,13 @@ export default function ProjectBoq() {
         reader.onload = (event) => {
             const text = (event.target?.result).replace(/^\uFEFF/, '');
             const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
-            // Basic CSV parsing logic... reusing functionality from original request
 
-            // Simplified for brevity, assume strict CSV format
-            // ... (Insert CSV parsing logic here similar to original file, resulting in `items` array)
-            // For now, simpler implementation or direct pass to backend validation?
-            // Backend expects structured array. Client side parsing is robust.
-
-            // Let's implement a robust parser quickly:
             const resultItems = [];
             let currentItem = null;
 
             lines.forEach((line, idx) => {
                 if (idx === 0 || line.startsWith('#') || line.startsWith('"#')) return;
 
-                // Split by comma but respect quotes is complex, simple split for template:
-                // The template doesn't use commas in descriptions usually, but to be safe:
                 const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(s => s.replace(/^"|"$/g, '').trim());
                 if (cols.length < 2) return;
 
@@ -264,68 +256,71 @@ export default function ProjectBoq() {
         <AuthenticatedLayout>
             <Head title={`BOQ - ${project.name}`} />
 
-            <div className="p-4 space-y-4 max-w-[1920px] mx-auto max-h-[calc(100vh-64px)] overflow-y-auto custom-scrollbar">
+            <div className="p-6 space-y-6 max-w-[1920px] mx-auto h-[calc(100vh-65px)] overflow-hidden flex flex-col">
 
-                {/* Header */}
-                <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 dark:bg-slate-800/50 backdrop-blur-md p-4 rounded-xl border border-slate-200 dark:border-slate-700 sticky top-0 z-20">
+                {/* Header Section */}
+                <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl p-5 rounded-3xl border border-white/20 shadow-lg shadow-black/5 shrink-0 z-20">
                     <div>
-                        <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                            <ClipboardList className="text-orange-500" size={24} />
-                            <span className="hidden md:inline">Bill of Quantities: </span>
-                            <span className="text-orange-600 dark:text-orange-400">{project.name}</span>
+                        <div className="flex items-center gap-2 mb-1">
+                            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                                <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl text-white shadow-lg shadow-indigo-500/30">
+                                    <ClipboardList size={20} className="text-white" />
+                                </div>
+                                <span className="opacity-90">Bill of Quantities</span>
+                            </h1>
                             {isApproved && (
-                                <span className="ml-2 text-[10px] bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase font-bold tracking-wider flex items-center gap-1">
+                                <span className="ml-2 text-[10px] bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 px-2.5 py-1 rounded-full uppercase font-bold tracking-wider flex items-center gap-1">
                                     Approved
                                 </span>
                             )}
-                        </h1>
-                        <p className="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black opacity-60">Project ID: #{project.id}</p>
+                        </div>
+                        <p className="text-sm text-slate-500 font-medium ml-1">
+                            Project: <span className="text-slate-800 dark:text-slate-200 font-bold">{project.name}</span> <span className="text-slate-400 mx-1">•</span> <span className="font-mono text-slate-400">#{project.id}</span>
+                        </p>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        {isApproved ? (
-                            <div className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-lg text-xs font-bold flex items-center gap-2 border border-slate-200 dark:border-slate-700">
-                                <span className="w-2 h-2 rounded-full bg-slate-400"></span> Locked
-                            </div>
-                        ) : (
-                            ['ADMIN', 'PROJECT_MANAGER'].includes(auth.user.role) && (
-                                <>
-                                    <button onClick={handleApprove} className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs font-bold transition-all shadow-lg shadow-emerald-600/20 active:scale-95">
-                                        Approve BOQ
-                                    </button>
-                                    <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
-                                </>
-                            )
-                        )}
-
-                        <div className="relative group max-w-xs">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan-500 transition-colors" size={14} />
+                    <div className="flex items-center gap-3">
+                        {/* Search Bar */}
+                        <div className="relative group w-64">
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-purple-500 transition-colors" size={16} />
                             <input
                                 type="text"
                                 placeholder="Search items..."
-                                className="w-full bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg pl-9 pr-4 py-1.5 text-slate-900 dark:text-white text-xs focus:border-cyan-500/50 outline-none transition-all"
+                                className="w-full bg-slate-100/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-slate-900 dark:text-white text-sm focus:border-purple-500/50 focus:ring-0 outline-none transition-all placeholder:text-slate-400"
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
                             />
                         </div>
 
+                        <div className="h-8 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
+
+                        {isApproved ? (
+                            <div className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-xl text-xs font-bold flex items-center gap-2 border border-slate-200 dark:border-slate-700">
+                                <span className="w-2 h-2 rounded-full bg-slate-400"></span> Locked
+                            </div>
+                        ) : (
+                            ['ADMIN', 'PROJECT_MANAGER'].includes(auth.user.role) && (
+                                <button onClick={handleApprove} className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 text-xs font-bold transition-all shadow-lg shadow-emerald-500/20 active:scale-95">
+                                    Approve BOQ
+                                </button>
+                            )
+                        )}
+
                         {!isApproved && (
-                            <button onClick={() => setIsWizardOpen(true)} className="bg-orange-600 hover:bg-orange-500 text-white px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs font-bold transition-all shadow-lg shadow-orange-600/20 active:scale-95">
-                                <Plus size={16} /> <span className="hidden sm:inline">Add Item</span>
+                            <button onClick={() => setIsWizardOpen(true)} className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 text-xs font-bold transition-all shadow-lg shadow-purple-600/20 active:scale-95">
+                                <Plus size={18} /> <span className="hidden sm:inline">Add Item</span>
                             </button>
                         )}
 
-                        <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
-
-                        <div className="flex items-center gap-1">
-                            <button onClick={() => router.reload()} className="p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Refresh">
+                        <div className="flex items-center gap-1 bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <button onClick={() => router.reload()} className="p-2 text-slate-500 hover:text-purple-600 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all shadow-sm hover:shadow" title="Refresh">
                                 <RefreshCcw size={16} className={loading ? 'animate-spin' : ''} />
                             </button>
-                            <button onClick={downloadTemplate} className="p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Template">
+                            <button onClick={downloadTemplate} className="p-2 text-slate-500 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all shadow-sm hover:shadow" title="Download Template">
                                 <FileDown size={16} />
                             </button>
                             {!isApproved && (
-                                <label className="p-1.5 text-cyan-500 hover:bg-cyan-500/10 rounded-lg cursor-pointer transition-colors" title="Bulk Upload">
+                                <label className="p-2 text-slate-500 hover:text-emerald-600 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all shadow-sm hover:shadow cursor-pointer" title="Bulk Upload">
                                     <Upload size={16} />
                                     <input type="file" accept=".csv" className="hidden" onChange={handleBulkUpload} disabled={loading} />
                                 </label>
@@ -334,105 +329,130 @@ export default function ProjectBoq() {
                     </div>
                 </header>
 
-                {/* Metrics */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                    <div className="bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex items-center gap-4 hover:border-orange-500/30 transition-all">
-                        <div className="p-3 rounded-lg bg-orange-500/10 text-orange-500">
-                            <TrendingUp size={24} />
+                {/* Metrics Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
+                    <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-md border border-white/20 dark:border-slate-700/50 rounded-2xl p-4 flex flex-col justify-between shadow-sm relative group overflow-hidden">
+                        <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <TrendingUp size={48} className="text-purple-500" />
                         </div>
-                        <div>
-                            <p className="text-[10px] text-slate-500 uppercase font-black tracking-wider">
-                                {project.appropriation ? 'Appropriation' : 'Total Cost (+10%)'}
-                            </p>
-                            <p className="text-xl font-black text-slate-900 dark:text-white font-mono tracking-tighter leading-none">
-                                ₱ {(Number(project.appropriation) || totalWithProfit).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                            </p>
+                        <div className="flex items-center gap-3 mb-2 relative z-10">
+                            <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                                <TrendingUp size={20} />
+                            </div>
+                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Project Cost</span>
                         </div>
+                        <p className="text-2xl font-black text-slate-900 dark:text-white font-mono tracking-tight relative z-10">
+                            <span className="text-lg text-slate-400 mr-1">₱</span>
+                            {(Number(project.appropriation) || totalWithProfit).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        </p>
                     </div>
 
                     {project.project_type === 'BUILDING' ? (
                         <>
-                            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex flex-col gap-2 hover:border-cyan-500/30 transition-all">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-[10px] text-slate-500 uppercase font-black">Building Metrics</span>
-                                    <Home size={14} className="text-cyan-500" />
+                            <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-md border border-white/20 dark:border-slate-700/50 rounded-2xl p-4 flex flex-col justify-between shadow-sm relative group overflow-hidden">
+                                <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <Home size={48} className="text-blue-500" />
                                 </div>
-                                <div className="flex justify-between items-end">
-                                    <p className="text-lg font-black text-slate-900 dark:text-white font-mono">₱ {amountPerSqmBuilding.toLocaleString(undefined, { maximumFractionDigits: 0 })}<span className="text-[10px] text-slate-400">/sqm</span></p>
-                                    <div className="text-right">
-                                        <span className="text-xs font-mono text-cyan-600 font-bold">{floorArea}</span>
-                                        <span className="text-[10px] text-slate-400 ml-1">sqm</span>
+                                <div className="flex items-center gap-3 mb-2 relative z-10">
+                                    <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                                        <Home size={20} />
                                     </div>
+                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Building Value</span>
+                                </div>
+                                <div className="flex items-baseline gap-2 relative z-10">
+                                    <p className="text-xl font-bold text-slate-900 dark:text-white font-mono">
+                                        ₱ {amountPerSqmBuilding.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                    </p>
+                                    <span className="text-xs text-slate-500 font-medium">/ sqm ({floorArea})</span>
                                 </div>
                             </div>
 
-                            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex flex-col gap-2 hover:border-orange-500/30 transition-all">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-[10px] text-slate-500 uppercase font-black">Carport Metrics</span>
-                                    <Car size={14} className="text-orange-500" />
+                            <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-md border border-white/20 dark:border-slate-700/50 rounded-2xl p-4 flex flex-col justify-between shadow-sm relative group overflow-hidden">
+                                <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                                    <Car size={48} className="text-amber-500" />
                                 </div>
-                                <div className="flex justify-between items-end">
-                                    <p className="text-lg font-black text-slate-900 dark:text-white font-mono">₱ {amountPerSqmCarport.toLocaleString(undefined, { maximumFractionDigits: 0 })}<span className="text-[10px] text-slate-400">/sqm</span></p>
-                                    <div className="text-right">
-                                        <span className="text-xs font-mono text-orange-600 font-bold">{carportArea}</span>
-                                        <span className="text-[10px] text-slate-400 ml-1">sqm</span>
+                                <div className="flex items-center gap-3 mb-2 relative z-10">
+                                    <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                                        <Car size={20} />
                                     </div>
+                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Carport Value</span>
+                                </div>
+                                <div className="flex items-baseline gap-2 relative z-10">
+                                    <p className="text-xl font-bold text-slate-900 dark:text-white font-mono">
+                                        ₱ {amountPerSqmCarport.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                    </p>
+                                    <span className="text-xs text-slate-500 font-medium">/ sqm ({carportArea})</span>
                                 </div>
                             </div>
                         </>
                     ) : (
-                        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex flex-col gap-2 hover:border-emerald-500/30 transition-all">
-                            <div className="flex justify-between items-center">
-                                <span className="text-[10px] text-slate-500 uppercase font-black">Infra Metrics</span>
-                                <Settings size={14} className="text-emerald-500" />
+                        <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-md border border-white/20 dark:border-slate-700/50 rounded-2xl p-4 flex flex-col justify-between shadow-sm relative group overflow-hidden">
+                            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <Settings size={48} className="text-emerald-500" />
                             </div>
-                            <div className="flex justify-between items-end">
-                                <p className="text-lg font-black text-slate-900 dark:text-white font-mono">
-                                    ₱ {(project.net_length > 0 ? totalConstructionCost / Number(project.net_length) : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                                    <span className="text-[10px] text-slate-400"> / unit</span>
-                                </p>
-                                <div className="text-right">
-                                    <span className="text-xs text-emerald-500 font-mono">{project.net_length || 0}</span>
-                                    <span className="text-[10px] text-slate-400 ml-1">meters</span>
+                            <div className="flex items-center gap-3 mb-2 relative z-10">
+                                <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                                    <Settings size={20} />
                                 </div>
+                                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Infra Value</span>
+                            </div>
+                            <div className="flex items-baseline gap-2 relative z-10">
+                                <p className="text-xl font-bold text-slate-900 dark:text-white font-mono">
+                                    ₱ {(project.net_length > 0 ? totalConstructionCost / Number(project.net_length) : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                </p>
+                                <span className="text-xs text-slate-500 font-medium">/ meter ({project.net_length || 0})</span>
                             </div>
                         </div>
                     )}
-                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex flex-col justify-between hover:border-emerald-500/30 transition-all">
-                        <div className="flex justify-between items-center mb-1">
-                            <span className="text-[10px] text-slate-500 uppercase font-black">Cost Distribution</span>
-                            <span className="text-[9px] font-bold text-emerald-500">{((amountWithoutCarportWithProfit / totalWithProfit) * 100 || 0).toFixed(0)}% Building</span>
+
+                    <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-md border border-white/20 dark:border-slate-700/50 rounded-2xl p-4 flex flex-col justify-end shadow-sm relative">
+                        <div className="flex justify-between items-center mb-2">
+                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Cost Distribution</span>
                         </div>
-                        <div className="w-full bg-slate-100 dark:bg-slate-900 rounded-full h-1.5 overflow-hidden flex">
-                            <div className="bg-cyan-500 h-full" style={{ width: `${(amountWithoutCarportWithProfit / totalWithProfit) * 100 || 0}%` }} />
-                            <div className="bg-orange-500 h-full" style={{ width: `${(amountOfCarportWithProfit / totalWithProfit) * 100 || 0}%` }} />
+                        <div className="w-full bg-slate-200/50 dark:bg-slate-700/50 rounded-full h-3 overflow-hidden flex mb-2">
+                            <div className="bg-cyan-500 h-full shadow-[0_0_10px_rgba(6,182,212,0.5)]" style={{ width: `${(amountWithoutCarportWithProfit / totalWithProfit) * 100 || 0}%` }} />
+                            <div className="bg-amber-500 h-full shadow-[0_0_10px_rgba(245,158,11,0.5)]" style={{ width: `${(amountOfCarportWithProfit / totalWithProfit) * 100 || 0}%` }} />
                         </div>
-                        <div className="flex justify-between text-[8px] mt-1 text-slate-400 font-bold">
-                            <span>M: ₱ {(totalMaterialCost * 1.1).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                            <span>L: ₱ {(totalLaborCost * 1.1).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                        <div className="flex justify-between text-[10px] text-slate-400 font-bold uppercase tracking-wide">
+                            <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-cyan-500"></div> Building ({((amountWithoutCarportWithProfit / totalWithProfit) * 100 || 0).toFixed(0)}%)</span>
+                            <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-amber-500"></div> Carport</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Table */}
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
-                    <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-320px)] custom-scrollbar">
+                {/* Table Container - Flex grow to take up remaining space */}
+                <div className="bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl border border-white/20 dark:border-slate-700/30 rounded-3xl overflow-hidden shadow-2xl shadow-black/5 flex-grow relative flex flex-col">
+                    <div className="overflow-auto custom-scrollbar flex-grow">
                         <table className="w-full text-left border-collapse">
-                            <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-slate-500 dark:text-slate-400 uppercase text-[10px] font-semibold tracking-wider sticky top-0 z-10 backdrop-blur-sm">
-                                <tr className="border-b border-slate-200 dark:border-slate-700">
-                                    <th className="p-3 w-12 text-center">#</th>
-                                    <th className="p-3 min-w-[300px]">Description</th>
-                                    <th className="p-3 w-20 text-center">Unit</th>
-                                    <th className="p-3 w-24 text-center">Qty</th>
-                                    <th className="p-3 w-32 text-right">Mat. Unit</th>
-                                    <th className="p-3 w-36 text-right text-cyan-600/90">Mat. Total</th>
-                                    <th className="p-3 w-32 text-right">Lab. Unit</th>
-                                    <th className="p-3 w-36 text-right text-purple-600/90">Lab. Total</th>
-                                    <th className="p-3 w-40 text-right text-emerald-600/90 bg-emerald-500/5">Total Amount</th>
-                                    <th className="p-3 w-16 text-center"></th>
+                            <thead className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10 shadow-sm">
+                                <tr className="border-b border-slate-200/60 dark:border-slate-700/60 text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">
+                                    <th className="p-4 w-12 text-center text-slate-400">#</th>
+                                    <th className="p-4 min-w-[300px]">
+                                        <div className="flex items-center gap-2">
+                                            Description
+                                        </div>
+                                    </th>
+                                    <th className="p-4 w-20 text-center text-slate-400">Unit</th>
+                                    <th className="p-4 w-24 text-center">Qty</th>
+                                    <th className="p-4 w-32 text-right text-slate-500">
+                                        <div className="flex items-center justify-end gap-1">
+                                            Mat. Rate
+                                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-400/50"></div>
+                                        </div>
+                                    </th>
+                                    <th className="p-4 w-36 text-right text-cyan-600 dark:text-cyan-400">Total Material</th>
+                                    <th className="p-4 w-32 text-right text-slate-500">
+                                        <div className="flex items-center justify-end gap-1">
+                                            Lab. Rate
+                                            <div className="w-1.5 h-1.5 rounded-full bg-purple-400/50"></div>
+                                        </div>
+                                    </th>
+                                    <th className="p-4 w-36 text-right text-purple-600 dark:text-purple-400">Total Labor</th>
+                                    <th className="p-4 w-40 text-right text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 dark:bg-emerald-500/10">Line Total</th>
+                                    <th className="p-4 w-16 text-center text-slate-400">Action</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50 text-xs text-slate-900 dark:text-slate-100">
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-sm text-slate-700 dark:text-slate-200">
                                 {filteredItems.map((item, idx) => {
                                     const matTotal = Number(item.material_unit_price) * Number(item.quantity);
                                     const laborTotal = (Number(item.labor_unit_price) || 0) * Number(item.quantity);
@@ -443,158 +463,149 @@ export default function ProjectBoq() {
                                     return (
                                         <React.Fragment key={item.id}>
                                             <tr
-                                                className="hover:bg-slate-50 dark:hover:bg-slate-700/30 group transition-colors cursor-pointer"
+                                                className={`group hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all duration-200 cursor-pointer ${isExpanded ? 'bg-white/80 dark:bg-slate-700/30' : ''}`}
                                                 onClick={() => toggleRow(item.id)}
                                             >
-                                                <td className="py-2 px-3 text-center text-slate-400 font-mono text-[10px]">
+                                                <td className="py-3 px-4 text-center text-slate-400 font-mono text-xs border-l-4 border-transparent group-hover:border-purple-500/50 transition-all">
                                                     <div className="flex items-center justify-center gap-1">
-                                                        {isExpanded ? <ChevronDown size={14} className="text-orange-500" /> : <ChevronRight size={14} />}
                                                         {idx + 1}
                                                     </div>
                                                 </td>
-                                                <td className="py-2 px-3 font-medium">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="group-hover:text-cyan-600 transition-colors uppercase tracking-tight">{highlightMatch(item.item_description)}</span>
-                                                        {item.is_carport && (
-                                                            <span className="text-[9px] bg-orange-500/10 text-orange-600 border border-orange-500/20 px-1.5 py-0.5 rounded flex items-center gap-1 uppercase font-bold tracking-wider">
-                                                                <Car size={10} strokeWidth={3} /> Carport
-                                                            </span>
-                                                        )}
+                                                <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white">
+                                                    <div className="flex items-center gap-3">
+                                                        <button className={`p-1 rounded-md transition-all ${isExpanded ? 'bg-slate-200 dark:bg-slate-600 rotate-90' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                                                            <ChevronRight size={14} />
+                                                        </button>
+                                                        <div>
+                                                            <div className="group-hover:text-purple-600 transition-colors">{highlightMatch(item.item_description)}</div>
+                                                            {item.is_carport && (
+                                                                <span className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full inline-flex items-center gap-1 uppercase font-bold tracking-wider mt-1">
+                                                                    <Car size={10} /> Carport
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </td>
-                                                <td className="py-2 px-3 text-center text-slate-500">{item.unit}</td>
-                                                <td className="py-2 px-3 text-center font-bold text-slate-700 dark:text-slate-300">{item.quantity}</td>
-                                                <td className="py-2 px-3 text-right font-mono text-slate-500 tabular-nums">
-                                                    {Number(item.material_unit_price).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                                <td className="py-3 px-4 text-center text-slate-500 text-xs font-medium uppercase tracking-wide bg-slate-50/50 dark:bg-slate-800/50 rounded-lg mx-2">{item.unit}</td>
+                                                <td className="py-3 px-4 text-center font-bold font-mono text-slate-800 dark:text-slate-200">{item.quantity}</td>
+                                                <td className="py-3 px-4 text-right font-mono text-slate-500 tabular-nums">
+                                                    <span className="text-[10px] text-slate-300 mr-1">₱</span>{Number(item.material_unit_price).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                                 </td>
-                                                <td className="py-2 px-3 text-right font-mono text-cyan-700 font-medium bg-cyan-50/50 dark:bg-cyan-900/10 tabular-nums">
-                                                    {matTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                                <td className="py-3 px-4 text-right font-mono font-medium text-cyan-700 dark:text-cyan-400 tabular-nums">
+                                                    <span className="text-[10px] text-cyan-300/50 mr-1">₱</span>{matTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                                 </td>
-                                                <td className="py-2 px-3 text-right font-mono text-slate-500 tabular-nums">
-                                                    {Number(item.labor_unit_price || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                                <td className="py-3 px-4 text-right font-mono text-slate-500 tabular-nums">
+                                                    <span className="text-[10px] text-slate-300 mr-1">₱</span>{Number(item.labor_unit_price || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                                 </td>
-                                                <td className="py-2 px-3 text-right font-mono text-purple-700 font-medium bg-purple-50/50 dark:bg-purple-900/10 tabular-nums">
-                                                    {laborTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                                <td className="py-3 px-4 text-right font-mono font-medium text-purple-700 dark:text-purple-400 tabular-nums">
+                                                    <span className="text-[10px] text-purple-300/50 mr-1">₱</span>{laborTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                                 </td>
-                                                <td className="py-2 px-3 text-right font-mono text-emerald-700 font-bold bg-emerald-50/50 dark:bg-emerald-900/10 tabular-nums">
-                                                    {rowTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                                <td className="py-3 px-4 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 tabular-nums bg-emerald-500/5 dark:bg-emerald-500/10 mb-1">
+                                                    <span className="text-[10px] text-emerald-400/50 mr-1">₱</span>{rowTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                                 </td>
-                                                <td className="py-2 px-3 text-center">
-                                                    <td className="py-2 px-3 text-center">
-                                                        {!isApproved && (
-                                                            <div className="flex items-center justify-center gap-1">
-                                                                <button
-                                                                    onClick={(e) => { e.stopPropagation(); setEditItem(item); }}
-                                                                    className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-cyan-50 text-cyan-400 hover:text-cyan-500 rounded-md transition-all duration-200"
-                                                                >
-                                                                    <Pencil size={14} />
-                                                                </button>
-                                                                <button
-                                                                    onClick={(e) => { e.stopPropagation(); setDeleteTarget(item); }}
-                                                                    className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-red-50 text-red-400 hover:text-red-500 rounded-md transition-all duration-200"
-                                                                >
-                                                                    <Trash2 size={14} />
-                                                                </button>
-                                                            </div>
-                                                        )}
-                                                    </td>
+                                                <td className="py-3 px-4 text-center" onClick={e => e.stopPropagation()}>
+                                                    {!isApproved && (
+                                                        <div className="flex items-center justify-center gap-1 transition-all duration-200">
+                                                            <button
+                                                                onClick={() => setEditItem(item)}
+                                                                className="p-1.5 text-slate-400 hover:text-cyan-500 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded-lg transition-colors"
+                                                            >
+                                                                <Pencil size={14} />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => setDeleteTarget(item)}
+                                                                className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </td>
                                             </tr>
-                                            {isExpanded && hasComponents && (
-                                                <tr className="bg-slate-50/50 dark:bg-slate-900/20 border-b border-slate-100 dark:border-slate-700/50">
+                                            {isExpanded && (
+                                                <tr className="bg-slate-50/50 dark:bg-black/20">
                                                     <td colSpan={10} className="p-0">
-                                                        <div className="pl-14 pr-4 py-3 space-y-2">
-                                                            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden shadow-sm">
-                                                                <div className="bg-slate-100/50 dark:bg-slate-900/50 px-4 py-2 flex items-center justify-between border-b border-slate-200 dark:border-slate-700">
-                                                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                                                                        <Calculator size={12} /> Detailed Cost Breakdown
-                                                                    </p>
-                                                                    <div className="flex items-center gap-3">
-                                                                        <span className="text-[10px] text-slate-400">Unit: {item.unit}</span>
-                                                                        {!isApproved && (
-                                                                            <button
-                                                                                onClick={() => setResourceModal({ open: true, mode: 'add', parentItem: item, data: { resource_type: 'MATERIAL', quantity_factor: 1, client_unit_rate: 0, altapil_unit_rate: 0, no_of_persons: 1, hours: 0 } })}
-                                                                                className="text-[10px] flex items-center gap-1 font-bold text-cyan-600 hover:text-cyan-500 bg-cyan-500/10 hover:bg-cyan-500/20 px-2 py-1 rounded transition-colors"
-                                                                            >
-                                                                                <Plus size={12} /> Add Resource
-                                                                            </button>
-                                                                        )}
+                                                        <div className="pl-12 pr-4 py-4 relative">
+                                                            <div className="absolute left-6 top-0 bottom-0 w-px bg-slate-200 dark:bg-slate-700 border-l border-dashed"></div>
+                                                            <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-xl border border-slate-200/60 dark:border-slate-700/60 overflow-hidden shadow-sm">
+
+                                                                {/* Nested List Header */}
+                                                                <div className="bg-slate-50/80 dark:bg-slate-900/50 px-4 py-2 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Layers size={14} className="text-slate-400" />
+                                                                        <h3 className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Resource Breakdown</h3>
                                                                     </div>
+                                                                    {!isApproved && (
+                                                                        <button
+                                                                            onClick={() => setResourceModal({ open: true, mode: 'add', parentItem: item, data: { resource_type: 'MATERIAL', quantity_factor: 1, client_unit_rate: 0, altapil_unit_rate: 0, no_of_persons: 1, hours: 0 } })}
+                                                                            className="text-[10px] font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-cyan-500 text-slate-600 hover:text-cyan-600 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all shadow-sm"
+                                                                        >
+                                                                            <Plus size={12} /> Add Resource
+                                                                        </button>
+                                                                    )}
                                                                 </div>
-                                                                <table className="w-full text-xs">
-                                                                    <thead className="bg-slate-50 dark:bg-slate-900 text-slate-400 uppercase text-[9px] font-medium">
-                                                                        <tr>
-                                                                            <th className="p-2 pl-4 text-left w-20">Type</th>
-                                                                            <th className="p-2 text-left">Resource Name</th>
-                                                                            <th className="p-2 text-center w-24">Factor</th>
-                                                                            <th className="p-2 text-right w-24 text-slate-500">Client Rate</th>
-                                                                            <th className="p-2 text-right w-28 text-slate-700 dark:text-slate-200">Client Total</th>
-                                                                            <th className="p-2 text-right w-24 text-orange-500">Altapil Rate</th>
-                                                                            <th className="p-2 text-right w-28 text-orange-600">Altapil Total</th>
-                                                                            <th className="p-2 text-right w-24 text-emerald-600">Profit</th>
-                                                                            <th className="p-2 w-16"></th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+
+                                                                {/* Nested List Content */}
+                                                                {item.components && item.components.length > 0 ? (
+                                                                    <div className="w-full text-xs">
+                                                                        <div className="grid grid-cols-[80px_1fr_80px_100px_120px_100px_120px_100px_60px] gap-2 px-4 py-2 border-b border-slate-100 dark:border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                                                                            <div>Type</div>
+                                                                            <div>Resource Name</div>
+                                                                            <div className="text-center">Factor</div>
+                                                                            <div className="text-right">Rate</div>
+                                                                            <div className="text-right">Total</div>
+                                                                            <div className="text-right text-orange-500">Alt. Rate</div>
+                                                                            <div className="text-right text-orange-600">Alt. Total</div>
+                                                                            <div className="text-right text-emerald-600">Profit</div>
+                                                                            <div className="text-center">Action</div>
+                                                                        </div>
                                                                         {item.components.map(comp => (
-                                                                            <tr key={comp.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group/row">
-                                                                                <td className="p-2 pl-4">
-                                                                                    <span className={`inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider w-16 ${comp.resource_type === 'MATERIAL' ? 'bg-cyan-100 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-400' :
-                                                                                        comp.resource_type === 'LABOR' ? 'bg-purple-100 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400' :
-                                                                                            'bg-orange-100 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400'
-                                                                                        }`}>
-                                                                                        {comp.resource_type.substring(0, 3)}
-                                                                                    </span>
-                                                                                </td>
-                                                                                <td className="p-2 text-slate-700 dark:text-slate-300 font-medium">
-                                                                                    <div className="flex flex-col">
-                                                                                        <span>{comp.name}</span>
-                                                                                        {comp.resource_type !== 'MATERIAL' && (
-                                                                                            <span className="text-[8px] text-slate-400">{comp.no_of_persons}p × {comp.hours}h</span>
-                                                                                        )}
-                                                                                    </div>
-                                                                                </td>
-                                                                                <td className="p-2 text-center font-mono text-slate-500 tabular-nums text-[10px]">{Number(comp.quantity_factor).toFixed(4)}</td>
+                                                                            <div key={comp.id} className="grid grid-cols-[80px_1fr_80px_100px_120px_100px_120px_100px_60px] gap-2 px-4 py-2.5 items-center hover:bg-slate-50 dark:hover:bg-slate-700/20 group/row border-b last:border-0 border-slate-50 dark:border-slate-800/50 transition-colors">
+                                                                                <div>
+                                                                                    {comp.resource_type === 'MATERIAL' && <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold bg-cyan-100 text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-400"><Box size={10} /> MAT</span>}
+                                                                                    {comp.resource_type === 'LABOR' && <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400"><Hammer size={10} /> LAB</span>}
+                                                                                    {comp.resource_type === 'EQUIPMENT' && <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400"><Truck size={10} /> EQP</span>}
+                                                                                </div>
+                                                                                <div className="font-medium text-slate-700 dark:text-slate-300">
+                                                                                    {comp.name}
+                                                                                    {comp.resource_type !== 'MATERIAL' && <div className="text-[9px] text-slate-400 mt-0.5 font-mono">{comp.no_of_persons}p × {comp.hours}h</div>}
+                                                                                </div>
+                                                                                <div className="text-center font-mono text-slate-500">{Number(comp.quantity_factor).toFixed(4)}</div>
 
-                                                                                {/* Client Side */}
-                                                                                <td className="p-2 text-right font-mono text-slate-500 tabular-nums">₱ {Number(comp.client_unit_rate || comp.unit_rate || 0).toLocaleString()}</td>
-                                                                                <td className="p-2 text-right font-mono font-bold text-slate-900 dark:text-white tabular-nums bg-slate-50/50 dark:bg-slate-900/20">
-                                                                                    ₱ {Number(comp.client_total_cost || comp.total_component_cost || 0).toLocaleString()}
-                                                                                </td>
+                                                                                <div className="text-right font-mono text-slate-500">₱ {Number(comp.client_unit_rate || comp.unit_rate || 0).toLocaleString()}</div>
+                                                                                <div className="text-right font-mono font-bold text-slate-800 dark:text-slate-200 bg-slate-100/50 dark:bg-slate-800/50 rounded px-1">₱ {Number(comp.client_total_cost || comp.total_component_cost || 0).toLocaleString()}</div>
 
-                                                                                {/* Altapil Side */}
-                                                                                <td className="p-2 text-right font-mono text-orange-500 tabular-nums">₱ {Number(comp.altapil_unit_rate || 0).toLocaleString()}</td>
-                                                                                <td className="p-2 text-right font-mono font-medium text-orange-600 dark:text-orange-400 tabular-nums bg-orange-50/30 dark:bg-orange-900/10">
-                                                                                    ₱ {Number(comp.altapil_total_cost || 0).toLocaleString()}
-                                                                                </td>
+                                                                                <div className="text-right font-mono text-orange-500/80">₱ {Number(comp.altapil_unit_rate || 0).toLocaleString()}</div>
+                                                                                <div className="text-right font-mono font-bold text-orange-600 dark:text-orange-400 bg-orange-50/50 dark:bg-orange-900/10 rounded px-1">₱ {Number(comp.altapil_total_cost || 0).toLocaleString()}</div>
 
-                                                                                {/* Profit */}
-                                                                                <td className="p-2 text-right font-mono font-bold text-emerald-600 tabular-nums bg-emerald-50/30 dark:bg-emerald-900/10">
-                                                                                    ₱ {(Number(comp.client_total_cost || comp.total_component_cost || 0) - Number(comp.altapil_total_cost || 0)).toLocaleString()}
-                                                                                </td>
+                                                                                <div className="text-right font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-900/10 rounded px-1">₱ {(Number(comp.client_total_cost || comp.total_component_cost || 0) - Number(comp.altapil_total_cost || 0)).toLocaleString()}</div>
 
-                                                                                <td className="p-2 text-center">
+                                                                                <div className="flex justify-center transition-opacity">
                                                                                     {!isApproved && (
-                                                                                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover/row:opacity-100 transition-opacity">
+                                                                                        <>
                                                                                             <button
                                                                                                 onClick={() => setResourceModal({ open: true, mode: 'edit', parentItem: item, data: comp })}
-                                                                                                className="p-1 text-slate-400 hover:text-cyan-500 hover:bg-cyan-50 rounded"
+                                                                                                className="p-1 text-slate-400 hover:text-cyan-500"
                                                                                             >
                                                                                                 <Pencil size={12} />
                                                                                             </button>
                                                                                             <button
                                                                                                 onClick={() => handleDeleteResource(comp)}
-                                                                                                className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded"
+                                                                                                className="p-1 text-slate-400 hover:text-red-500"
                                                                                             >
                                                                                                 <Trash2 size={12} />
                                                                                             </button>
-                                                                                        </div>
+                                                                                        </>
                                                                                     )}
-                                                                                </td>
-                                                                            </tr>
+                                                                                </div>
+                                                                            </div>
                                                                         ))}
-                                                                    </tbody>
-                                                                </table>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="p-8 text-center text-slate-400 text-xs italic">
+                                                                        No resources added yet.
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </td>
@@ -604,14 +615,14 @@ export default function ProjectBoq() {
                                     );
                                 })}
                             </tbody>
-                            <tfoot className="border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs font-bold sticky bottom-0 z-10 shadow-[0_-4px_10px_rgba(0,0,0,0.03)] backdrop-blur-sm">
-                                <tr>
-                                    <td colSpan={4} className="p-3 text-right text-slate-500 uppercase tracking-widest">Grand Totals</td>
-                                    <td className="p-3 text-right text-slate-400 opacity-30 font-mono">---</td>
-                                    <td className="p-3 text-right font-mono text-cyan-700 bg-cyan-50/50 dark:bg-cyan-900/10">{totalMaterialCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                    <td className="p-3 text-right text-slate-400 opacity-30 font-mono">---</td>
-                                    <td className="p-3 text-right font-mono text-purple-700 bg-purple-50/50 dark:bg-purple-900/10">{totalLaborCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                    <td className="p-3 text-right font-mono text-emerald-700 bg-emerald-50/50 dark:bg-emerald-900/10">{totalConstructionCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                            <tfoot className="bg-slate-50 dark:bg-slate-900/90 border-t border-slate-200 dark:border-slate-700 sticky bottom-0 z-10 shadow-inner backdrop-blur-sm">
+                                <tr className="text-xs font-bold text-slate-900 dark:text-white">
+                                    <td colSpan={4} className="p-4 text-right text-slate-500 uppercase tracking-widest">Grand Totals</td>
+                                    <td className="p-4 text-right text-slate-300 font-mono">---</td>
+                                    <td className="p-4 text-right font-mono text-cyan-700 dark:text-cyan-400 bg-cyan-50/30 dark:bg-cyan-900/20">{totalMaterialCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                    <td className="p-4 text-right text-slate-300 font-mono">---</td>
+                                    <td className="p-4 text-right font-mono text-purple-700 dark:text-purple-400 bg-purple-50/30 dark:bg-purple-900/20">{totalLaborCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                    <td className="p-4 text-right font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-50/30 dark:bg-emerald-900/20">{totalConstructionCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                                     <td></td>
                                 </tr>
                             </tfoot>
@@ -627,151 +638,177 @@ export default function ProjectBoq() {
                     units={units || []}
                 />
 
+                {/* Delete Confirmation Modal */}
                 <Modal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Confirm Delete">
                     <div className="space-y-6">
-                        <div className="flex items-start gap-4 p-4 bg-red-500/5 border border-red-500/20 rounded-xl">
-                            <div className="p-2 bg-red-500/10 rounded-lg text-red-500 shrink-0"><AlertTriangle size={24} /></div>
+                        <div className="flex items-start gap-4 p-4 bg-red-500/5 border border-red-500/10 rounded-xl">
+                            <div className="p-3 bg-white dark:bg-slate-800 rounded-full text-red-500 shadow-sm shrink-0"><AlertTriangle size={24} /></div>
                             <div className="space-y-1">
-                                <p className="text-sm font-medium text-slate-900 dark:text-white">Are you sure you want to delete <span className="font-bold">"{deleteTarget?.item_description}"</span>?</p>
-                                <p className="text-xs text-slate-500 leading-relaxed">This action is permanent and cannot be undone.</p>
+                                <h4 className="text-sm font-bold text-slate-900 dark:text-white">Delete Item?</h4>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">
+                                    Are you sure you want to delete <span className="font-bold text-slate-700 dark:text-slate-300">"{deleteTarget?.item_description}"</span>?
+                                    <br />This action cannot be undone.
+                                </p>
                             </div>
                         </div>
                         <div className="flex justify-end gap-3">
-                            <button onClick={() => setDeleteTarget(null)} className="px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-all">Cancel</button>
-                            <button onClick={handleDelete} className="px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white bg-red-600 hover:bg-red-500 shadow-lg shadow-red-600/20 rounded-xl transition-all flex items-center gap-2"><Trash2 size={14} /> Delete Item</button>
+                            <button onClick={() => setDeleteTarget(null)} className="px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">Cancel</button>
+                            <button onClick={handleDelete} className="px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white bg-red-500 hover:bg-red-600 rounded-xl shadow-lg shadow-red-500/20 transition-colors flex items-center gap-2"><Trash2 size={14} /> Delete Item</button>
                         </div>
                     </div>
                 </Modal>
 
                 {/* Edit Item Modal */}
                 <Modal isOpen={!!editItem} onClose={() => setEditItem(null)} title="Edit BOQ Item">
-                    <form onSubmit={handleUpdateItem} className="space-y-4">
+                    <form onSubmit={handleUpdateItem} className="space-y-5">
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Description</label>
+                            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Description</label>
                             <input
                                 type="text"
                                 required
                                 value={editItem?.item_description || ''}
                                 onChange={e => setEditItem({ ...editItem, item_description: e.target.value })}
-                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500"
+                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all shadow-sm"
                             />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Unit</label>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Unit</label>
                                 <input
                                     type="text"
                                     required
                                     value={editItem?.unit || ''}
                                     onChange={e => setEditItem({ ...editItem, unit: e.target.value })}
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500"
+                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all shadow-sm"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Quantity</label>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Quantity</label>
                                 <input
                                     type="number"
                                     step="0.0001"
                                     required
                                     value={editItem?.quantity || ''}
                                     onChange={e => setEditItem({ ...editItem, quantity: e.target.value })}
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500"
+                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all shadow-sm"
                                 />
                             </div>
                         </div>
                         {editItem?.components && editItem.components.length === 0 && (
                             <div className="grid grid-cols-2 gap-4 border-t border-slate-100 dark:border-slate-700/50 pt-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Mat. Unit Price</label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        value={editItem?.material_unit_price || ''}
-                                        onChange={e => setEditItem({ ...editItem, material_unit_price: e.target.value })}
-                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500"
-                                    />
+                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Mat. Unit Price</label>
+                                    <div className="relative">
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₱</span>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={editItem?.material_unit_price || ''}
+                                            onChange={e => setEditItem({ ...editItem, material_unit_price: e.target.value })}
+                                            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-8 pr-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all shadow-sm"
+                                        />
+                                    </div>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Lab. Unit Price</label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        value={editItem?.labor_unit_price || ''}
-                                        onChange={e => setEditItem({ ...editItem, labor_unit_price: e.target.value })}
-                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500"
-                                    />
+                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Lab. Unit Price</label>
+                                    <div className="relative">
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₱</span>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={editItem?.labor_unit_price || ''}
+                                            onChange={e => setEditItem({ ...editItem, labor_unit_price: e.target.value })}
+                                            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-8 pr-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all shadow-sm"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         )}
-                        <div className="flex items-center gap-2 pt-2">
+                        <div className="flex items-center gap-3 pt-2 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700/50">
                             <input
                                 type="checkbox"
                                 id="isCarport"
                                 checked={editItem?.is_carport || false}
                                 onChange={e => setEditItem({ ...editItem, is_carport: e.target.checked })}
-                                className="rounded border-slate-300 dark:border-slate-600 text-cyan-600 focus:ring-cyan-500 bg-white dark:bg-slate-800"
+                                className="w-5 h-5 rounded border-slate-300 dark:border-slate-600 text-cyan-600 focus:ring-cyan-500 bg-white dark:bg-slate-800"
                             />
-                            <label htmlFor="isCarport" className="text-sm font-medium text-slate-700 dark:text-slate-300">Is Carport Area?</label>
+                            <label htmlFor="isCarport" className="text-sm font-bold text-slate-700 dark:text-slate-300 cursor-pointer select-none flex items-center gap-2">
+                                <Car size={16} className="text-amber-500" /> Mark as Carport / Garage Area
+                            </label>
                         </div>
-                        <div className="flex justify-end gap-3 pt-4">
-                            <button type="button" onClick={() => setEditItem(null)} className="px-4 py-2 text-xs font-bold uppercase text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">Cancel</button>
-                            <button type="submit" disabled={loading} className="px-4 py-2 text-xs font-bold uppercase text-white bg-cyan-600 hover:bg-cyan-500 rounded-lg shadow-lg shadow-cyan-600/20">Save Changes</button>
+                        <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-700/50">
+                            <button type="button" onClick={() => setEditItem(null)} className="px-5 py-2.5 text-xs font-bold uppercase text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">Cancel</button>
+                            <button type="submit" disabled={loading} className="px-5 py-2.5 text-xs font-bold uppercase text-white bg-cyan-600 hover:bg-cyan-500 rounded-xl shadow-lg shadow-cyan-600/20 transition-all transform active:scale-95">Save Changes</button>
                         </div>
                     </form>
                 </Modal>
 
                 {/* Resource Modal */}
                 <Modal isOpen={resourceModal.open} onClose={() => setResourceModal({ ...resourceModal, open: false })} title={`${resourceModal.mode === 'add' ? 'Add' : 'Edit'} Resource`}>
-                    <form onSubmit={handleResourceSubmit} className="space-y-4">
-                        <div>
-                            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Resource Type</label>
-                            <select
-                                value={resourceModal.data?.resource_type || 'MATERIAL'}
-                                onChange={e => setResourceModal({ ...resourceModal, data: { ...resourceModal.data, resource_type: e.target.value } })}
-                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500"
-                            >
-                                <option value="MATERIAL">MATERIAL</option>
-                                <option value="LABOR">LABOR</option>
-                                <option value="EQUIPMENT">EQUIPMENT</option>
-                            </select>
+                    <form onSubmit={handleResourceSubmit} className="space-y-5">
+
+                        {/* Resource Type Selector */}
+                        <div className="grid grid-cols-3 gap-3">
+                            {['MATERIAL', 'LABOR', 'EQUIPMENT'].map(type => (
+                                <button
+                                    key={type}
+                                    type="button"
+                                    onClick={() => setResourceModal({ ...resourceModal, data: { ...resourceModal.data, resource_type: type } })}
+                                    className={`py-3 px-2 rounded-xl text-[10px] font-bold uppercase tracking-wider border transition-all ${resourceModal.data?.resource_type === type
+                                        ? type === 'MATERIAL' ? 'bg-cyan-500 text-white border-cyan-500 shadow-lg shadow-cyan-500/20' :
+                                            type === 'LABOR' ? 'bg-purple-500 text-white border-purple-500 shadow-lg shadow-purple-500/20' :
+                                                'bg-orange-500 text-white border-orange-500 shadow-lg shadow-orange-500/20'
+                                        : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                        }`}
+                                >
+                                    {type}
+                                </button>
+                            ))}
                         </div>
+
                         <div>
-                            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Name / Description</label>
+                            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Name / Description</label>
                             <input
                                 type="text"
                                 required
+                                placeholder="e.g. Portland Cement"
                                 value={resourceModal.data?.name || ''}
                                 onChange={e => setResourceModal({ ...resourceModal, data: { ...resourceModal.data, name: e.target.value } })}
-                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500"
+                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all"
                             />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Client Unit Rate</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    required
-                                    value={resourceModal.data?.client_unit_rate !== undefined ? resourceModal.data.client_unit_rate : (resourceModal.data?.unit_rate || '')}
-                                    onChange={e => setResourceModal({ ...resourceModal, data: { ...resourceModal.data, client_unit_rate: e.target.value } })}
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500"
-                                />
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Client Unit Rate</label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₱</span>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        required
+                                        value={resourceModal.data?.client_unit_rate !== undefined ? resourceModal.data.client_unit_rate : (resourceModal.data?.unit_rate || '')}
+                                        onChange={e => setResourceModal({ ...resourceModal, data: { ...resourceModal.data, client_unit_rate: e.target.value } })}
+                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-8 pr-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all font-mono"
+                                    />
+                                </div>
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-orange-500 dark:text-orange-400 uppercase mb-1">Altapil Unit Rate</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-
-                                    value={resourceModal.data?.altapil_unit_rate || ''}
-                                    onChange={e => setResourceModal({ ...resourceModal, data: { ...resourceModal.data, altapil_unit_rate: e.target.value } })}
-                                    className="w-full bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-900/30 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-orange-500"
-                                />
+                                <label className="block text-xs font-bold text-orange-500 dark:text-orange-400 uppercase mb-2">Altapil Unit Rate</label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-300">₱</span>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={resourceModal.data?.altapil_unit_rate || ''}
+                                        onChange={e => setResourceModal({ ...resourceModal, data: { ...resourceModal.data, altapil_unit_rate: e.target.value } })}
+                                        className="w-full bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-900/30 rounded-xl pl-8 pr-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-orange-500 transition-all font-mono"
+                                    />
+                                </div>
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">
                                     {resourceModal.data?.resource_type === 'MATERIAL' ? 'Quantity Factor' : 'No. of Persons'}
                                 </label>
                                 <input
@@ -787,28 +824,27 @@ export default function ProjectBoq() {
                                             setResourceModal({ ...resourceModal, data: { ...resourceModal.data, no_of_persons: val } });
                                         }
                                     }}
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500"
+                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all font-mono"
                                 />
                             </div>
+                            {resourceModal.data?.resource_type !== 'MATERIAL' && (
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Hours</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        required
+                                        value={resourceModal.data?.hours || ''}
+                                        onChange={e => setResourceModal({ ...resourceModal, data: { ...resourceModal.data, hours: e.target.value } })}
+                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all font-mono"
+                                    />
+                                </div>
+                            )}
                         </div>
 
-                        {resourceModal.data?.resource_type !== 'MATERIAL' && (
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Hours</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    required
-                                    value={resourceModal.data?.hours || ''}
-                                    onChange={e => setResourceModal({ ...resourceModal, data: { ...resourceModal.data, hours: e.target.value } })}
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500"
-                                />
-                            </div>
-                        )}
-
-                        <div className="flex justify-end gap-3 pt-4">
-                            <button type="button" onClick={() => setResourceModal({ ...resourceModal, open: false })} className="px-4 py-2 text-xs font-bold uppercase text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">Cancel</button>
-                            <button type="submit" disabled={loading} className="px-4 py-2 text-xs font-bold uppercase text-white bg-cyan-600 hover:bg-cyan-500 rounded-lg shadow-lg shadow-cyan-600/20">Save</button>
+                        <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-700/50">
+                            <button type="button" onClick={() => setResourceModal({ ...resourceModal, open: false })} className="px-5 py-2.5 text-xs font-bold uppercase text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">Cancel</button>
+                            <button type="submit" disabled={loading} className="px-5 py-2.5 text-xs font-bold uppercase text-white bg-cyan-600 hover:bg-cyan-500 rounded-xl shadow-lg shadow-cyan-600/20 transition-all transform active:scale-95">Save Resource</button>
                         </div>
                     </form>
                 </Modal>

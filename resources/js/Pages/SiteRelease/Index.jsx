@@ -1,61 +1,218 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, usePage } from '@inertiajs/react';
-import { Package, Search, MapPin, ArrowRightCircle } from 'lucide-react';
+import { Head, router, usePage } from '@inertiajs/react';
+import Modal from '@/Components/UI/Modal';
+import { Package, Search, MapPin, ArrowRightCircle, Clock, User, AlertTriangle } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function SiteReleaseIndex() {
-    const { inventory } = usePage().props;
+    const { inventory, releases, flash } = usePage().props;
     const items = inventory || [];
+    const releaseHistory = releases || [];
+
     const [search, setSearch] = useState('');
+    const [releaseModal, setReleaseModal] = useState({ open: false, item: null });
+    const [qty, setQty] = useState('');
+    const [issuedTo, setIssuedTo] = useState('');
+    const [purpose, setPurpose] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (flash?.success) toast.success(flash.success);
+        if (flash?.error) toast.error(flash.error);
+    }, [flash]);
 
     const filtered = items.filter(i => i.material_name?.toLowerCase().includes(search.toLowerCase()));
+
+    const openRelease = (item) => {
+        setReleaseModal({ open: true, item });
+        setQty('');
+        setIssuedTo('');
+        setPurpose('');
+    };
+
+    const handleRelease = () => {
+        if (!qty || Number(qty) <= 0 || !issuedTo.trim()) return;
+        setSubmitting(true);
+        router.post('/site-release', {
+            inventory_item_id: releaseModal.item.id,
+            quantity_released: Number(qty),
+            issued_to: issuedTo,
+            purpose,
+        }, {
+            onSuccess: () => setReleaseModal({ open: false, item: null }),
+            onFinish: () => setSubmitting(false),
+            preserveScroll: true,
+        });
+    };
+
+    const isExceeded = releaseModal.item && Number(qty) > Number(releaseModal.item.quantity);
 
     return (
         <AuthenticatedLayout>
             <Head title="Site Release / Issuance" />
-            <div className="p-6 max-w-7xl mx-auto space-y-6">
-                <header className="pb-6 border-b border-slate-200 dark:border-slate-700">
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Site Release / Issuance</h1>
-                    <p className="text-slate-500">Manage material issuance from site inventory.</p>
+
+            <div className="p-6 max-w-[1920px] mx-auto space-y-6">
+                {/* Header */}
+                <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl p-5 rounded-3xl border border-white/20 shadow-lg shadow-black/5">
+                    <div>
+                        <div className="flex items-center gap-2 mb-1">
+                            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                                <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl text-white shadow-lg shadow-emerald-500/30">
+                                    <ArrowRightCircle size={20} />
+                                </div>
+                                <span className="opacity-90">Site Release / Issuance</span>
+                            </h1>
+                        </div>
+                        <p className="text-sm text-slate-500 font-medium ml-1">Issue materials from site inventory to workers</p>
+                    </div>
+
+                    {/* Search */}
+                    <div className="relative group w-64">
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" size={16} />
+                        <input type="text" placeholder="Search materials..." className="w-full bg-slate-100/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-slate-900 dark:text-white text-sm focus:border-emerald-500/50 focus:ring-0 outline-none transition-all placeholder:text-slate-400" value={search} onChange={e => setSearch(e.target.value)} />
+                    </div>
                 </header>
 
-                <div className="flex gap-4">
-                    <div className="relative flex-1 max-w-md">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                        <input type="text" placeholder="Search site materials..." className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-blue-500" value={search} onChange={e => setSearch(e.target.value)} />
+                {/* Inventory Table */}
+                <div className="bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl border border-white/20 dark:border-slate-700/30 rounded-3xl overflow-hidden shadow-2xl shadow-black/5">
+                    <div className="overflow-auto custom-scrollbar">
+                        <table className="w-full text-left border-collapse">
+                            <thead className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10 shadow-sm">
+                                <tr className="border-b border-slate-200/60 dark:border-slate-700/60 text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">
+                                    <th className="p-4 w-12 text-center">#</th>
+                                    <th className="p-4 min-w-[250px]">Material Name</th>
+                                    <th className="p-4 min-w-[180px]">Project Site</th>
+                                    <th className="p-4 text-right w-32">Available Qty</th>
+                                    <th className="p-4 w-20 text-center">Unit</th>
+                                    <th className="p-4 w-32 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-sm text-slate-700 dark:text-slate-200">
+                                {filtered.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={6} className="p-16 text-center">
+                                            <Package className="mx-auto mb-4 text-slate-300 dark:text-slate-600" size={48} />
+                                            <p className="text-slate-400 uppercase tracking-widest font-bold text-xs">No site inventory found</p>
+                                        </td>
+                                    </tr>
+                                ) : filtered.map((item, idx) => (
+                                    <tr key={item.id} className="group hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all duration-200">
+                                        <td className="py-3 px-4 text-center text-slate-400 font-mono text-xs border-l-4 border-transparent group-hover:border-emerald-500/50 transition-all">{idx + 1}</td>
+                                        <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white group-hover:text-emerald-600 transition-colors">{item.material_name}</td>
+                                        <td className="py-3 px-4">
+                                            <div className="flex items-center gap-2 text-slate-500">
+                                                <MapPin size={14} className="text-slate-400" />
+                                                {item.project?.name || 'N/A'}
+                                            </div>
+                                        </td>
+                                        <td className="py-3 px-4 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                                            {Number(item.quantity).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                        </td>
+                                        <td className="py-3 px-4 text-center text-slate-500 text-xs font-medium uppercase">{item.unit}</td>
+                                        <td className="py-3 px-4 text-center">
+                                            <button onClick={() => openRelease(item)} className="px-3 py-1.5 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 rounded-lg transition-colors text-xs font-bold flex items-center gap-1.5 mx-auto active:scale-95">
+                                                <ArrowRightCircle size={14} /> Release
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80">
-                                <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-widest pl-6">Material Name</th>
-                                <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Project Site</th>
-                                <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">Available Qty</th>
-                                <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Unit</th>
-                                <th className="p-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right pr-6">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
-                            {filtered.length === 0 ? (
-                                <tr><td colSpan={5} className="p-8 text-center text-slate-500"><Package className="mx-auto mb-3 opacity-30" size={36} />No site inventory found.</td></tr>
-                            ) : filtered.map(item => (
-                                <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                                    <td className="p-4 pl-6 font-medium text-slate-900 dark:text-white">{item.material_name}</td>
-                                    <td className="p-4"><div className="flex items-center gap-2 text-slate-500"><MapPin size={14} />{item.project?.name}</div></td>
-                                    <td className="p-4 text-right font-mono text-blue-600 dark:text-cyan-400 font-medium">{Number(item.quantity).toLocaleString()}</td>
-                                    <td className="p-4 text-slate-500 text-sm">{item.unit}</td>
-                                    <td className="p-4 text-right pr-6">
-                                        <button className="flex items-center gap-2 px-3 py-1.5 ml-auto bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 rounded-lg transition-colors text-sm font-medium">
-                                            <ArrowRightCircle size={14} /> Release
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                {/* Recent Releases */}
+                {releaseHistory.length > 0 && (
+                    <div className="bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl border border-white/20 dark:border-slate-700/30 rounded-3xl overflow-hidden shadow-lg">
+                        <div className="bg-white/80 dark:bg-slate-900/80 px-5 py-3 border-b border-slate-200/60 dark:border-slate-700/60">
+                            <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                                <Clock size={14} className="text-slate-400" /> Recent Releases
+                            </h2>
+                        </div>
+                        <div className="overflow-auto custom-scrollbar">
+                            <table className="w-full text-left border-collapse text-xs">
+                                <thead className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
+                                    <tr className="border-b border-slate-100 dark:border-slate-800">
+                                        <th className="p-3 pl-5">Material</th>
+                                        <th className="p-3">Issued To</th>
+                                        <th className="p-3 text-center">Qty</th>
+                                        <th className="p-3">Purpose</th>
+                                        <th className="p-3">Released By</th>
+                                        <th className="p-3">Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50 text-slate-600 dark:text-slate-300">
+                                    {releaseHistory.map(r => (
+                                        <tr key={r.id} className="hover:bg-white/60 dark:hover:bg-slate-700/20 transition-colors">
+                                            <td className="p-3 pl-5 font-medium text-slate-900 dark:text-white">{r.inventory_item?.material_name}</td>
+                                            <td className="p-3">
+                                                <div className="flex items-center gap-1.5">
+                                                    <User size={12} className="text-slate-400" />
+                                                    {r.issued_to}
+                                                </div>
+                                            </td>
+                                            <td className="p-3 text-center font-mono font-bold text-red-500">-{Number(r.quantity_released).toLocaleString()}</td>
+                                            <td className="p-3 text-slate-400 italic">{r.purpose || '—'}</td>
+                                            <td className="p-3 text-slate-500">{r.released_by?.name}</td>
+                                            <td className="p-3 text-slate-400">{new Date(r.release_date).toLocaleDateString()}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {/* Release Modal */}
+                <Modal isOpen={releaseModal.open} onClose={() => setReleaseModal({ open: false, item: null })} title="Release Material">
+                    {releaseModal.item && (
+                        <div className="space-y-5">
+                            {/* Material Info */}
+                            <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-4">
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <h4 className="text-sm font-bold text-slate-900 dark:text-white">{releaseModal.item.material_name}</h4>
+                                        <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1"><MapPin size={12} /> {releaseModal.item.project?.name}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-lg font-mono font-bold text-emerald-600">{Number(releaseModal.item.quantity).toLocaleString()}</div>
+                                        <div className="text-[10px] text-slate-400 uppercase font-bold">{releaseModal.item.unit} available</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Issued To */}
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Issued To *</label>
+                                <input type="text" value={issuedTo} onChange={e => setIssuedTo(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 transition-all" placeholder="e.g. Juan Dela Cruz (Foreman)" />
+                            </div>
+
+                            {/* Quantity */}
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Quantity to Release *</label>
+                                <input type="number" step="0.01" value={qty} onChange={e => setQty(e.target.value)} className={`w-full bg-slate-50 dark:bg-slate-900 border rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none transition-all font-mono ${isExceeded ? 'border-red-500 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-emerald-500'}`} placeholder="0.00" />
+                                {isExceeded && (
+                                    <p className="text-red-500 text-[10px] font-bold flex items-center gap-1 mt-1"><AlertTriangle size={12} /> Exceeds available stock ({Number(releaseModal.item.quantity).toLocaleString()} {releaseModal.item.unit})</p>
+                                )}
+                            </div>
+
+                            {/* Purpose */}
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Purpose</label>
+                                <input type="text" value={purpose} onChange={e => setPurpose(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 transition-all" placeholder="e.g. Foundation pouring" />
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-700/50">
+                                <button onClick={() => setReleaseModal({ open: false, item: null })} className="px-5 py-2.5 text-xs font-bold uppercase text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">Cancel</button>
+                                <button onClick={handleRelease} disabled={submitting || isExceeded || !qty || Number(qty) <= 0 || !issuedTo.trim()} className="px-5 py-2.5 text-xs font-bold uppercase text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 rounded-xl shadow-lg shadow-emerald-600/20 transition-all active:scale-95 flex items-center gap-2">
+                                    <ArrowRightCircle size={14} /> Confirm Release
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </Modal>
             </div>
         </AuthenticatedLayout>
     );
