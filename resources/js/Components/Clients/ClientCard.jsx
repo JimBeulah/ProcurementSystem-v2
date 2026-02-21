@@ -22,22 +22,28 @@ export function ClientCard({ client, onEdit, onDelete }) {
                         <div className="w-10 h-10 rounded-[14px] bg-blue-500/10 dark:bg-blue-400/10 flex items-center justify-center group-hover:bg-blue-500/15 transition-colors">
                             <Building2 size={18} className="text-blue-600 dark:text-blue-400" />
                         </div>
-                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            <button
-                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit?.(client); }}
-                                className="p-2 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] text-black/40 dark:text-white/40 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition-all duration-150 cursor-pointer"
-                                title="Edit"
-                            >
-                                <Edit2 size={14} />
-                            </button>
-                            <button
-                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete?.(client.id); }}
-                                className="p-2 hover:bg-red-500/10 text-black/40 dark:text-white/40 hover:text-red-500 rounded-lg transition-all duration-150 cursor-pointer"
-                                title="Delete"
-                            >
-                                <Trash2 size={14} />
-                            </button>
-                        </div>
+                        {(onEdit || onDelete) && (
+                            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                {onEdit && (
+                                    <button
+                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit(client); }}
+                                        className="p-2 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] text-black/40 dark:text-white/40 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition-all duration-150 cursor-pointer"
+                                        title="Edit"
+                                    >
+                                        <Edit2 size={14} />
+                                    </button>
+                                )}
+                                {onDelete && (
+                                    <button
+                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(client.id); }}
+                                        className="p-2 hover:bg-red-500/10 text-black/40 dark:text-white/40 hover:text-red-500 rounded-lg transition-all duration-150 cursor-pointer"
+                                        title="Delete"
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Title & Contact */}

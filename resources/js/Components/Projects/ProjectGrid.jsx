@@ -10,10 +10,12 @@ export default function ProjectGrid({ projects, onEdit, onDelete }) {
                     <Link href={`/projects/${project.id}`} className="absolute inset-0 z-10" />
                     <div className="flex justify-between items-start mb-4">
                         <div className={`p-2 rounded-lg ${project.project_type === 'BUILDING' ? 'bg-cyan-500/10 text-cyan-600' : 'bg-orange-500/10 text-orange-600'}`}><Briefcase size={20} /></div>
-                        <div className="flex items-center gap-1 relative z-20">
-                            <button onClick={(e) => onEdit(project, e)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-cyan-600 rounded"><Edit2 size={12} /></button>
-                            <button onClick={(e) => onDelete(project, e)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-red-500 rounded"><Trash2 size={12} /></button>
-                        </div>
+                        {(onEdit || onDelete) && (
+                            <div className="flex items-center gap-1 relative z-20">
+                                {onEdit && <button onClick={(e) => onEdit(project, e)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-cyan-600 rounded"><Edit2 size={12} /></button>}
+                                {onDelete && <button onClick={(e) => onDelete(project, e)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-red-500 rounded"><Trash2 size={12} /></button>}
+                            </div>
+                        )}
                     </div>
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1 group-hover:text-cyan-600 transition-colors uppercase tracking-tight truncate">{project.name}</h3>
                     <p className="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-4">{project.client?.name || 'Internal'}</p>

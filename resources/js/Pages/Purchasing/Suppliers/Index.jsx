@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage, router } from '@inertiajs/react';
+import { usePermissions } from '@/Hooks/usePermissions';
 import { Briefcase, Plus, Star, Search, MapPin, Phone, Mail, X } from 'lucide-react';
 import Modal from '@/Components/UI/Modal';
 import { toast } from 'sonner';
 
 export default function SuppliersIndex() {
     const { suppliers } = usePage().props;
+    const { can } = usePermissions();
     const [search, setSearch] = useState('');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -54,12 +56,14 @@ export default function SuppliersIndex() {
                         </h1>
                         <p className="text-slate-500">Manage vendor contact information and ratings.</p>
                     </div>
-                    <button
-                        onClick={() => setIsAddModalOpen(true)}
-                        className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors shadow-lg shadow-blue-500/20"
-                    >
-                        <Plus size={18} /> Add Supplier
-                    </button>
+                    {can('manage suppliers') && (
+                        <button
+                            onClick={() => setIsAddModalOpen(true)}
+                            className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors shadow-lg shadow-blue-500/20"
+                        >
+                            <Plus size={18} /> Add Supplier
+                        </button>
+                    )}
                 </header>
 
                 {/* Search Bar */}

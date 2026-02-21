@@ -15,7 +15,7 @@ export default function ProjectTable({ projects, onEdit, onDelete }) {
                             <th className="p-3 text-center">Type</th>
                             <th className="p-3 text-right">Budget</th>
                             <th className="p-3 text-center">Status</th>
-                            <th className="p-3 text-center">Actions</th>
+                            {(onEdit || onDelete) && <th className="p-3 text-center">Actions</th>}
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50 text-xs">
@@ -43,12 +43,14 @@ export default function ProjectTable({ projects, onEdit, onDelete }) {
                                 <td className="p-3 text-center">
                                     <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${project.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'}`}>{project.status}</span>
                                 </td>
-                                <td className="p-3 text-center">
-                                    <div className="flex items-center justify-center gap-1">
-                                        <button onClick={(e) => onEdit(project, e)} className="p-1.5 text-slate-400 hover:text-cyan-600 hover:bg-cyan-500/10 rounded transition-colors" title="Edit"><Edit2 size={14} /></button>
-                                        <button onClick={(e) => onDelete(project, e)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Delete"><Trash2 size={14} /></button>
-                                    </div>
-                                </td>
+                                {(onEdit || onDelete) && (
+                                    <td className="p-3 text-center">
+                                        <div className="flex items-center justify-center gap-1">
+                                            {onEdit && <button onClick={(e) => onEdit(project, e)} className="p-1.5 text-slate-400 hover:text-cyan-600 hover:bg-cyan-500/10 rounded transition-colors" title="Edit"><Edit2 size={14} /></button>}
+                                            {onDelete && <button onClick={(e) => onDelete(project, e)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Delete"><Trash2 size={14} /></button>}
+                                        </div>
+                                    </td>
+                                )}
                             </tr>
                         ))}
                         {projects.length === 0 && (

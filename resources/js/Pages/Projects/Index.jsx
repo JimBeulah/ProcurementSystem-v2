@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, usePage } from '@inertiajs/react';
+import { usePermissions } from '@/Hooks/usePermissions';
 import Modal from '@/Components/UI/Modal';
 import Select from '@/Components/UI/Select';
 import ProjectMetrics from '@/Components/Projects/ProjectMetrics';
@@ -11,6 +12,7 @@ import { Plus, Search, LayoutGrid, List as ListIcon, Building2, Layers } from 'l
 export default function ProjectsIndex() {
     const { projects: initialProjects, clients } = usePage().props;
     const projects = initialProjects || [];
+    const { can } = usePermissions();
 
     const [showModal, setShowModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -119,16 +121,18 @@ export default function ProjectsIndex() {
                             <button onClick={() => setViewMode('table')} className={`p-1.5 rounded transition-all ${viewMode === 'table' ? 'bg-white dark:bg-slate-900 shadow-sm text-cyan-600' : 'text-slate-400 hover:text-slate-700 dark:hover:text-white'}`} title="Table View"><ListIcon size={14} /></button>
                             <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-slate-900 shadow-sm text-cyan-600' : 'text-slate-400 hover:text-slate-700 dark:hover:text-white'}`} title="Grid View"><LayoutGrid size={14} /></button>
                         </div>
-                        <button onClick={() => { setEditingProject(null); setFormData(initialFormData); setShowModal(true); }}
-                            className="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-xs font-bold shadow-lg shadow-cyan-500/20 transition-all active:scale-95">
-                            <Plus size={16} /> <span>New Project</span>
-                        </button>
+                        {can('create projects') && (
+                            <button onClick={() => { setEditingProject(null); setFormData(initialFormData); setShowModal(true); }}
+                                className="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-xs font-bold shadow-lg shadow-cyan-500/20 transition-all active:scale-95">
+                                <Plus size={16} /> <span>New Project</span>
+                            </button>
+                        )}
                     </div>
                 </div>
 
                 {viewMode === 'table'
-                    ? <ProjectTable projects={filteredProjects} onEdit={handleEdit} onDelete={handleDeleteClick} />
-                    : <ProjectGrid projects={filteredProjects} onEdit={handleEdit} onDelete={handleDeleteClick} />
+                    ? <ProjectTable projects={filteredProjects} onEdit={can('edit projects') ? handleEdit : null} onDelete={can('delete projects') ? handleDeleteClick : null} />
+                    : <ProjectGrid projects={filteredProjects} onEdit={can('edit projects') ? handleEdit : null} onDelete={can('delete projects') ? handleDeleteClick : null} />
                 }
 
                 {/* Create/Edit Modal */}

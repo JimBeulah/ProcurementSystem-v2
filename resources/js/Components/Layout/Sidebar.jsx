@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, usePage } from '@inertiajs/react';
+import { usePermissions } from '@/Hooks/usePermissions';
 import {
     Building2, ShoppingCart, FileText, CreditCard, Package,
     Users, Hexagon, X, Briefcase, Shield, ArrowDownCircle,
@@ -17,18 +18,69 @@ export const SPRING_TRANSITION = {
     restDelta: 0.001,
 };
 
-export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleCollapse }) {
-    const { url, props } = usePage();
-    const { auth } = props;
+/**
+ * Data-driven navigation config.
+ * Each item declares: label, href, icon, permission (null = always shown), matchPrefix.
+ * anyPermission is used for items that need a one-of-many permission check.
+ * Groups with no visible items are hidden entirely.
+ */
+const NAVIGATION_CONFIG = [
+    {
+        group: 'Procurement',
+        items: [
+            { label: 'Clients', href: '/clients', icon: <Users />, permission: 'view clients', matchPrefix: '/clients' },
+            { label: 'Projects', href: '/projects', icon: <Briefcase />, permission: 'view projects', matchPrefix: '/projects' },
+            { label: 'Purchase Requests', href: '/purchasing/requests', icon: <FileText />, permission: 'view purchase requests', matchPrefix: '/purchasing/requests' },
+            { label: 'RFQ', href: '/purchasing/rfq', icon: <FileText />, permission: 'view rfq', matchPrefix: '/purchasing/rfq' },
+            { label: 'Suppliers', href: '/purchasing/suppliers', icon: <Users />, permission: 'view suppliers', matchPrefix: '/purchasing/suppliers' },
+            { label: 'Orders', href: '/purchasing/orders', icon: <ShoppingCart />, permission: 'view purchase orders', matchPrefix: '/purchasing/orders' },
+            { label: 'Receive Goods', href: '/inventory/receiving', icon: <ArrowDownCircle />, permission: 'view receiving', matchPrefix: '/inventory/receiving' },
+            {
+                label: 'Approvals',
+                href: '/purchasing/approvals',
+                icon: <Shield />,
+                permission: null,
+                matchPrefix: '/purchasing/approvals',
+                anyPermission: ['approve boq', 'approve material requests', 'approve purchase orders', 'manage purchase requests'],
+            },
+        ],
+    },
+    {
+        group: 'Operations',
+        items: [
+            { label: 'Inventory', href: '/inventory', icon: <Package />, permission: 'view inventory', matchPrefix: '/inventory', exactMatch: true },
+            { label: 'Receiving', href: '/receiving', icon: <Building2 />, permission: 'view receiving', matchPrefix: '/receiving', exactMatch: true },
+            { label: 'Site Release', href: '/site-release', icon: <Truck />, permission: 'view site release', matchPrefix: '/site-release' },
+        ],
+    },
+    {
+        group: 'Finance',
+        items: [
+            { label: 'Invoices', href: '/finance/invoices', icon: <FileText />, permission: 'view invoices', matchPrefix: '/finance/invoices' },
+            { label: 'Disbursements', href: '/finance/disbursements', icon: <CreditCard />, permission: 'view disbursements', matchPrefix: '/finance/disbursements' },
+            { label: 'Reports', href: '/finance/reports', icon: <PieChart />, permission: 'view financial reports', matchPrefix: '/finance/reports' },
+        ],
+    },
+];
 
-    const can = (permission) => {
-        return auth?.permissions?.includes(permission) || auth?.roles?.includes('admin'); // Admin superuser check
-    };
+export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleCollapse }) {
+    const { url } = usePage();
+    const { can } = usePermissions();
+    const [activeTooltip, setActiveTooltip] = useState(null);
 
     const handleLinkClick = () => {
-        if (typeof window !== 'undefined' && window.innerWidth < 768) {
-            onClose();
-        }
+        if (typeof window !== 'undefined' && window.innerWidth < 768) onClose();
+    };
+
+    const isItemVisible = (item) => {
+        if (item.anyPermission) return item.anyPermission.some((p) => can(p));
+        if (!item.permission) return true;
+        return can(item.permission);
+    };
+
+    const isItemActive = (item) => {
+        if (item.exactMatch) return url === item.matchPrefix;
+        return url.startsWith(item.matchPrefix);
     };
 
     const sidebarVariants = {
@@ -36,8 +88,6 @@ export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleColl
         collapsed: { width: "4rem", x: 0, transition: SPRING_TRANSITION },
         hidden: { x: "-100%", transition: { ...SPRING_TRANSITION, damping: 30 } },
     };
-
-    const [activeTooltip, setActiveTooltip] = useState(null);
 
     return (
         <>
@@ -112,33 +162,43 @@ export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleColl
                 </div>
 
                 {/* Navigation */}
-                <nav className="flex-1 overflow-y-auto overscroll-contain overflow-x-hidden px-3 py-3 space-y-1 no-scrollbar" onMouseLeave={() => setActiveTooltip(null)}>
-                    <NavItem href="/dashboard" icon={<LayoutDashboard />} label="Dashboard" isActive={url === '/dashboard'} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />
+                <nav
+                    className="flex-1 overflow-y-auto overscroll-contain overflow-x-hidden px-3 py-3 space-y-1 no-scrollbar"
+                    onMouseLeave={() => setActiveTooltip(null)}
+                >
+                    {/* Dashboard - always visible */}
+                    <NavItem
+                        href="/dashboard"
+                        icon={<LayoutDashboard />}
+                        label="Dashboard"
+                        isActive={url === '/dashboard'}
+                        isCollapsed={isCollapsed}
+                        onClick={handleLinkClick}
+                        onHover={setActiveTooltip}
+                    />
 
-                    <NavGroup label="Procurement" isCollapsed={isCollapsed}>
-                        {can('view clients') && <NavItem href="/clients" icon={<Users />} label="Clients" isActive={url.startsWith('/clients')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />}
-                        {can('view projects') && <NavItem href="/projects" icon={<Briefcase />} label="Projects" isActive={url.startsWith('/projects')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />}
-                        {can('view purchase requests') && <NavItem href="/purchasing/requests" icon={<FileText />} label="Purchase Requests" isActive={url.startsWith('/purchasing/requests')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />}
-                        {can('view rfq') && <NavItem href="/purchasing/rfq" icon={<FileText />} label="RFQ" isActive={url.startsWith('/purchasing/rfq')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />}
-                        {can('create purchase orders') && <NavItem href="/purchasing/suppliers" icon={<Users />} label="Suppliers" isActive={url.startsWith('/purchasing/suppliers')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />}
-                        {can('view purchase orders') && <NavItem href="/purchasing/orders" icon={<ShoppingCart />} label="Orders" isActive={url.startsWith('/purchasing/orders')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />}
-                        {can('view receiving') && <NavItem href="/inventory/receiving" icon={<ArrowDownCircle />} label="Receive Goods" isActive={url.startsWith('/inventory/receiving')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />}
-                        {(can('approve boq') || can('approve material requests') || can('approve purchase orders') || can('manage purchase requests')) &&
-                            <NavItem href="/purchasing/approvals" icon={<Shield />} label="Approvals" isActive={url.startsWith('/purchasing/approvals')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />
-                        }
-                    </NavGroup>
+                    {/* Dynamic groups from NAVIGATION_CONFIG, filtered by permissions */}
+                    {NAVIGATION_CONFIG.map(({ group, items }) => {
+                        const visibleItems = items.filter(isItemVisible);
+                        if (visibleItems.length === 0) return null;
 
-                    <NavGroup label="Operations" isCollapsed={isCollapsed}>
-                        {can('view inventory') && <NavItem href="/inventory" icon={<Package />} label="Inventory" isActive={url === '/inventory'} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />}
-                        {can('view receiving') && <NavItem href="/receiving" icon={<Building2 />} label="Receiving" isActive={url === '/receiving'} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />}
-                        {can('view site release') && <NavItem href="/site-release" icon={<Truck />} label="Site Release" isActive={url.startsWith('/site-release')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />}
-                    </NavGroup>
-
-                    <NavGroup label="Finance" isCollapsed={isCollapsed}>
-                        {can('view invoices') && <NavItem href="/finance/invoices" icon={<FileText />} label="Invoices" isActive={url.startsWith('/finance/invoices')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />}
-                        {can('view disbursements') && <NavItem href="/finance/disbursements" icon={<CreditCard />} label="Disbursements" isActive={url.startsWith('/finance/disbursements')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />}
-                        {can('view financial reports') && <NavItem href="/finance/reports" icon={<PieChart />} label="Reports" isActive={url.startsWith('/finance/reports')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />}
-                    </NavGroup>
+                        return (
+                            <NavGroup key={group} label={group} isCollapsed={isCollapsed}>
+                                {visibleItems.map((item) => (
+                                    <NavItem
+                                        key={item.href}
+                                        href={item.href}
+                                        icon={item.icon}
+                                        label={item.label}
+                                        isActive={isItemActive(item)}
+                                        isCollapsed={isCollapsed}
+                                        onClick={handleLinkClick}
+                                        onHover={setActiveTooltip}
+                                    />
+                                ))}
+                            </NavGroup>
+                        );
+                    })}
                 </nav>
             </motion.div>
         </>
@@ -238,22 +298,11 @@ function SidebarTooltip({ activeTooltip }) {
             initial={{ opacity: 0, x: -10, y: "-50%", scale: 0.95 }}
             animate={{ opacity: 1, x: 0, y: "-50%", scale: 1 }}
             exit={{ opacity: 0, x: -10, y: "-50%", scale: 0.95 }}
-            transition={{
-                type: "spring",
-                stiffness: 500,
-                damping: 30,
-                mass: 0.5
-            }}
-            style={{
-                top: rect.top + rect.height / 2,
-                left: rect.right + 12,
-            }}
+            transition={{ type: "spring", stiffness: 500, damping: 30, mass: 0.5 }}
+            style={{ top: rect.top + rect.height / 2, left: rect.right + 12 }}
             className="fixed z-[100] flex items-center group pointer-events-none"
         >
-            {/* Tooltip Arrow */}
             <div className="w-2.5 h-2.5 bg-slate-900 absolute -left-1 top-1/2 -translate-y-1/2 rotate-45 border-l border-b border-white/10" />
-
-            {/* Tooltip Content */}
             <div className="relative px-3 py-1.5 bg-slate-900/95 backdrop-blur-md text-white text-[11px] font-semibold rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.5)] whitespace-nowrap border border-white/10 tracking-tight">
                 {label}
             </div>

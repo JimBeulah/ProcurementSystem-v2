@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { usePermissions } from '@/Hooks/usePermissions';
 import Modal from '@/Components/UI/Modal';
 import {
     FileText, Plus, CheckCircle, XCircle, Trash2, ChevronDown, ChevronRight,
@@ -19,8 +20,9 @@ function StatusBadge({ status }) {
 }
 
 export default function PurchaseRequestsIndex() {
-    const { requests, projects, flash, auth } = usePage().props;
+    const { requests, projects, flash } = usePage().props;
     const list = requests || [];
+    const { can } = usePermissions();
 
     const [showCreate, setShowCreate] = useState(false);
     const [expandedRows, setExpandedRows] = useState(new Set());
@@ -117,9 +119,11 @@ export default function PurchaseRequestsIndex() {
                         </div>
                         <p className="text-sm text-slate-500 font-medium ml-1">Internal requests for materials and services</p>
                     </div>
-                    <button onClick={() => setShowCreate(true)} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 text-xs font-bold transition-all shadow-lg shadow-blue-600/20 active:scale-95">
-                        <Plus size={18} /> New Request
-                    </button>
+                    {can('manage purchase requests') && (
+                        <button onClick={() => setShowCreate(true)} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 text-xs font-bold transition-all shadow-lg shadow-blue-600/20 active:scale-95">
+                            <Plus size={18} /> New Request
+                        </button>
+                    )}
                 </header>
 
                 {/* PR Table */}
@@ -186,7 +190,7 @@ export default function PurchaseRequestsIndex() {
                                                 </td>
                                                 <td className="py-3 px-4 text-center" onClick={e => e.stopPropagation()}>
                                                     <div className="flex items-center justify-center gap-1">
-                                                        {pr.status === 'PENDING' && (
+                                                        {pr.status === 'PENDING' && can('manage purchase requests') && (
                                                             <>
                                                                 <button onClick={() => handleApprove(pr.id)} title="Approve" className="p-1.5 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors">
                                                                     <CheckCircle size={16} />
@@ -196,14 +200,16 @@ export default function PurchaseRequestsIndex() {
                                                                 </button>
                                                             </>
                                                         )}
-                                                        {pr.status === 'APPROVED' && (
+                                                        {pr.status === 'APPROVED' && can('create purchase orders') && (
                                                             <Link href={`/purchasing/orders/create?prId=${pr.id}`} title="Create PO" className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors flex items-center justify-center">
                                                                 <ShoppingCart size={16} />
                                                             </Link>
                                                         )}
-                                                        <button onClick={() => setDeleteTarget(pr)} title="Delete" className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
-                                                            <Trash2 size={14} />
-                                                        </button>
+                                                        {can('manage purchase requests') && (
+                                                            <button onClick={() => setDeleteTarget(pr)} title="Delete" className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>

@@ -1,10 +1,12 @@
 import React from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
+import { usePermissions } from '@/Hooks/usePermissions';
 import { ShoppingCart, Plus, Calendar, MapPin, Package } from 'lucide-react';
 
 export default function PurchaseOrdersIndex() {
     const { orders } = usePage().props;
+    const { can } = usePermissions();
     const pos = orders || [];
 
     return (
@@ -18,11 +20,13 @@ export default function PurchaseOrdersIndex() {
                         </h1>
                         <p className="text-slate-500">Track and manage supplier orders.</p>
                     </div>
-                    <Link href="/purchasing/orders/create">
-                        <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors active:scale-95">
-                            <Plus size={18} /> Create PO
-                        </button>
-                    </Link>
+                    {can('create purchase orders') && (
+                        <Link href="/purchasing/orders/create">
+                            <button className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors active:scale-95">
+                                <Plus size={18} /> Create PO
+                            </button>
+                        </Link>
+                    )}
                 </header>
 
                 <div className="grid gap-4">
@@ -42,7 +46,7 @@ export default function PurchaseOrdersIndex() {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        {(po.status === 'APPROVED' || po.status === 'PARTIALLY DELIVERED') && (
+                                        {(po.status === 'APPROVED' || po.status === 'PARTIALLY DELIVERED') && can('create receiving') && (
                                             <Link href={`/inventory/receiving/create?poId=${po.id}`} onClick={e => e.stopPropagation()} className="p-1.5 text-slate-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-colors flex items-center justify-center">
                                                 <Package size={16} />
                                             </Link>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, usePage } from '@inertiajs/react';
+import { usePermissions } from '@/Hooks/usePermissions';
 import { Card } from '@/Components/UI/Card';
 import { ClientCard } from '@/Components/Clients/ClientCard';
 import Modal from '@/Components/UI/Modal';
@@ -15,6 +16,7 @@ import {
 export default function ClientsIndex() {
     const { clients: initialClients } = usePage().props;
     const clients = initialClients || [];
+    const { can } = usePermissions();
 
     const [showModal, setShowModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -141,16 +143,18 @@ export default function ClientsIndex() {
                     {/* Right Controls */}
                     <div className="flex items-center gap-2 w-full md:w-auto">
                         {/* Add Button */}
-                        <button
-                            onClick={() => {
-                                setEditingClient(null);
-                                resetForm();
-                                setShowModal(true);
-                            }}
-                            className="bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-semibold transition-all duration-150 text-[13px] whitespace-nowrap shadow-sm cursor-pointer"
-                        >
-                            <Plus size={15} strokeWidth={2.5} /> Add Client
-                        </button>
+                        {can('manage clients') && (
+                            <button
+                                onClick={() => {
+                                    setEditingClient(null);
+                                    resetForm();
+                                    setShowModal(true);
+                                }}
+                                className="bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-semibold transition-all duration-150 text-[13px] whitespace-nowrap shadow-sm cursor-pointer"
+                            >
+                                <Plus size={15} strokeWidth={2.5} /> Add Client
+                            </button>
+                        )}
 
                         {/* Filter */}
                         <div className="relative flex-1 md:flex-none">
@@ -258,12 +262,16 @@ export default function ClientsIndex() {
                                             <p className="text-[13px] font-medium text-foreground">{client.payment_terms}</p>
                                         </div>
                                         <div className="flex items-center gap-1 pl-3 md:border-l border-black/[0.04] dark:border-white/[0.04] opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button onClick={() => handleEdit(client)} className="p-2 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] text-black/40 dark:text-white/40 hover:text-blue-600 rounded-lg transition-all cursor-pointer" title="Edit">
-                                                <Edit2 size={15} />
-                                            </button>
-                                            <button onClick={() => confirmDelete(client)} className="p-2 hover:bg-red-500/10 text-black/40 dark:text-white/40 hover:text-red-500 rounded-lg transition-all cursor-pointer" title="Delete">
-                                                <Trash2 size={15} />
-                                            </button>
+                                            {can('manage clients') && (
+                                                <>
+                                                    <button onClick={() => handleEdit(client)} className="p-2 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] text-black/40 dark:text-white/40 hover:text-blue-600 rounded-lg transition-all cursor-pointer" title="Edit">
+                                                        <Edit2 size={15} />
+                                                    </button>
+                                                    <button onClick={() => confirmDelete(client)} className="p-2 hover:bg-red-500/10 text-black/40 dark:text-white/40 hover:text-red-500 rounded-lg transition-all cursor-pointer" title="Delete">
+                                                        <Trash2 size={15} />
+                                                    </button>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                 </motion.div>

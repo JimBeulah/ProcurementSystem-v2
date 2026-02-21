@@ -1,10 +1,12 @@
 import React from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
+import { usePermissions } from '@/Hooks/usePermissions';
 import { FileText, Plus, Calendar } from 'lucide-react';
 
 export default function RfqIndex() {
     const { rfqs } = usePage().props;
+    const { can } = usePermissions();
     const list = rfqs || [];
 
     return (
@@ -18,11 +20,13 @@ export default function RfqIndex() {
                         </h1>
                         <p className="text-slate-500">Manage RFQs and supplier pricing.</p>
                     </div>
-                    <Link href="/purchasing/rfq/create">
-                        <button className="bg-pink-600 hover:bg-pink-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors active:scale-95">
-                            <Plus size={18} /> Create RFQ
-                        </button>
-                    </Link>
+                    {can('manage rfq') && (
+                        <Link href="/purchasing/rfq/create">
+                            <button className="bg-pink-600 hover:bg-pink-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors active:scale-95">
+                                <Plus size={18} /> Create RFQ
+                            </button>
+                        </Link>
+                    )}
                 </header>
 
                 {list.length === 0 ? (
