@@ -172,7 +172,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={handleClose} title="Add BOQ Item" maxWidth="max-w-2xl">
+        <Modal isOpen={isOpen} onClose={handleClose} title="Add BOQ Item" maxWidth="max-w-4xl">
             {/* Stepper Header */}
             <div className="flex items-center justify-between mb-6 -mt-1 px-1">
                 {STEPS.map((s, i) => {
@@ -208,11 +208,11 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
             {step === 0 && (
                 <div className="space-y-4">
                     <div>
-                        <label className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-black mb-1 block">Item Description</label>
+                        <label className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-black mb-1 block ml-1">Item Description</label>
                         <input
                             ref={descRef}
                             list="wiz-material-suggestions"
-                            className={`w-full bg-slate-50 dark:bg-slate-900 border rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-orange-500 outline-none transition-all ${errors.itemDescription ? 'border-red-500/60' : 'border-slate-200 dark:border-slate-700'}`}
+                            className={`w-full bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl shadow-sm border rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all ${errors.itemDescription ? 'border-red-500/60 focus:ring-red-500/30' : 'border-slate-200/80 dark:border-slate-700/80'}`}
                             value={item.itemDescription}
                             onChange={e => {
                                 const val = e.target.value;
@@ -234,10 +234,10 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-black mb-1 block">Quantity</label>
+                            <label className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-black mb-1 block ml-1">Quantity</label>
                             <input
                                 type="number" step="0.01"
-                                className={`w-full bg-slate-50 dark:bg-slate-900 border rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-orange-500 outline-none ${errors.quantity ? 'border-red-500/60' : 'border-slate-200 dark:border-slate-700'}`}
+                                className={`w-full bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl shadow-sm border rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all ${errors.quantity ? 'border-red-500/60 focus:ring-red-500/30' : 'border-slate-200/80 dark:border-slate-700/80'}`}
                                 value={item.quantity || ''}
                                 onChange={e => {
                                     setItem(prev => ({ ...prev, quantity: parseFloat(e.target.value) }));
@@ -247,10 +247,10 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                             {errors.quantity && <p className="text-[10px] text-red-500 mt-1 font-bold">{errors.quantity}</p>}
                         </div>
                         <div>
-                            <label className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-black mb-1 block">Unit</label>
+                            <label className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-black mb-1 block ml-1">Unit</label>
                             <input
                                 list="wiz-unit-suggestions"
-                                className={`w-full bg-slate-50 dark:bg-slate-900 border rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:border-orange-500 outline-none ${errors.unit ? 'border-red-500/60' : 'border-slate-200 dark:border-slate-700'}`}
+                                className={`w-full bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl shadow-sm border rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all ${errors.unit ? 'border-red-500/60 focus:ring-red-500/30' : 'border-slate-200/80 dark:border-slate-700/80'}`}
                                 value={item.unit}
                                 onChange={e => {
                                     setItem(prev => ({ ...prev, unit: e.target.value }));
@@ -268,9 +268,9 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                     <button
                         type="button"
                         onClick={() => setItem(prev => ({ ...prev, isCarport: !prev.isCarport }))}
-                        className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg border transition-all text-xs font-black uppercase tracking-widest ${item.isCarport
-                            ? 'bg-orange-500/20 border-orange-500 text-orange-600 dark:text-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.1)]'
-                            : 'bg-cyan-500/5 border-cyan-500/20 text-cyan-600 dark:text-cyan-500'
+                        className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg border backdrop-blur-md transition-all text-xs font-black uppercase tracking-widest ${item.isCarport
+                            ? 'bg-blue-500/20 border-blue-500/50 text-blue-600 dark:text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.15)] ring-2 ring-blue-500/20'
+                            : 'bg-white/40 dark:bg-slate-800/40 border-slate-200/80 dark:border-slate-700/80 text-slate-600 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800/60'
                             }`}
                     >
                         {item.isCarport ? <Car size={16} /> : <Home size={16} />}
@@ -291,12 +291,12 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
 
                     <div ref={resourceListRef} className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
                         {item.components.map((comp, idx) => (
-                            <div key={idx} className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3 border border-slate-200 dark:border-slate-700 relative group/row">
-                                <div className="grid grid-cols-12 gap-2 items-center">
-                                    <div className="col-span-2">
-                                        <label className="text-[8px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-0.5 block">Type</label>
+                            <div key={idx} className="bg-white/60 dark:bg-slate-800/40 backdrop-blur-xl shadow-sm rounded-lg p-3 border border-slate-200/80 dark:border-slate-700/80 relative group/row hover:bg-white/80 dark:hover:bg-slate-800/60 transition-colors">
+                                <div className="grid gap-2 items-center" style={{ gridTemplateColumns: comp.resourceType === 'MATERIAL' ? "100px 1fr 80px 96px 96px 28px" : "100px 1fr 48px 48px 80px 96px 96px 28px" }}>
+                                    <div>
+                                        <label className="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-1 block ml-1">Type</label>
                                         <select
-                                            className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-1.5 text-[10px] text-slate-900 dark:text-white outline-none focus:border-orange-500"
+                                            className="w-full bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700/80 rounded shadow-sm p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-semibold cursor-pointer"
                                             value={comp.resourceType}
                                             onChange={e => updateComponent(idx, 'resourceType', e.target.value)}
                                         >
@@ -305,73 +305,75 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                                             <option value="EQUIPMENT">EQUIPMENT</option>
                                         </select>
                                     </div>
-                                    <div className={comp.resourceType === 'MATERIAL' ? 'col-span-5' : 'col-span-3'}>
-                                        <label className="text-[8px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-0.5 block">Name</label>
+                                    <div>
+                                        <label className="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-1 block ml-1">Name</label>
                                         <input
                                             type="text"
                                             placeholder="Resource Name"
-                                            className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-1.5 text-[10px] text-slate-900 dark:text-white outline-none"
+                                            className="w-full bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700/80 rounded shadow-sm p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
                                             value={comp.name}
                                             onChange={e => updateComponent(idx, 'name', e.target.value)}
                                         />
                                     </div>
-                                    <div className="col-span-2">
-                                        <label className="text-[8px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-0.5 block">Factor</label>
-                                        <input
-                                            type="number" step="0.0001"
-                                            placeholder="Qty Factor"
-                                            className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-1.5 text-[10px] text-slate-900 dark:text-white outline-none text-center focus:border-cyan-500"
-                                            value={comp.quantityFactor || ''}
-                                            onChange={e => updateComponent(idx, 'quantityFactor', e.target.value)}
-                                        />
-                                    </div>
                                     {comp.resourceType !== 'MATERIAL' && (
                                         <>
-                                            <div className="col-span-1">
-                                                <label className="text-[8px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-0.5 block">P</label>
+                                            <div>
+                                                <label className="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-1 block text-center">P</label>
                                                 <input
                                                     type="number"
                                                     title="No. of Persons"
-                                                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-1.5 text-[10px] text-slate-900 dark:text-white outline-none text-center"
+                                                    placeholder="P"
+                                                    className="w-full bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700/80 rounded shadow-sm p-1.5 text-xs text-slate-900 dark:text-white outline-none text-center focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
                                                     value={comp.noOfPersons || ''}
                                                     onChange={e => updateComponent(idx, 'noOfPersons', e.target.value)}
                                                 />
                                             </div>
-                                            <div className="col-span-1">
-                                                <label className="text-[8px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-0.5 block">H</label>
+                                            <div>
+                                                <label className="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-1 block text-center">H</label>
                                                 <input
                                                     type="number"
                                                     title="No. of Hours"
-                                                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-1.5 text-[10px] text-slate-900 dark:text-white outline-none text-center"
+                                                    placeholder="H"
+                                                    className="w-full bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700/80 rounded shadow-sm p-1.5 text-xs text-slate-900 dark:text-white outline-none text-center focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
                                                     value={comp.hours || ''}
                                                     onChange={e => updateComponent(idx, 'hours', e.target.value)}
                                                 />
                                             </div>
                                         </>
                                     )}
-                                    <div className="col-span-1">
-                                        <label className="text-[8px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-0.5 block">Client Rate</label>
+                                    <div>
+                                        <label className="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-1 block text-center">Factor</label>
+                                        <input
+                                            type="number" step="0.0001"
+                                            placeholder="Qty Factor"
+                                            className="w-full bg-slate-100/50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 rounded shadow-sm p-1.5 text-xs text-slate-900 dark:text-white outline-none text-center focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-mono"
+                                            value={comp.quantityFactor || ''}
+                                            onChange={e => updateComponent(idx, 'quantityFactor', e.target.value)}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-1 block text-right pr-1">Client Rate</label>
                                         <input
                                             type="number" step="0.01"
-                                            placeholder="Client Rate"
-                                            className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-1.5 text-[10px] text-slate-900 dark:text-white outline-none text-right"
+                                            placeholder="0.00"
+                                            className="w-full bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700/80 rounded shadow-sm p-1.5 text-xs text-slate-900 dark:text-white outline-none text-right focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-mono"
                                             value={comp.unitRate || ''}
                                             onChange={e => updateComponent(idx, 'unitRate', e.target.value)}
                                         />
                                     </div>
-                                    <div className="col-span-1">
-                                        <label className="text-[8px] text-orange-500/80 uppercase font-bold mb-0.5 block">Altapil Rate</label>
+                                    <div>
+                                        <label className="text-[9px] text-blue-600 dark:text-blue-400 uppercase font-black mb-1 block text-right pr-1 drop-shadow-sm">Altapil Rate</label>
                                         <input
                                             type="number" step="0.01"
-                                            placeholder="Target"
-                                            className="w-full bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-900/30 rounded p-1.5 text-[10px] text-slate-900 dark:text-white outline-none text-right focus:border-orange-500"
+                                            placeholder="0.00"
+                                            className="w-full bg-blue-50/50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700/50 rounded shadow-sm p-1.5 text-xs text-slate-900 dark:text-white outline-none text-right focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-mono font-bold"
                                             value={comp.altapilUnitRate || ''}
                                             onChange={e => updateComponent(idx, 'altapilUnitRate', e.target.value)}
                                         />
                                     </div>
-                                    <div className="col-span-1 flex items-end justify-end">
-                                        <button type="button" onClick={() => removeComponent(idx)} className="text-slate-400 hover:text-red-500 p-1 transition-colors">
-                                            <Trash2 size={12} />
+                                    <div className="flex items-end justify-center pt-[22px]">
+                                        <button type="button" onClick={() => removeComponent(idx)} className="text-slate-400 hover:text-red-500 p-1.5 hover:bg-red-50 dark:hover:bg-red-500/10 rounded transition-colors group/del">
+                                            <Trash2 size={14} className="group-hover/del:scale-110 transition-transform" />
                                         </button>
                                     </div>
                                 </div>
@@ -391,23 +393,22 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                         )}
                     </div>
 
-                    {/* Add Resource button — always visible below the list */}
-                    <button type="button" onClick={addComponent} className="w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-black uppercase text-cyan-600 dark:text-cyan-500 hover:text-cyan-500 bg-cyan-500/5 hover:bg-cyan-500/10 border border-dashed border-cyan-500/30 rounded-lg transition-all">
+                    <button type="button" onClick={addComponent} className="w-full flex items-center justify-center gap-1.5 py-2 mt-2 text-[10px] font-black uppercase text-blue-600 dark:text-blue-500 hover:text-blue-500 bg-blue-500/5 hover:bg-blue-500/10 border border-dashed border-blue-500/30 rounded-lg transition-all backdrop-blur-sm">
                         <Plus size={14} /> Add Resource
                     </button>
 
                     {/* Cost Summary */}
-                    <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                    <div className="grid grid-cols-2 gap-3 pt-3 mt-3 border-t border-slate-200 dark:border-slate-700">
                         <div>
                             <label className="text-[10px] text-cyan-600 uppercase font-black mb-1 block">Material Cost /unit</label>
-                            <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg p-2 text-slate-900 dark:text-white text-sm font-mono flex items-center justify-between">
+                            <div className="bg-cyan-500/5 border border-cyan-500/20 rounded-lg p-2 text-slate-900 dark:text-white text-sm font-mono flex items-center justify-between backdrop-blur-sm shadow-sm">
                                 <span>₱ {item.materialUnitPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                                 <Calculator size={12} className="opacity-30" />
                             </div>
                         </div>
                         <div>
-                            <label className="text-[10px] text-purple-600 uppercase font-black mb-1 block">Labor/Eq. Cost /unit</label>
-                            <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-2 text-slate-900 dark:text-white text-sm font-mono flex items-center justify-between">
+                            <label className="text-[10px] text-blue-600 uppercase font-black mb-1 block">Labor/Eq. Cost /unit</label>
+                            <div className="bg-blue-500/5 border border-blue-500/20 rounded-lg p-2 text-slate-900 dark:text-white text-sm font-mono flex items-center justify-between backdrop-blur-sm shadow-sm">
                                 <span>₱ {item.laborUnitPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                                 <Hammer size={12} className="opacity-30" />
                             </div>
@@ -420,13 +421,13 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
             {step === 2 && (
                 <div className="space-y-4">
                     {/* Item Summary */}
-                    <div className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700 space-y-3">
+                    <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl shadow-sm rounded-xl p-4 border border-slate-200/80 dark:border-slate-700/80 space-y-3">
                         <div className="flex justify-between items-start">
                             <div>
                                 <p className="text-[9px] text-slate-500 uppercase font-black">Item Description</p>
                                 <p className="text-sm font-bold text-slate-900 dark:text-white uppercase">{item.itemDescription}</p>
                             </div>
-                            <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase border ${item.isCarport ? 'bg-orange-500/10 text-orange-500 border-orange-500/30' : 'bg-cyan-500/10 text-cyan-500 border-cyan-500/30'}`}>
+                            <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase border ${item.isCarport ? 'bg-blue-500/10 text-blue-500 border-blue-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'}`}>
                                 {item.isCarport ? '🅿 Carport' : '🏠 Building'}
                             </span>
                         </div>
@@ -448,24 +449,24 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
 
                     {/* Cost Breakdown */}
                     <div className="space-y-2">
-                        <div className="flex justify-between items-center py-2 px-3 bg-cyan-500/5 rounded-lg border border-cyan-500/10">
+                        <div className="flex justify-between items-center py-2 px-3 bg-cyan-500/5 backdrop-blur-sm shadow-sm rounded-lg border border-cyan-500/20">
                             <span className="text-[10px] text-slate-500 uppercase font-black">Material Cost</span>
                             <span className="text-sm font-mono font-bold text-cyan-600">
                                 ₱ {(item.materialUnitPrice * item.quantity).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                             </span>
                         </div>
-                        <div className="flex justify-between items-center py-2 px-3 bg-purple-500/5 rounded-lg border border-purple-500/10">
+                        <div className="flex justify-between items-center py-2 px-3 bg-blue-500/5 backdrop-blur-sm shadow-sm rounded-lg border border-blue-500/20">
                             <span className="text-[10px] text-slate-500 uppercase font-black">Labor/Equipment Cost</span>
-                            <span className="text-sm font-mono font-bold text-purple-600">
+                            <span className="text-sm font-mono font-bold text-blue-600">
                                 ₱ {(item.laborUnitPrice * item.quantity).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                             </span>
                         </div>
                     </div>
 
                     {/* Grand Total */}
-                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 flex justify-between items-center">
+                    <div className="bg-emerald-500/5 backdrop-blur-sm shadow-sm border border-emerald-500/30 rounded-xl p-4 flex justify-between items-center">
                         <div>
-                            <span className="text-[9px] text-emerald-600 dark:text-emerald-500 uppercase font-black block">Estimated Combined Total</span>
+                            <span className="text-[9px] text-emerald-600 dark:text-emerald-500 uppercase font-black block mb-1">Estimated Combined Total</span>
                             <span className="text-2xl font-black text-emerald-600 dark:text-emerald-500 font-mono">
                                 ₱ {combinedTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                             </span>
@@ -473,8 +474,8 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                     </div>
 
                     {/* Batch Mode Toggle */}
-                    <label className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" onClick={(e) => { e.preventDefault(); setBatchMode(!batchMode); }}>
-                        <div className={`w-9 h-5 rounded-full flex items-center transition-colors ${batchMode ? 'bg-orange-500 justify-end' : 'bg-slate-200 dark:bg-slate-700 justify-start'}`}>
+                    <label className="flex items-center gap-3 p-3 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl shadow-sm rounded-lg border border-slate-200/80 dark:border-slate-700/80 cursor-pointer hover:bg-white/80 dark:hover:bg-slate-800/60 transition-colors" onClick={(e) => { e.preventDefault(); setBatchMode(!batchMode); }}>
+                        <div className={`w-9 h-5 rounded-full flex items-center transition-colors shadow-inner ${batchMode ? 'bg-blue-500 justify-end' : 'bg-slate-200 dark:bg-slate-700 justify-start'}`}>
                             <div className="w-4 h-4 bg-white rounded-full shadow mx-0.5" />
                         </div>
                         <div>

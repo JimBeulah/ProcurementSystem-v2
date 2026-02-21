@@ -4,7 +4,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import Modal from '@/Components/UI/Modal';
 import {
     FileText, Plus, CheckCircle, XCircle, Trash2, ChevronDown, ChevronRight,
-    Briefcase, Calendar, User, DollarSign, AlertTriangle, Package
+    Briefcase, Calendar, User, DollarSign, AlertTriangle, Package, ShoppingCart
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -195,6 +195,11 @@ export default function PurchaseRequestsIndex() {
                                                                     <XCircle size={16} />
                                                                 </button>
                                                             </>
+                                                        )}
+                                                        {pr.status === 'APPROVED' && (
+                                                            <Link href={`/purchasing/orders/create?prId=${pr.id}`} title="Create PO" className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors flex items-center justify-center">
+                                                                <ShoppingCart size={16} />
+                                                            </Link>
                                                         )}
                                                         <button onClick={() => setDeleteTarget(pr)} title="Delete" className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
                                                             <Trash2 size={14} />

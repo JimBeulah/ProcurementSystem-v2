@@ -4,7 +4,7 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import { ClipboardCheck, Plus, Package, Truck } from 'lucide-react';
 
 export default function ReceivingIndex() {
-    const { reports } = usePage().props;
+    const { reports, auth } = usePage().props;
     const list = reports || [];
 
     return (
@@ -18,9 +18,13 @@ export default function ReceivingIndex() {
                         </h1>
                         <p className="text-slate-500">Track received materials and deliveries.</p>
                     </div>
-                    <button className="bg-orange-600 hover:bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors">
-                        <Plus size={18} /> Receive Goods
-                    </button>
+                    {auth.permissions.includes('create receiving') && (
+                        <Link href="/inventory/receiving/create">
+                            <button className="bg-orange-600 hover:bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors">
+                                <Plus size={18} /> Receive Goods
+                            </button>
+                        </Link>
+                    )}
                 </header>
 
                 <div className="grid gap-4">

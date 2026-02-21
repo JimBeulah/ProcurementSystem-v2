@@ -1,7 +1,7 @@
 import React from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ShoppingCart, Plus, Calendar, MapPin } from 'lucide-react';
+import { ShoppingCart, Plus, Calendar, MapPin, Package } from 'lucide-react';
 
 export default function PurchaseOrdersIndex() {
     const { orders } = usePage().props;
@@ -41,10 +41,18 @@ export default function PurchaseOrdersIndex() {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className={`px-3 py-1 rounded-full text-xs font-bold border ${po.status === 'APPROVED' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
-                                        po.status === 'PENDING' ? 'bg-orange-500/10 text-orange-600 border-orange-500/20' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 border-slate-300 dark:border-slate-600'
-                                        }`}>
-                                        {po.status}
+                                    <div className="flex items-center gap-2">
+                                        {(po.status === 'APPROVED' || po.status === 'PARTIALLY DELIVERED') && (
+                                            <Link href={`/inventory/receiving/create?poId=${po.id}`} onClick={e => e.stopPropagation()} className="p-1.5 text-slate-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-colors flex items-center justify-center">
+                                                <Package size={16} />
+                                            </Link>
+                                        )}
+                                        <div className={`px-3 py-1 rounded-full text-xs font-bold border ${po.status === 'APPROVED' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
+                                            po.status === 'COMPLETED' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
+                                                po.status === 'PENDING' ? 'bg-orange-500/10 text-orange-600 border-orange-500/20' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 border-slate-300 dark:border-slate-600'
+                                            }`}>
+                                            {po.status}
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="flex justify-between items-end mt-2">

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Material;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
+use App\Models\PurchaseRequest;
 use App\Models\Project;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
@@ -38,12 +39,18 @@ class PurchaseOrderController extends Controller
         $suppliers = Supplier::orderBy('name')->get();
         $materials = Material::orderBy('name')->get();
 
+        $pr = null;
+        if ($request->query('prId')) {
+            $pr = PurchaseRequest::with('items')->find($request->query('prId'));
+        }
+
         return Inertia::render('Purchasing/Orders/Create', [
             'projects' => $projects,
             'suppliers' => $suppliers,
             'materials' => $materials,
             'rfqId' => $request->query('rfqId'),
             'quoteId' => $request->query('quoteId'),
+            'purchaseRequest' => $pr,
         ]);
     }
 
@@ -52,6 +59,7 @@ class PurchaseOrderController extends Controller
         $validated = $request->validate([
             'project_id' => 'required|exists:projects,id',
             'supplier_id' => 'required|exists:suppliers,id',
+            'purchase_request_id' => 'nullable|exists:purchase_requests,id',
             'remarks' => 'nullable|string|max:500',
             'items' => 'required|array|min:1',
             'items.*.material_name' => 'required|string|max:255',
@@ -66,6 +74,7 @@ class PurchaseOrderController extends Controller
         $po = PurchaseOrder::create([
             'project_id' => $validated['project_id'],
             'supplier_id' => $validated['supplier_id'],
+            'purchase_request_id' => $validated['purchase_request_id'] ?? null,
             'requester_id' => auth()->id(),
             'order_date' => now(),
             'status' => 'PENDING',
@@ -80,6 +89,7 @@ class PurchaseOrderController extends Controller
                 'description' => $item['description'] ?? null,
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['unit_price'],
+                'total_price' => $item['quantity'] * $item['unit_price'],
                 'unit' => $item['unit'] ?? 'pcs',
             ]);
         }

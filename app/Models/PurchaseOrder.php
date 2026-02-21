@@ -12,6 +12,7 @@ class PurchaseOrder extends Model
         'supplier_id',
         'requester_id',
         'approver_id',
+        'purchase_request_id',
         'status',
         'remarks',
         'total_amount',
@@ -43,6 +44,11 @@ class PurchaseOrder extends Model
     public function approver()
     {
         return $this->belongsTo(User::class, 'approver_id');
+    }
+
+    public function purchaseRequest()
+    {
+        return $this->belongsTo(PurchaseRequest::class);
     }
 
     public function items()

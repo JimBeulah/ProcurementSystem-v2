@@ -82,6 +82,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/purchasing/orders/{order}/approve', [PurchaseOrderController::class, 'approve'])->name('purchasing.orders.approve')->middleware('can:approve purchase orders');
     });
 
+    // Suppliers
+    Route::get('/purchasing/suppliers', [App\Http\Controllers\SupplierController::class, 'index'])->name('purchasing.suppliers.index');
+    Route::post('/purchasing/suppliers', [App\Http\Controllers\SupplierController::class, 'store'])->name('purchasing.suppliers.store');
+
     // RFQ
     Route::middleware(['can:view rfq'])->group(function () {
         Route::get('/purchasing/rfq', [RfqController::class, 'index'])->name('purchasing.rfq.index');
@@ -104,6 +108,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Receiving / GRN
     Route::get('/inventory/receiving', [ReceivingController::class, 'index'])->name('receiving.index')->middleware('can:view receiving');
+    Route::get('/inventory/receiving/create', [ReceivingController::class, 'create'])->name('receiving.create')->middleware('can:create receiving');
+    Route::post('/inventory/receiving', [ReceivingController::class, 'store'])->name('receiving.store')->middleware('can:create receiving');
 
     // Finance
     Route::get('/finance/invoices', [FinanceController::class, 'invoices'])->name('finance.invoices')->middleware('can:view invoices');
@@ -113,11 +119,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Approvals
     Route::get('/purchasing/approvals', [ApprovalController::class, 'index'])->name('purchasing.approvals');
 
-    // Receiving Create
-    Route::middleware(['can:create receiving'])->group(function () {
-        Route::get('/inventory/receiving/create', [ReceivingFormController::class, 'create'])->name('receiving.create');
-        Route::post('/inventory/receiving', [ReceivingFormController::class, 'store'])->name('receiving.store');
-    });
+
 
     // Finance Forms
     Route::get('/finance/invoices/create', [FinanceFormController::class, 'createInvoice'])->name('finance.invoices.create');

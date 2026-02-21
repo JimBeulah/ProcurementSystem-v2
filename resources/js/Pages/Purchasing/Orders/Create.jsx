@@ -4,10 +4,29 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, Save, Search, Plus, X } from 'lucide-react';
 
 export default function CreatePurchaseOrder() {
-    const { projects, suppliers, materials, rfqId, quoteId } = usePage().props;
+    const { projects, suppliers, materials, rfqId, quoteId, purchaseRequest } = usePage().props;
 
-    const [formData, setFormData] = useState({ project_id: '', supplier_id: '', remarks: '' });
-    const [items, setItems] = useState([]);
+    const [formData, setFormData] = useState({
+        project_id: purchaseRequest?.project_id || '',
+        supplier_id: '',
+        remarks: purchaseRequest ? `PO for PR-${purchaseRequest.id.toString().padStart(5, '0')}` : '',
+        purchase_request_id: purchaseRequest?.id || null
+    });
+
+    // Auto-fill items if PR exists
+    const [items, setItems] = useState(() => {
+        if (purchaseRequest?.items) {
+            return purchaseRequest.items.map(item => ({
+                material_name: item.item_description,
+                description: 'From PR',
+                quantity: item.quantity,
+                unit: item.unit,
+                unit_price: item.estimated_unit_cost || 0
+            }));
+        }
+        return [];
+    });
+
     const [submitting, setSubmitting] = useState(false);
 
     // Item Entry
@@ -59,7 +78,14 @@ export default function CreatePurchaseOrder() {
                         <ArrowLeft size={20} />
                     </Link>
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Create Purchase Order</h1>
+                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            Create Purchase Order
+                            {purchaseRequest && (
+                                <span className="text-xs bg-blue-500/10 text-blue-600 px-2.5 py-1 rounded-full border border-blue-500/20 font-mono">
+                                    From PR-{purchaseRequest.id.toString().padStart(5, '0')}
+                                </span>
+                            )}
+                        </h1>
                         <p className="text-slate-500">Issue a new order to supplier.</p>
                     </div>
                 </header>
@@ -74,7 +100,12 @@ export default function CreatePurchaseOrder() {
                             </select>
                         </div>
                         <div>
-                            <label className="text-xs text-slate-500 uppercase font-bold mb-1 block tracking-widest">Supplier</label>
+                            <div className="flex justify-between items-end mb-1">
+                                <label className="text-xs text-slate-500 uppercase font-bold tracking-widest">Supplier</label>
+                                <Link href="/purchasing/suppliers" className="text-[10px] text-blue-500 hover:text-blue-600 font-bold uppercase tracking-wider">
+                                    + Add New
+                                </Link>
+                            </div>
                             <select className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-blue-500 outline-none" value={formData.supplier_id} onChange={e => setFormData({ ...formData, supplier_id: e.target.value })} required>
                                 <option value="">Select Supplier...</option>
                                 {(suppliers || []).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}

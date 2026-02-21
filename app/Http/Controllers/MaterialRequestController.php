@@ -7,6 +7,7 @@ use App\Models\MaterialRequest;
 use App\Models\MaterialRequestItem;
 use App\Models\Project;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class MaterialRequestController extends Controller
@@ -130,12 +131,45 @@ class MaterialRequestController extends Controller
             return redirect()->back()->with('error', 'This request has already been processed.');
         }
 
-        $materialRequest->update([
-            'status' => 'APPROVED',
-            'approver_id' => auth()->id(),
-        ]);
+        $pr = DB::transaction(function () use ($materialRequest) {
+            $materialRequest->update([
+                'status' => 'APPROVED',
+                'approver_id' => auth()->id(),
+            ]);
 
-        return redirect()->back()->with('success', "Material Request MR-{$materialRequest->id} approved successfully.");
+            // Auto-create Purchase Request
+            $materialRequest->load('items');
+
+            $totalCost = 0;
+            foreach ($materialRequest->items as $item) {
+                $totalCost += $item->quantity * ($item->material_unit_price + $item->labor_unit_price);
+            }
+
+            $pr = \App\Models\PurchaseRequest::create([
+                'project_id' => $materialRequest->project_id,
+                'requester_id' => $materialRequest->requester_id,
+                'request_date' => now(),
+                'status' => 'PENDING',
+                'purpose' => 'Generated from MR-' . str_pad($materialRequest->id, 5, '0', STR_PAD_LEFT),
+                'remarks' => $materialRequest->remarks,
+                'total_estimated_cost' => $totalCost,
+            ]);
+
+            foreach ($materialRequest->items as $item) {
+                \App\Models\PurchaseRequestItem::create([
+                    'purchase_request_id' => $pr->id,
+                    'item_description' => $item->item_description,
+                    'quantity' => $item->quantity,
+                    'unit' => $item->unit,
+                    'estimated_unit_cost' => $item->material_unit_price + $item->labor_unit_price,
+                    'estimated_total_cost' => $item->quantity * ($item->material_unit_price + $item->labor_unit_price),
+                ]);
+            }
+
+            return $pr;
+        });
+
+        return redirect()->back()->with('success', "Material Request MR-{$materialRequest->id} approved and Purchase Request PR-" . str_pad($pr->id, 5, '0', STR_PAD_LEFT) . " generated.");
     }
 
     public function reject(Request $request, MaterialRequest $materialRequest)
