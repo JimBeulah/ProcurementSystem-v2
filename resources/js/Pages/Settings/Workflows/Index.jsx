@@ -8,7 +8,7 @@ export default function WorkflowsIndex() {
     const { rules } = usePage().props;
     const ruleList = rules || [];
     const [showModal, setShowModal] = useState(false);
-    const [formData, setFormData] = useState({ processType: 'PO', minAmount: 0, maxAmount: '', approverRole: 'PROJECT_MANAGER' });
+    const [formData, setFormData] = useState({ processType: 'PO', minAmount: 0, maxAmount: '', approverRole: 'project_manager' });
 
     return (
         <AuthenticatedLayout>
@@ -79,7 +79,7 @@ export default function WorkflowsIndex() {
                         <div>
                             <label className="text-xs text-slate-500 uppercase font-bold mb-1 block">Approver Role</label>
                             <select className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white" value={formData.approverRole} onChange={e => setFormData({ ...formData, approverRole: e.target.value })}>
-                                <option value="PROJECT_MANAGER">Project Manager</option><option value="PROCUREMENT_OFFICER">Procurement Officer</option><option value="FINANCE">Finance</option><option value="AUDITOR">Auditor</option><option value="HEAD_OF_ADMIN">Head of Admin</option><option value="ADMIN">Admin</option>
+                                <option value="project_manager">Project Manager</option><option value="procurement_officer">Procurement Officer</option><option value="finance">Finance</option><option value="admin">Admin</option>
                             </select>
                         </div>
                         <div className="flex justify-end gap-3 pt-4">

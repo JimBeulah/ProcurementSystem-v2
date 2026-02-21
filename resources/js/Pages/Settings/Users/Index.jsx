@@ -10,7 +10,7 @@ export default function UsersIndex() {
     const [showModal, setShowModal] = useState(false);
 
     const roleBadge = (role) => {
-        const colors = { ADMIN: 'text-red-500 border-red-500', PROJECT_MANAGER: 'text-blue-500 border-blue-500', PROCUREMENT_OFFICER: 'text-emerald-500 border-emerald-500', FINANCE: 'text-amber-500 border-amber-500' };
+        const colors = { admin: 'text-red-500 border-red-500', project_manager: 'text-blue-500 border-blue-500', site_engineer: 'text-teal-500 border-teal-500', warehouse: 'text-orange-500 border-orange-500', procurement_officer: 'text-emerald-500 border-emerald-500', finance: 'text-amber-500 border-amber-500' };
         return colors[role] || 'text-slate-400 border-slate-400';
     };
 

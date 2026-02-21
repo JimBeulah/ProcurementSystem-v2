@@ -299,7 +299,7 @@ export default function ProjectBoq() {
                                 <span className="w-2 h-2 rounded-full bg-slate-400"></span> Locked
                             </div>
                         ) : (
-                            ['ADMIN', 'PROJECT_MANAGER'].includes(auth.user.role) && (
+                            ['admin', 'project_manager'].includes(auth.user.role) && (
                                 <button onClick={handleApprove} className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 text-xs font-bold transition-all shadow-lg shadow-emerald-500/20 active:scale-95">
                                     Approve BOQ
                                 </button>

@@ -24,16 +24,16 @@ class DatabaseSeeder extends Seeder
             'name' => 'Admin',
             'email' => 'admin@example.com',
             'password' => Hash::make('password'),
-            'role' => 'ADMIN',
+            'role' => 'admin',
         ]);
 
         // Create test users for each role
         $roles = [
-            ['name' => 'Project Manager', 'email' => 'pm@example.com', 'role' => 'PROJECT_MANAGER'],
-            ['name' => 'Procurement Officer', 'email' => 'procurement@example.com', 'role' => 'PROCUREMENT_OFFICER'],
-            ['name' => 'Engineer', 'email' => 'engineer@example.com', 'role' => 'ENGINEER'],
-            ['name' => 'Finance Officer', 'email' => 'finance@example.com', 'role' => 'FINANCE'],
-            ['name' => 'Encoder', 'email' => 'encoder@example.com', 'role' => 'ENCODER'],
+            ['name' => 'Project Manager', 'email' => 'pm@example.com', 'role' => 'project_manager'],
+            ['name' => 'Site Engineer', 'email' => 'site_engineer@example.com', 'role' => 'site_engineer'],
+            ['name' => 'Warehouse Officer', 'email' => 'warehouse@example.com', 'role' => 'warehouse'],
+            ['name' => 'Procurement Officer', 'email' => 'procurement@example.com', 'role' => 'procurement_officer'],
+            ['name' => 'Finance Officer', 'email' => 'finance@example.com', 'role' => 'finance'],
         ];
 
         foreach ($roles as $roleData) {
@@ -44,14 +44,6 @@ class DatabaseSeeder extends Seeder
                 'role' => $roleData['role'],
             ]);
         }
-
-        // Create sample client
-        Client::create([
-            'name' => 'Sample Client Corp.',
-            'contact_person' => 'Juan Dela Cruz',
-            'contract_type' => 'Lump Sum',
-            'payment_terms' => 'Net 30',
-        ]);
 
         $this->call(RolesAndPermissionsSeeder::class);
     }

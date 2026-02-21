@@ -22,7 +22,7 @@ export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleColl
     const { auth } = props;
 
     const can = (permission) => {
-        return auth?.permissions?.includes(permission) || auth?.roles?.includes('ADMIN'); // Admin superuser check
+        return auth?.permissions?.includes(permission) || auth?.roles?.includes('admin'); // Admin superuser check
     };
 
     const handleLinkClick = () => {
@@ -118,12 +118,11 @@ export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleColl
                     <NavGroup label="Procurement" isCollapsed={isCollapsed}>
                         {can('view clients') && <NavItem href="/clients" icon={<Users />} label="Clients" isActive={url.startsWith('/clients')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />}
                         {can('view projects') && <NavItem href="/projects" icon={<Briefcase />} label="Projects" isActive={url.startsWith('/projects')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />}
+                        {can('view purchase requests') && <NavItem href="/purchasing/requests" icon={<FileText />} label="Purchase Requests" isActive={url.startsWith('/purchasing/requests')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />}
                         {can('view rfq') && <NavItem href="/purchasing/rfq" icon={<FileText />} label="RFQ" isActive={url.startsWith('/purchasing/rfq')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />}
-                        {can('view purchase requests') && <NavItem href="/purchasing/requests" icon={<FileText />} label="Requests" isActive={url.startsWith('/purchasing/requests')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />}
                         {can('view purchase orders') && <NavItem href="/purchasing/orders" icon={<ShoppingCart />} label="Orders" isActive={url.startsWith('/purchasing/orders')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />}
                         {can('view receiving') && <NavItem href="/inventory/receiving" icon={<ArrowDownCircle />} label="Receive Goods" isActive={url.startsWith('/inventory/receiving')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />}
-                        {/* Approvals might need specific permission or rely on being an approver */}
-                        {(can('approve boq') || can('approve material requests') || can('approve purchase orders')) &&
+                        {(can('approve boq') || can('approve material requests') || can('approve purchase orders') || can('manage purchase requests')) &&
                             <NavItem href="/purchasing/approvals" icon={<Shield />} label="Approvals" isActive={url.startsWith('/purchasing/approvals')} isCollapsed={isCollapsed} onClick={handleLinkClick} onHover={setActiveTooltip} />
                         }
                     </NavGroup>

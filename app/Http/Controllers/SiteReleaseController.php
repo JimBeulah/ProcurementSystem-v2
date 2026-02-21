@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreSiteReleaseRequest;
 use App\Models\InventoryItem;
 use App\Models\SiteRelease;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class SiteReleaseController extends Controller
@@ -17,7 +18,7 @@ class SiteReleaseController extends Controller
             ->orderBy('material_name', 'asc')
             ->get();
 
-        $releases = SiteRelease::with(['inventoryItem', 'project', 'releasedBy'])
+        $releases = SiteRelease::with(['inventoryItem', 'project', 'releasedBy', 'receivedBy'])
             ->orderBy('release_date', 'desc')
             ->limit(50)
             ->get();
@@ -46,10 +47,33 @@ class SiteReleaseController extends Controller
             'unit' => $item->unit,
             'purpose' => $validated['purpose'] ?? null,
             'release_date' => now(),
+            'status' => 'IN_TRANSIT',
         ]);
 
         $item->decrement('quantity', $validated['quantity_released']);
 
         return redirect()->back()->with('success', "Released {$validated['quantity_released']} {$item->unit} of {$item->material_name}.");
+    }
+
+    public function confirmReceipt(Request $request, SiteRelease $siteRelease)
+    {
+        if ($siteRelease->status === 'RECEIVED') {
+            return redirect()->back()->with('error', 'This release has already been confirmed.');
+        }
+
+        $validated = $request->validate([
+            'quantity_received' => 'required|numeric|min:0|max:' . $siteRelease->quantity_released,
+            'receipt_remarks' => 'nullable|string|max:500',
+        ]);
+
+        $siteRelease->update([
+            'status' => 'RECEIVED',
+            'received_by_id' => auth()->id(),
+            'received_date' => now(),
+            'quantity_received' => $validated['quantity_received'],
+            'receipt_remarks' => $validated['receipt_remarks'] ?? null,
+        ]);
+
+        return redirect()->back()->with('success', "Receipt confirmed: {$validated['quantity_received']} {$siteRelease->unit} received.");
     }
 }

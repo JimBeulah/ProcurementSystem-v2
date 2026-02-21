@@ -122,7 +122,7 @@ class MaterialRequestController extends Controller
 
     public function approve(MaterialRequest $materialRequest)
     {
-        if (!in_array(auth()->user()->role, ['ADMIN', 'PROJECT_MANAGER'])) {
+        if (!in_array(auth()->user()->role, ['admin', 'project_manager'])) {
             abort(403, 'Unauthorized. Only Admins and Project Managers can approve requests.');
         }
 
@@ -140,7 +140,7 @@ class MaterialRequestController extends Controller
 
     public function reject(Request $request, MaterialRequest $materialRequest)
     {
-        if (!in_array(auth()->user()->role, ['ADMIN', 'PROJECT_MANAGER'])) {
+        if (!in_array(auth()->user()->role, ['admin', 'project_manager'])) {
             abort(403, 'Unauthorized. Only Admins and Project Managers can reject requests.');
         }
 

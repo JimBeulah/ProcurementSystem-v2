@@ -15,13 +15,20 @@ class SiteRelease extends Model
         'unit',
         'purpose',
         'release_date',
+        'status',
+        'received_by_id',
+        'received_date',
+        'quantity_received',
+        'receipt_remarks',
     ];
 
     protected function casts(): array
     {
         return [
             'quantity_released' => 'decimal:2',
+            'quantity_received' => 'decimal:2',
             'release_date' => 'datetime',
+            'received_date' => 'datetime',
         ];
     }
 
@@ -38,5 +45,10 @@ class SiteRelease extends Model
     public function releasedBy()
     {
         return $this->belongsTo(User::class, 'released_by_id');
+    }
+
+    public function receivedBy()
+    {
+        return $this->belongsTo(User::class, 'received_by_id');
     }
 }

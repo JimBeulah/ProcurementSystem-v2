@@ -33,7 +33,7 @@ class BoqController extends Controller
 
     public function approve(Project $project)
     {
-        if (!in_array(auth()->user()->role, ['ADMIN', 'PROJECT_MANAGER'])) {
+        if (!in_array(auth()->user()->role, ['admin', 'project_manager'])) {
             abort(403, 'Unauthorized. Only Admins and Project Managers can approve BOQs.');
         }
 

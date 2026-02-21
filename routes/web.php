@@ -127,7 +127,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Site Release
     Route::get('/site-release', [SiteReleaseController::class, 'index'])->name('site-release.index')->middleware('can:view site release');
-    Route::post('/site-release', [SiteReleaseController::class, 'store'])->name('site-release.store');
+    Route::post('/site-release', [SiteReleaseController::class, 'store'])->name('site-release.store')->middleware('can:create site release');
+    Route::post('/site-release/{siteRelease}/confirm', [SiteReleaseController::class, 'confirmReceipt'])->name('site-release.confirm')->middleware('can:confirm site release');
 
     // Settings
     Route::middleware(['can:view settings'])->group(function () {
