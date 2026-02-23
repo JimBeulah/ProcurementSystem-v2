@@ -61,6 +61,12 @@ const NAVIGATION_CONFIG = [
             { label: 'Reports', href: '/finance/reports', icon: <PieChart />, permission: 'view financial reports', matchPrefix: '/finance/reports' },
         ],
     },
+    {
+        group: 'Admin',
+        items: [
+            { label: 'User Management', href: '/settings/users', icon: <Users />, permission: 'manage users', matchPrefix: '/settings/users' },
+        ],
+    },
 ];
 
 export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleCollapse }) {

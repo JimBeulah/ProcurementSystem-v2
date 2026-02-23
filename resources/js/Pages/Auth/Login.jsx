@@ -1,11 +1,11 @@
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
-export default function Login({ status, canResetPassword }) {
+export default function Login({ status }) {
     const { data, setData, post, processing, errors, reset } = useForm({
-        email: '',
+        username: '',
         password: '',
         remember: false,
     });
@@ -22,10 +22,8 @@ export default function Login({ status, canResetPassword }) {
         <GuestLayout>
             <Head title="Sign In" />
 
-            {/* macOS Window Glass Panel */}
             <div className="w-full bg-white/70 dark:bg-slate-900/60 backdrop-blur-3xl rounded-2xl border border-white/50 dark:border-white/10 shadow-2xl p-8 space-y-6">
 
-                {/* Header */}
                 <div className="space-y-1 text-center">
                     <h1 className="text-[22px] font-semibold text-slate-900 dark:text-white tracking-tight">
                         Sign In
@@ -42,24 +40,24 @@ export default function Login({ status, canResetPassword }) {
                 )}
 
                 <form onSubmit={submit} className="space-y-4">
-                    {/* Email */}
+                    {/* Username */}
                     <div className="space-y-1.5 flex flex-col items-start">
-                        <label htmlFor="email" className="text-[13px] font-medium text-slate-700 dark:text-slate-300 ml-1">
-                            Email
+                        <label htmlFor="username" className="text-[13px] font-medium text-slate-700 dark:text-slate-300 ml-1">
+                            Username
                         </label>
                         <input
-                            id="email"
-                            type="email"
-                            value={data.email}
-                            onChange={(e) => setData('email', e.target.value)}
+                            id="username"
+                            type="text"
+                            value={data.username}
+                            onChange={(e) => setData('username', e.target.value)}
                             className="w-full px-3 py-2 bg-white/90 dark:bg-black/20 border border-slate-300/50 dark:border-white/10 rounded-lg text-[14px] text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-[3px] focus:ring-blue-500/30 focus:border-blue-500 transition-all shadow-inner"
-                            placeholder="Enter your email"
+                            placeholder="Enter your username"
                             autoFocus
                             autoComplete="username"
                             required
                         />
-                        {errors.email && (
-                            <p className="text-xs text-red-500 font-medium pl-1 mt-1">{errors.email}</p>
+                        {errors.username && (
+                            <p className="text-xs text-red-500 font-medium pl-1 mt-1">{errors.username}</p>
                         )}
                     </div>
 
@@ -92,8 +90,8 @@ export default function Login({ status, canResetPassword }) {
                         )}
                     </div>
 
-                    {/* Remember + Forgot */}
-                    <div className="flex items-center justify-between pt-2">
+                    {/* Remember */}
+                    <div className="flex items-center pt-2">
                         <label className="flex items-center gap-2 cursor-pointer select-none group">
                             <input
                                 type="checkbox"
@@ -105,18 +103,10 @@ export default function Login({ status, canResetPassword }) {
                                 Keep me logged in
                             </span>
                         </label>
-                        {canResetPassword && (
-                            <Link
-                                href={route('password.request')}
-                                className="text-[13px] font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
-                            >
-                                Forgot password?
-                            </Link>
-                        )}
                     </div>
 
                     {/* Submit */}
-                    <div className="pt-4 flex justify-end">
+                    <div className="pt-4">
                         <button
                             type="submit"
                             disabled={processing}
@@ -130,19 +120,6 @@ export default function Login({ status, canResetPassword }) {
                         </button>
                     </div>
                 </form>
-
-                {/* Register link */}
-                <div className="text-center text-[13px] text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200/50 dark:border-white/10 mt-6 flex justify-center items-center">
-                    <span className="mt-4 inline-block">
-                        Don't have an account?{' '}
-                        <Link
-                            href={route('register')}
-                            className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
-                        >
-                            Create account
-                        </Link>
-                    </span>
-                </div>
             </div>
         </GuestLayout>
     );

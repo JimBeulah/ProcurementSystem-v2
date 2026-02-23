@@ -17,6 +17,7 @@ use App\Http\Controllers\ReceivingFormController;
 use App\Http\Controllers\RfqController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SiteReleaseController;
+use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -135,9 +136,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Settings
     Route::middleware(['can:view settings'])->group(function () {
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
-        Route::get('/settings/users', [SettingsController::class, 'users'])->name('settings.users')->middleware('can:manage users');
         Route::get('/settings/master-data', [SettingsController::class, 'masterData'])->name('settings.master-data')->middleware('can:manage master data');
         Route::get('/settings/workflows', [SettingsController::class, 'workflows'])->name('settings.workflows')->middleware('can:manage master data');
+    });
+
+    // User Management (Admin only)
+    Route::middleware(['can:manage users'])->group(function () {
+        Route::get('/settings/users', [SettingsController::class, 'users'])->name('settings.users');
+        Route::post('/settings/users', [UserController::class, 'store'])->name('users.store');
+        Route::put('/settings/users/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::patch('/settings/users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
     });
 });
 

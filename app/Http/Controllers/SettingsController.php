@@ -15,7 +15,15 @@ class SettingsController extends Controller
 
     public function users()
     {
-        $users = User::orderBy('created_at', 'desc')->get();
+        $users = User::with('roles')->orderBy('name')->get()->map(fn($u) => [
+            'id' => $u->id,
+            'name' => $u->name,
+            'email' => $u->email,
+            'username' => $u->username,
+            'role' => $u->role,
+            'is_active' => (bool) $u->is_active,
+            'created_at' => $u->created_at,
+        ]);
         return Inertia::render('Settings/Users/Index', ['users' => $users]);
     }
 
