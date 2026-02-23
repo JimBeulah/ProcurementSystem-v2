@@ -22,6 +22,7 @@ class SettingsController extends Controller
             'username' => $u->username,
             'role' => $u->role,
             'is_active' => (bool) $u->is_active,
+            'must_change_password' => (bool) $u->must_change_password,
             'created_at' => $u->created_at,
         ]);
         return Inertia::render('Settings/Users/Index', ['users' => $users]);

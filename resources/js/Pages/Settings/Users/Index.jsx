@@ -143,6 +143,13 @@ export default function UsersIndex() {
         });
     };
 
+    const handleResetPassword = (user) => {
+        if (!window.confirm(`Reset password for "${user.name}"? They will be required to change it on next login.`)) return;
+        router.patch(route('users.reset-password', user.id), {}, {
+            preserveScroll: true,
+        });
+    };
+
     return (
         <AuthenticatedLayout>
             <Head title="User Management" />
@@ -226,15 +233,22 @@ export default function UsersIndex() {
                                     </td>
                                     {/* Status */}
                                     <td className="px-5 py-3.5">
-                                        {u.is_active ? (
-                                            <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Active
-                                            </span>
-                                        ) : (
-                                            <span className="inline-flex items-center gap-1 text-xs font-medium text-red-500">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-red-500" /> Inactive
-                                            </span>
-                                        )}
+                                        <div className="flex flex-col gap-1">
+                                            {u.is_active ? (
+                                                <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Active
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1 text-xs font-medium text-red-500">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-red-500" /> Inactive
+                                                </span>
+                                            )}
+                                            {u.must_change_password && (
+                                                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-full w-fit">
+                                                    🔑 Temp PW
+                                                </span>
+                                            )}
+                                        </div>
                                     </td>
                                     {/* Actions */}
                                     <td className="px-5 py-3.5 text-right">
@@ -247,6 +261,16 @@ export default function UsersIndex() {
                                             >
                                                 <Edit2 size={14} />
                                             </button>
+                                            {/* Reset Password */}
+                                            {u.id !== auth?.user?.id && (
+                                                <button
+                                                    onClick={() => handleResetPassword(u)}
+                                                    title="Reset password to default"
+                                                    className="p-1.5 rounded-lg text-slate-400 hover:text-amber-500 hover:bg-amber-500/10 transition"
+                                                >
+                                                    <KeyRound size={14} />
+                                                </button>
+                                            )}
                                             {/* Toggle Active */}
                                             {u.id !== auth?.user?.id && (
                                                 <button

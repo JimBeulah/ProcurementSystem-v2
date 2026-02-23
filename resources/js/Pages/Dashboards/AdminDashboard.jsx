@@ -1,9 +1,8 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { Card } from '@/Components/UI/Card';
 import {
-    Clock, Activity, ShoppingCart, AlertCircle,
-    TrendingUp, Package, FileText, AlertTriangle, Users, PhilippinePeso
+    Package, Users, ShoppingCart, AlertCircle, FileText, CheckCircle, TrendingUp, ShieldCheck
 } from 'lucide-react';
 
 export default function AdminDashboard({ stats }) {
@@ -11,132 +10,118 @@ export default function AdminDashboard({ stats }) {
         <AuthenticatedLayout>
             <Head title="Admin Dashboard" />
             <div className="space-y-6">
-                {/* Stat Cards */}
+                {/* Welcome Banner */}
+                <div className="rounded-3xl bg-gradient-to-br from-indigo-600 to-purple-700 p-6 text-white relative overflow-hidden shadow-lg border border-indigo-500/20">
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.15),_transparent_60%)]" />
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-2 mb-2">
+                            <ShieldCheck className="text-indigo-200" size={18} />
+                            <p className="text-indigo-100 text-xs font-semibold uppercase tracking-widest">System Administrator</p>
+                        </div>
+                        <h2 className="text-2xl font-bold mb-1 tracking-tight">System Overview</h2>
+                        <p className="text-indigo-100 text-sm max-w-xl">
+                            You have <span className="font-bold text-white">{stats?.pendingPOs || 0} pending orders</span> and <span className="font-bold text-white">{stats?.alerts || 0} system alerts</span> requiring attention.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Primary Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard
-                        title="Pending Approvals"
-                        value={stats?.pendingPOs?.toString() || '0'}
-                        icon={<Clock className="text-orange-500" size={20} />}
-                        trend="+2 New"
-                        color="from-orange-500/10 to-transparent"
-                    />
                     <StatCard
                         title="Active Projects"
                         value={stats?.activeProjects?.toString() || '0'}
-                        icon={<Activity className="text-blue-500" size={20} />}
-                        trend="On Time"
+                        icon={<Package className="text-blue-500" size={20} />}
                         color="from-blue-500/10 to-transparent"
                     />
                     <StatCard
-                        title="Total Orders"
-                        value={stats?.totalOrders?.toString() || '0'}
-                        icon={<ShoppingCart className="text-indigo-500" size={20} />}
-                        trend="+12%"
-                        color="from-indigo-500/10 to-transparent"
-                    />
-                    <StatCard
-                        title="System Alerts"
-                        value={stats?.alerts?.toString() || '0'}
-                        icon={<AlertCircle className="text-red-500" size={20} />}
-                        trend="Check Inventory"
-                        color="from-red-500/10 to-transparent"
-                    />
-                </div>
-
-                {/* Second Row */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <StatCard
                         title="Total Users"
                         value={stats?.totalUsers?.toString() || '0'}
-                        icon={<Users className="text-teal-500" size={20} />}
-                        color="from-teal-500/10 to-transparent"
+                        icon={<Users className="text-purple-500" size={20} />}
+                        color="from-purple-500/10 to-transparent"
                     />
                     <StatCard
                         title="Pending PRs"
                         value={stats?.pendingPRs?.toString() || '0'}
-                        icon={<FileText className="text-amber-500" size={20} />}
-                        color="from-amber-500/10 to-transparent"
+                        icon={<FileText className="text-orange-500" size={20} />}
+                        trend={stats?.pendingPRs > 0 ? "Action Required" : null}
+                        color="from-orange-500/10 to-transparent"
                     />
                     <StatCard
-                        title="Total Finance Records"
-                        value={stats?.totalInvoices?.toString() || '0'}
-                        icon={<PhilippinePeso className="text-emerald-500" size={20} />}
-                        color="from-emerald-500/10 to-transparent"
+                        title="Total Orders (POs)"
+                        value={stats?.totalOrders?.toString() || '0'}
+                        icon={<ShoppingCart className="text-indigo-500" size={20} />}
+                        color="from-indigo-500/10 to-transparent"
                     />
                 </div>
 
-                {/* Main Content Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2 space-y-6">
-                        {/* Recent Activities */}
-                        <Card className="p-0 overflow-hidden bg-white/40 dark:bg-zinc-900/40 backdrop-blur-2xl border-white/20 dark:border-white/5 shadow-sm rounded-3xl">
-                            <div className="p-5 flex justify-between items-center border-b border-white/10 dark:border-white/5">
-                                <h3 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">Recent Activities</h3>
-                                <button className="text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-3 py-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors">View All</button>
-                            </div>
-                            <div className="p-2">
-                                {(stats?.recentActivities || [
-                                    { id: 1, title: 'New Purchase Order Created', code: 'PO-2026-001', time: 'Just now', type: 'po' },
-                                    { id: 2, title: 'Material Request Approved', code: 'MR-2026-005', time: '2h ago', type: 'mr' },
-                                    { id: 3, title: 'Delivery Received', code: 'RR-2026-003', time: '4h ago', type: 'delivery' },
-                                    { id: 4, title: 'Invoice Processed', code: 'INV-2026-012', time: 'Yesterday', type: 'invoice' },
-                                ]).map((activity, index) => (
-                                    <div key={activity.id} className={`flex items-center justify-between p-3 rounded-2xl hover:bg-white/40 dark:hover:bg-white/5 transition-all group cursor-pointer ${index !== 3 ? 'mb-1' : ''}`}>
-                                        <div className="flex items-center gap-4">
-                                            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all shadow-sm ${activity.type === 'po' ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400' :
-                                                activity.type === 'mr' ? 'bg-purple-50 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400' :
-                                                    activity.type === 'delivery' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400' :
-                                                        'bg-amber-50 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400'
-                                                }`}>
-                                                {activity.type === 'po' && <FileText size={18} />}
-                                                {activity.type === 'mr' && <Activity size={18} />}
-                                                {activity.type === 'delivery' && <Package size={18} />}
-                                                {activity.type === 'invoice' && <TrendingUp size={18} />}
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{activity.title}</p>
-                                                <p className="text-xs text-zinc-500 dark:text-zinc-400">{activity.code} • {activity.time}</p>
-                                            </div>
-                                        </div>
-                                        <div className="hidden sm:block">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-auto" />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </Card>
-                    </div>
+                {/* Secondary Action Areas */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* System Alerts */}
+                    <Card className="bg-white/40 dark:bg-zinc-900/40 backdrop-blur-2xl border-white/20 dark:border-white/5 shadow-sm p-6 rounded-3xl">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                                <AlertCircle className="text-red-500" size={18} />
+                                System Alerts
+                            </h3>
+                            <span className="text-xs bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 font-bold px-2 py-1 rounded-full">
+                                {stats?.alerts || 0} Issues
+                            </span>
+                        </div>
 
-                    {/* Budget Utilization */}
-                    <div>
-                        <Card className="h-full bg-white/40 dark:bg-zinc-900/40 backdrop-blur-2xl border-white/20 dark:border-white/5 shadow-sm p-6 rounded-3xl space-y-6">
-                            <h3 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">Budget Utilization</h3>
-                            <div className="space-y-6">
-                                {(stats?.budgetItems || [
-                                    { name: 'Skyline Tower', progress: 75, budget: '50M', color: 'bg-blue-500' },
-                                    { name: 'Seaside Villa', progress: 32, budget: '15M', color: 'bg-pink-500' },
-                                    { name: 'City Hardware', progress: 90, budget: '2M', color: 'bg-orange-500' },
-                                ]).map((item, i) => (
-                                    <BudgetRow key={i} {...item} />
-                                ))}
-                            </div>
-                            <div className="mt-8 p-0 rounded-2xl overflow-hidden relative group cursor-pointer">
-                                <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-indigo-600 opacity-90" />
-                                <div className="relative z-10 p-5 text-white">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <h4 className="font-bold text-sm">Pro Tip</h4>
-                                        <div className="bg-white/20 p-1 rounded-lg backdrop-blur-sm">
-                                            <AlertTriangle size={14} className="text-white" />
-                                        </div>
+                        <div className="space-y-4">
+                            {stats?.alerts > 0 ? (
+                                <div className="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-500/5 border border-red-100 dark:border-red-500/10 rounded-xl">
+                                    <AlertCircle className="text-red-500 shrink-0 mt-0.5" size={16} />
+                                    <div>
+                                        <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Declined Purchase Orders</p>
+                                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">There are {stats.alerts} declined orders that require review or modification.</p>
+                                        <Link href="/purchasing/orders" className="text-xs font-medium text-red-600 dark:text-red-400 hover:underline mt-2 inline-block">Review Orders →</Link>
                                     </div>
-                                    <p className="text-blue-50 text-xs leading-relaxed mb-4 font-medium opacity-90">Review DUPA limits before approving large orders to maintain budget health.</p>
-                                    <button className="w-full py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-xl text-xs font-bold transition-all border border-white/10">
-                                        Check Reports
-                                    </button>
                                 </div>
-                            </div>
-                        </Card>
-                    </div>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center py-6 text-zinc-400 dark:text-zinc-500">
+                                    <CheckCircle size={32} className="mb-2 opacity-50 text-emerald-500" />
+                                    <p className="text-sm font-medium">All systems normal</p>
+                                    <p className="text-xs">No pending alerts or declined orders.</p>
+                                </div>
+                            )}
+                        </div>
+                    </Card>
+
+                    {/* Quick Links */}
+                    <Card className="bg-white/40 dark:bg-zinc-900/40 backdrop-blur-2xl border-white/20 dark:border-white/5 shadow-sm p-6 rounded-3xl">
+                        <h3 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 mb-4">Quick Administration</h3>
+                        <div className="grid grid-cols-2 gap-3">
+                            <QuickLink
+                                href="/settings/users"
+                                icon={<Users size={18} />}
+                                label="Manage Users"
+                                desc="Add or edit system roles"
+                                color="bg-purple-50 border-purple-100 text-purple-600 dark:bg-purple-500/10 dark:border-purple-500/20 dark:text-purple-400"
+                            />
+                            <QuickLink
+                                href="/projects"
+                                icon={<Package size={18} />}
+                                label="Project Master"
+                                desc="View all active projects"
+                                color="bg-blue-50 border-blue-100 text-blue-600 dark:bg-blue-500/10 dark:border-blue-500/20 dark:text-blue-400"
+                            />
+                            <QuickLink
+                                href="/settings/master-data"
+                                icon={<FileText size={18} />}
+                                label="Master Data"
+                                desc="System lookup values"
+                                color="bg-slate-50 border-slate-200 text-slate-600 dark:bg-slate-500/10 dark:border-slate-500/20 dark:text-slate-400"
+                            />
+                            <QuickLink
+                                href="/finance/reports"
+                                icon={<TrendingUp size={18} />}
+                                label="Financial Reports"
+                                desc="View overall expenditure"
+                                color="bg-emerald-50 border-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400"
+                            />
+                        </div>
+                    </Card>
                 </div>
             </div>
         </AuthenticatedLayout>
@@ -153,8 +138,8 @@ function StatCard({ title, value, icon, trend, color }) {
                         {icon}
                     </div>
                     {trend && (
-                        <div className="flex items-center gap-1 text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2.5 py-1 rounded-full border border-emerald-500/10">
-                            <TrendingUp size={12} /> {trend}
+                        <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-orange-500/10 text-orange-600 dark:text-orange-400 px-2 py-1 rounded-md border border-orange-500/10">
+                            <AlertCircle size={10} /> {trend}
                         </div>
                     )}
                 </div>
@@ -167,19 +152,19 @@ function StatCard({ title, value, icon, trend, color }) {
     );
 }
 
-function BudgetRow({ name, progress, budget, color = "bg-primary" }) {
+function QuickLink({ href, icon, label, desc, color }) {
     return (
-        <div>
-            <div className="flex justify-between mb-2">
-                <div>
-                    <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">{name}</p>
-                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium">Budget: ₱{budget}</p>
-                </div>
-                <span className="text-xs font-bold text-zinc-600 dark:text-zinc-300">{progress}%</span>
+        <Link
+            href={href}
+            className={`flex flex-col items-start gap-2 p-4 rounded-2xl border ${color} hover:opacity-80 transition-opacity text-left`}
+        >
+            <div className="bg-white/50 dark:bg-black/20 p-2 rounded-lg backdrop-blur-sm">
+                {icon}
             </div>
-            <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                <div className={`h-full ${color} rounded-full transition-all duration-1000 ease-out shadow-sm`} style={{ width: `${progress}%` }} />
+            <div>
+                <span className="text-sm font-semibold block mb-0.5">{label}</span>
+                <span className="text-[10px] opacity-80 block">{desc}</span>
             </div>
-        </div>
+        </Link>
     );
 }

@@ -27,11 +27,12 @@ class UserController extends Controller
             'password' => Hash::make('password123'),
             'role' => $validated['role'],
             'is_active' => true,
+            'must_change_password' => true,
         ]);
 
         $user->syncRoles([$validated['role']]);
 
-        return back()->with('success', "User \"{$user->name}\" created. Default password is password123.");
+        return back()->with('success', "User \"{$user->name}\" created. They will be prompted to change their password on first login.");
     }
 
     public function update(Request $request, User $user)
@@ -55,6 +56,20 @@ class UserController extends Controller
         $user->syncRoles([$validated['role']]);
 
         return back()->with('success', "User \"{$user->name}\" updated successfully.");
+    }
+
+    public function resetPassword(User $user)
+    {
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'You cannot reset your own password here.');
+        }
+
+        $user->update([
+            'password' => Hash::make('password123'),
+            'must_change_password' => true,
+        ]);
+
+        return back()->with('success', "Password for \"{$user->name}\" has been reset. They will be prompted to change it on next login.");
     }
 
     public function toggleActive(User $user)

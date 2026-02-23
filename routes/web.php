@@ -18,6 +18,7 @@ use App\Http\Controllers\RfqController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SiteReleaseController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Auth\ForcePasswordChangeController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -27,7 +28,13 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
+// Force Password Change — accessible by authenticated users only (exempt from password.changed itself)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/password/change', [ForcePasswordChangeController::class, 'show'])->name('password.change');
+    Route::post('/password/change', [ForcePasswordChangeController::class, 'update'])->name('password.change.update');
+});
+
+Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Clients
@@ -146,6 +153,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/settings/users', [UserController::class, 'store'])->name('users.store');
         Route::put('/settings/users/{user}', [UserController::class, 'update'])->name('users.update');
         Route::patch('/settings/users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
+        Route::patch('/settings/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
     });
 });
 
