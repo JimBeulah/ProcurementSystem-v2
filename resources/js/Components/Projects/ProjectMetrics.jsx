@@ -1,5 +1,5 @@
 import React from 'react';
-import { Briefcase, DollarSign, Building } from 'lucide-react';
+import { Briefcase, PhilippinePeso, Building } from 'lucide-react';
 
 export default function ProjectMetrics({ projects }) {
     const totalProjects = projects.length;
@@ -27,7 +27,7 @@ export default function ProjectMetrics({ projects }) {
             </div>
 
             <div className="bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex items-center gap-4 group hover:border-emerald-500/30 transition-all shadow-sm">
-                <div className="p-3 rounded-lg bg-emerald-500/10 text-emerald-600 group-hover:scale-110 transition-transform"><DollarSign size={24} /></div>
+                <div className="p-3 rounded-lg bg-emerald-500/10 text-emerald-600 group-hover:scale-110 transition-transform"><PhilippinePeso size={24} /></div>
                 <div>
                     <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-black tracking-wider">Total Budget</p>
                     <p className="text-2xl font-black text-slate-900 dark:text-white font-mono tracking-tight">₱ {(totalBudget / 1000000).toFixed(2)}M</p>

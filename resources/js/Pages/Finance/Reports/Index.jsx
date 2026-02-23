@@ -1,7 +1,7 @@
 import React from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage } from '@inertiajs/react';
-import { PieChart, DollarSign, TrendingUp, Activity, BarChart3 } from 'lucide-react';
+import { PieChart, PhilippinePeso, TrendingUp, Activity, BarChart3 } from 'lucide-react';
 
 export default function FinancialReports() {
     const { data } = usePage().props;
@@ -25,7 +25,7 @@ export default function FinancialReports() {
                 {/* KPI Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-xl relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><DollarSign size={100} /></div>
+                        <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><PhilippinePeso size={100} /></div>
                         <div className="text-sm text-slate-500 uppercase font-bold mb-2">Total Budget</div>
                         <div className="text-3xl font-mono text-slate-900 dark:text-white font-bold">
                             {totalBudget.toLocaleString(undefined, { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 })}

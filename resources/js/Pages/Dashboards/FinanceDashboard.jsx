@@ -1,7 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { Card } from '@/Components/UI/Card';
-import { FileText, DollarSign, TrendingUp, PieChart, CreditCard } from 'lucide-react';
+import { FileText, PhilippinePeso, TrendingUp, PieChart, CreditCard } from 'lucide-react';
 
 export default function FinanceDashboard({ stats }) {
     return (
@@ -36,7 +36,7 @@ export default function FinanceDashboard({ stats }) {
                     <StatCard
                         title="Total Invoiced"
                         value={`₱${stats?.totalInvoicedAmount || '0'}`}
-                        icon={<DollarSign className="text-emerald-500" size={20} />}
+                        icon={<PhilippinePeso className="text-emerald-500" size={20} />}
                         trend="+5%"
                         color="from-emerald-500/10 to-transparent"
                     />

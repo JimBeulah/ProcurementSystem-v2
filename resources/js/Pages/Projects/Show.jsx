@@ -3,7 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
     Briefcase, ClipboardList, Truck, ShoppingCart, ArrowRight,
-    MapPin, Building, DollarSign, Calendar, Activity
+    MapPin, Building, PhilippinePeso, Calendar, Activity
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -116,7 +116,7 @@ export default function ProjectShow() {
                 {/* Stats Grid - Glass Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { label: 'Budget', value: Number(project.budget).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' }), icon: DollarSign, color: 'text-emerald-500' },
+                        { label: 'Budget', value: Number(project.budget).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' }), icon: PhilippinePeso, color: 'text-emerald-500' },
                         { label: 'BOQ Items', value: project.boq_items?.length || 0, icon: ClipboardList, color: 'text-orange-500' },
                         { label: 'Material Requests', value: project.material_requests?.length || 0, icon: Truck, color: 'text-blue-500' },
                         { label: 'Purchase Orders', value: project.purchase_orders?.length || 0, icon: ShoppingCart, color: 'text-purple-500' },

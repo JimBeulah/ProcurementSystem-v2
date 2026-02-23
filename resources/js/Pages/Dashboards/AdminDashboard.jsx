@@ -3,7 +3,7 @@ import { Head } from '@inertiajs/react';
 import { Card } from '@/Components/UI/Card';
 import {
     Clock, Activity, ShoppingCart, AlertCircle,
-    TrendingUp, Package, FileText, AlertTriangle, Users, DollarSign
+    TrendingUp, Package, FileText, AlertTriangle, Users, PhilippinePeso
 } from 'lucide-react';
 
 export default function AdminDashboard({ stats }) {
@@ -60,7 +60,7 @@ export default function AdminDashboard({ stats }) {
                     <StatCard
                         title="Total Finance Records"
                         value={stats?.totalInvoices?.toString() || '0'}
-                        icon={<DollarSign className="text-emerald-500" size={20} />}
+                        icon={<PhilippinePeso className="text-emerald-500" size={20} />}
                         color="from-emerald-500/10 to-transparent"
                     />
                 </div>

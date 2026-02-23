@@ -5,7 +5,7 @@ import { usePermissions } from '@/Hooks/usePermissions';
 import Modal from '@/Components/UI/Modal';
 import {
     FileText, Plus, CheckCircle, XCircle, Trash2, ChevronDown, ChevronRight,
-    Briefcase, Calendar, User, DollarSign, AlertTriangle, Package, ShoppingCart
+    Briefcase, Calendar, User, PhilippinePeso, AlertTriangle, Package, ShoppingCart
 } from 'lucide-react';
 import { toast } from 'sonner';
 
