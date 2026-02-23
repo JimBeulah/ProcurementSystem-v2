@@ -3,7 +3,7 @@ import { Hexagon } from 'lucide-react';
 import { Toaster } from 'sonner';
 import FlashNotifications from '@/Components/FlashNotifications';
 import { ThemeToggle } from '@/Components/UI/ThemeToggle';
-import MagneticGridBackground from '@/Components/UI/MagneticGridBackground';
+import ParticleCanvas from '@/Components/UI/ParticleCanvas';
 
 export default function GuestLayout({ children, bgImage }) {
     return (
@@ -20,7 +20,7 @@ export default function GuestLayout({ children, bgImage }) {
                     <div className="absolute inset-0 bg-white/30 dark:bg-slate-950/40" />
                 </div>
             ) : (
-                <MagneticGridBackground />
+                <ParticleCanvas />
             )}
 
             <div className="absolute top-6 right-6 z-20">
