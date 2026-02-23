@@ -2,7 +2,9 @@ import React from 'react';
 import { Link } from '@inertiajs/react';
 import { Briefcase, MapPin, Edit2, Trash2 } from 'lucide-react';
 
-export default function ProjectTable({ projects, onEdit, onDelete }) {
+export default function ProjectTable({ projects, onEdit, onDelete, auth }) {
+    const isSiteEngineer = auth?.user?.role === 'site_engineer';
+
     return (
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
@@ -13,7 +15,7 @@ export default function ProjectTable({ projects, onEdit, onDelete }) {
                             <th className="p-3 min-w-[200px]">Project Name / Client</th>
                             <th className="p-3">Location / Contract</th>
                             <th className="p-3 text-center">Type</th>
-                            <th className="p-3 text-right">Budget</th>
+                            {!isSiteEngineer && <th className="p-3 text-right">Budget</th>}
                             <th className="p-3 text-center">Status</th>
                             {(onEdit || onDelete) && <th className="p-3 text-center">Actions</th>}
                         </tr>
@@ -39,7 +41,9 @@ export default function ProjectTable({ projects, onEdit, onDelete }) {
                                         {project.project_type}
                                     </span>
                                 </td>
-                                <td className="p-3 text-right font-mono text-slate-900 dark:text-white">₱ {Number(project.budget).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                {!isSiteEngineer && (
+                                    <td className="p-3 text-right font-mono text-slate-900 dark:text-white">₱ {Number(project.budget).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                )}
                                 <td className="p-3 text-center">
                                     <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${project.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'}`}>{project.status}</span>
                                 </td>

@@ -14,6 +14,10 @@ class MaterialRequestController extends Controller
 {
     public function index(Project $project)
     {
+        if (auth()->user()->hasRole('site_engineer') && $project->site_engineer_id !== auth()->id()) {
+            abort(403, 'Unauthorized access to this project.');
+        }
+
         $project->load('client');
 
         $materialRequests = MaterialRequest::where('project_id', $project->id)
@@ -34,6 +38,10 @@ class MaterialRequestController extends Controller
 
     public function store(Request $request, Project $project)
     {
+        if (auth()->user()->hasRole('site_engineer') && $project->site_engineer_id !== auth()->id()) {
+            abort(403, 'Unauthorized access to this project.');
+        }
+
         $validated = $request->validate([
             'remarks' => 'nullable|string|max:500',
             'items' => 'required|array|min:1',

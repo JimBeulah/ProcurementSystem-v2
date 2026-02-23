@@ -8,7 +8,8 @@ import {
 import { motion } from 'framer-motion';
 
 export default function ProjectShow() {
-    const { project } = usePage().props;
+    const { project, auth } = usePage().props;
+    const isSiteEngineer = auth.user.role === 'site_engineer';
 
     if (!project) return (
         <div className="flex items-center justify-center min-h-[60vh]">
@@ -33,6 +34,7 @@ export default function ProjectShow() {
             iconColor: 'text-orange-600 dark:text-orange-400',
             bg: 'bg-orange-500/10',
             href: `/projects/${project.id}/boq`,
+            hideForSiteEngineer: true,
         },
         {
             title: 'Material Requests',
@@ -51,8 +53,9 @@ export default function ProjectShow() {
             iconColor: 'text-cyan-600 dark:text-cyan-400',
             bg: 'bg-cyan-500/10',
             href: '/purchasing/orders',
+            hideForSiteEngineer: true,
         },
-    ];
+    ].filter(mod => !(isSiteEngineer && mod.hideForSiteEngineer));
 
     return (
         <AuthenticatedLayout>
@@ -116,27 +119,28 @@ export default function ProjectShow() {
                 {/* Stats Grid - Glass Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { label: 'Budget', value: Number(project.budget).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' }), icon: PhilippinePeso, color: 'text-emerald-500' },
-                        { label: 'BOQ Items', value: project.boq_items?.length || 0, icon: ClipboardList, color: 'text-orange-500' },
+                        { label: 'Budget', value: Number(project.budget).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' }), icon: PhilippinePeso, color: 'text-emerald-500', hideForSiteEngineer: true },
+                        { label: 'BOQ Items', value: project.boq_items?.length || 0, icon: ClipboardList, color: 'text-orange-500', hideForSiteEngineer: true },
                         { label: 'Material Requests', value: project.material_requests?.length || 0, icon: Truck, color: 'text-blue-500' },
-                        { label: 'Purchase Orders', value: project.purchase_orders?.length || 0, icon: ShoppingCart, color: 'text-purple-500' },
-                    ].map((stat, i) => (
-                        <motion.div
-                            key={stat.label}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 + (i * 0.05) }}
-                            className="relative overflow-hidden p-5 rounded-2xl bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/5 dark:border-white/5 shadow-sm group hover:shadow-md transition-all"
-                        >
-                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-110 duration-500">
-                                <stat.icon size={64} />
-                            </div>
-                            <div className="flex flex-col relative z-10">
-                                <span className="text-sm font-medium text-muted-foreground/80">{stat.label}</span>
-                                <span className="text-2xl font-bold text-foreground mt-1 tracking-tight">{stat.value}</span>
-                            </div>
-                        </motion.div>
-                    ))}
+                        { label: 'Purchase Orders', value: project.purchase_orders?.length || 0, icon: ShoppingCart, color: 'text-purple-500', hideForSiteEngineer: true },
+                    ].filter(stat => !(isSiteEngineer && stat.hideForSiteEngineer))
+                        .map((stat, i) => (
+                            <motion.div
+                                key={stat.label}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.1 + (i * 0.05) }}
+                                className="relative overflow-hidden p-5 rounded-2xl bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/5 dark:border-white/5 shadow-sm group hover:shadow-md transition-all"
+                            >
+                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-110 duration-500">
+                                    <stat.icon size={64} />
+                                </div>
+                                <div className="flex flex-col relative z-10">
+                                    <span className="text-sm font-medium text-muted-foreground/80">{stat.label}</span>
+                                    <span className="text-2xl font-bold text-foreground mt-1 tracking-tight">{stat.value}</span>
+                                </div>
+                            </motion.div>
+                        ))}
                 </div>
 
                 {/* Modules Navigation */}

@@ -23,6 +23,7 @@ class Project extends Model
         'project_type',
         'approved_by',
         'approved_at',
+        'site_engineer_id',
     ];
 
     protected function casts(): array
@@ -45,6 +46,19 @@ class Project extends Model
     public function approver()
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function siteEngineer()
+    {
+        return $this->belongsTo(User::class, 'site_engineer_id');
+    }
+
+    public function scopeForUser($query, $user)
+    {
+        if ($user && $user->hasRole('site_engineer')) {
+            return $query->where('site_engineer_id', $user->id);
+        }
+        return $query;
     }
 
     public function teamMembers()

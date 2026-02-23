@@ -13,6 +13,10 @@ class BoqController extends Controller
 {
     public function index(Project $project)
     {
+        if (auth()->user()->hasRole('site_engineer')) {
+            abort(403, 'Unauthorized. Site Engineers cannot view BOQ details.');
+        }
+
         $project->load('client', 'approver');
         $boqItems = BoqItem::where('project_id', $project->id)
             ->with('components')

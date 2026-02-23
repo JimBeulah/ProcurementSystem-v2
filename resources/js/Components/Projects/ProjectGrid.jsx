@@ -2,7 +2,9 @@ import React from 'react';
 import { Link } from '@inertiajs/react';
 import { Briefcase, Edit2, Trash2 } from 'lucide-react';
 
-export default function ProjectGrid({ projects, onEdit, onDelete }) {
+export default function ProjectGrid({ projects, onEdit, onDelete, auth }) {
+    const isSiteEngineer = auth?.user?.role === 'site_engineer';
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {projects.map(project => (
@@ -20,7 +22,9 @@ export default function ProjectGrid({ projects, onEdit, onDelete }) {
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1 group-hover:text-cyan-600 transition-colors uppercase tracking-tight truncate">{project.name}</h3>
                     <p className="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-4">{project.client?.name || 'Internal'}</p>
                     <div className="space-y-2 text-xs">
-                        <div className="flex justify-between items-center py-1 border-b border-slate-100 dark:border-slate-700/50"><span className="text-slate-500">Budget</span><span className="font-mono font-bold text-emerald-600">₱ {Number(project.budget).toLocaleString()}</span></div>
+                        {!isSiteEngineer && (
+                            <div className="flex justify-between items-center py-1 border-b border-slate-100 dark:border-slate-700/50"><span className="text-slate-500">Budget</span><span className="font-mono font-bold text-emerald-600">₱ {Number(project.budget).toLocaleString()}</span></div>
+                        )}
                         <div className="flex justify-between items-center py-1 border-b border-slate-100 dark:border-slate-700/50"><span className="text-slate-500">Status</span><span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${project.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-600' : 'text-slate-500 bg-slate-100 dark:bg-slate-700'}`}>{project.status}</span></div>
                         <div className="flex justify-between items-center py-1"><span className="text-slate-500">Contract ID</span><span className="font-mono text-slate-900 dark:text-white">{project.contract_id || '-'}</span></div>
                     </div>

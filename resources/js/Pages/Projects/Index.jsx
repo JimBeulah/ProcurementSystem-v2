@@ -7,10 +7,10 @@ import Select from '@/Components/UI/Select';
 import ProjectMetrics from '@/Components/Projects/ProjectMetrics';
 import ProjectTable from '@/Components/Projects/ProjectTable';
 import ProjectGrid from '@/Components/Projects/ProjectGrid';
-import { Plus, Search, LayoutGrid, List as ListIcon, Building2, Layers } from 'lucide-react';
+import { Plus, Search, LayoutGrid, List as ListIcon, Building2, Layers, UserCog } from 'lucide-react';
 
 export default function ProjectsIndex() {
-    const { projects: initialProjects, clients } = usePage().props;
+    const { projects: initialProjects, clients, siteEngineers, auth } = usePage().props;
     const projects = initialProjects || [];
     const { can } = usePermissions();
 
@@ -26,7 +26,7 @@ export default function ProjectsIndex() {
         name: '', client_id: '', location: '', budget: '', duration: '',
         total_floor_area: '', carport_area: '', status: 'ACTIVE',
         project_type: 'BUILDING', appropriation: '', source_of_fund: '',
-        contract_id: '', project_component_id: '', net_length: ''
+        contract_id: '', project_component_id: '', net_length: '', site_engineer_id: ''
     };
     const [formData, setFormData] = useState(initialFormData);
 
@@ -41,6 +41,7 @@ export default function ProjectsIndex() {
             carport_area: Number(formData.carport_area) || 0,
             appropriation: Number(formData.appropriation) || 0,
             net_length: Number(formData.net_length) || 0,
+            site_engineer_id: formData.site_engineer_id ? Number(formData.site_engineer_id) : null,
         };
 
         if (editingProject) {
@@ -75,6 +76,7 @@ export default function ProjectsIndex() {
             contract_id: project.contract_id || '',
             project_component_id: project.project_component_id || '',
             net_length: project.net_length?.toString() || '',
+            site_engineer_id: project.site_engineer_id?.toString() || '',
         });
         setShowModal(true);
     };
@@ -104,7 +106,7 @@ export default function ProjectsIndex() {
             <Head title="Projects" />
             <div className="p-4 space-y-4 max-w-7xl mx-auto">
 
-                <ProjectMetrics projects={projects} />
+                <ProjectMetrics projects={projects} auth={auth} />
 
                 {/* Toolbar */}
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white/50 dark:bg-slate-800/50 backdrop-blur-md p-3 rounded-xl border border-slate-200 dark:border-slate-700 sticky top-0 z-20">
@@ -131,8 +133,8 @@ export default function ProjectsIndex() {
                 </div>
 
                 {viewMode === 'table'
-                    ? <ProjectTable projects={filteredProjects} onEdit={can('edit projects') ? handleEdit : null} onDelete={can('delete projects') ? handleDeleteClick : null} />
-                    : <ProjectGrid projects={filteredProjects} onEdit={can('edit projects') ? handleEdit : null} onDelete={can('delete projects') ? handleDeleteClick : null} />
+                    ? <ProjectTable auth={auth} projects={filteredProjects} onEdit={can('edit projects') ? handleEdit : null} onDelete={can('delete projects') ? handleDeleteClick : null} />
+                    : <ProjectGrid auth={auth} projects={filteredProjects} onEdit={can('edit projects') ? handleEdit : null} onDelete={can('delete projects') ? handleDeleteClick : null} />
                 }
 
                 {/* Create/Edit Modal */}
@@ -148,6 +150,10 @@ export default function ProjectsIndex() {
                                 <Select value={formData.client_id} onChange={val => setFormData({ ...formData, client_id: val })} options={(clients || []).map(c => ({ value: c.id.toString(), label: c.name }))} placeholder="Select Client" icon={Building2} />
                             </div>
                             <div>
+                                <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Site Engineer (Optional)</label>
+                                <Select value={formData.site_engineer_id} onChange={val => setFormData({ ...formData, site_engineer_id: val })} options={(siteEngineers || []).map(u => ({ value: u.id.toString(), label: u.name }))} placeholder="Unassigned" icon={UserCog} />
+                            </div>
+                            <div className="md:col-span-2">
                                 <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Project Type</label>
                                 <Select value={formData.project_type} onChange={val => setFormData({ ...formData, project_type: val })} options={[{ value: "BUILDING", label: "BUILDING" }, { value: "INFRASTRUCTURE", label: "INFRASTRUCTURE" }, { value: "MAINTENANCE", label: "MAINTENANCE" }]} icon={Layers} />
                             </div>

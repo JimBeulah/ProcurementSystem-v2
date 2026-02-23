@@ -12,16 +12,28 @@ class SiteReleaseController extends Controller
 {
     public function index()
     {
-        $inventory = InventoryItem::with('project')
+        $inventoryQuery = InventoryItem::with('project')
             ->whereNotNull('project_id')
             ->where('quantity', '>', 0)
-            ->orderBy('material_name', 'asc')
-            ->get();
+            ->orderBy('material_name', 'asc');
 
-        $releases = SiteRelease::with(['inventoryItem', 'project', 'releasedBy', 'receivedBy'])
+        if (auth()->user()->hasRole('site_engineer')) {
+            $inventoryQuery->whereHas('project', function ($q) {
+                $q->where('site_engineer_id', auth()->id());
+            });
+        }
+        $inventory = $inventoryQuery->get();
+
+        $releasesQuery = SiteRelease::with(['inventoryItem', 'project', 'releasedBy', 'receivedBy'])
             ->orderBy('release_date', 'desc')
-            ->limit(50)
-            ->get();
+            ->limit(50);
+
+        if (auth()->user()->hasRole('site_engineer')) {
+            $releasesQuery->whereHas('project', function ($q) {
+                $q->where('site_engineer_id', auth()->id());
+            });
+        }
+        $releases = $releasesQuery->get();
 
         return Inertia::render('SiteRelease/Index', [
             'inventory' => $inventory,

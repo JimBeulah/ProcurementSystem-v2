@@ -28,6 +28,7 @@ class StoreProjectRequest extends FormRequest
             'contract_id' => 'nullable|string|max:100',
             'project_component_id' => 'nullable|string|max:100',
             'net_length' => 'nullable|numeric|min:0',
+            'site_engineer_id' => 'nullable|exists:users,id',
         ];
     }
 }
