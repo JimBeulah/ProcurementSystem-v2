@@ -87,6 +87,7 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
         Route::get('/purchasing/orders/create', [PurchaseOrderController::class, 'create'])->name('purchasing.orders.create')->middleware('can:create purchase orders');
         Route::post('/purchasing/orders', [PurchaseOrderController::class, 'store'])->name('purchasing.orders.store')->middleware('can:create purchase orders');
         Route::get('/purchasing/orders/{order}', [PurchaseOrderController::class, 'show'])->name('purchasing.orders.show');
+        Route::get('/purchasing/orders/{order}/print', [PurchaseOrderController::class, 'print'])->name('purchasing.orders.print');
         Route::post('/purchasing/orders/{order}/approve', [PurchaseOrderController::class, 'approve'])->name('purchasing.orders.approve')->middleware('can:approve purchase orders');
     });
 
@@ -105,11 +106,17 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
     });
 
     // Purchase Requests
-    Route::get('/purchasing/requests', [PurchaseRequestController::class, 'index'])->name('purchasing.requests.index');
-    Route::post('/purchasing/requests', [PurchaseRequestController::class, 'store'])->name('purchasing.requests.store');
-    Route::post('/purchasing/requests/{purchaseRequest}/approve', [PurchaseRequestController::class, 'approve'])->name('purchasing.requests.approve');
-    Route::post('/purchasing/requests/{purchaseRequest}/decline', [PurchaseRequestController::class, 'decline'])->name('purchasing.requests.decline');
-    Route::delete('/purchasing/requests/{purchaseRequest}', [PurchaseRequestController::class, 'destroy'])->name('purchasing.requests.destroy');
+    Route::middleware(['can:view purchase requests'])->group(function () {
+        Route::get('/purchasing/requests', [PurchaseRequestController::class, 'index'])->name('purchasing.requests.index');
+        Route::post('/purchasing/requests', [PurchaseRequestController::class, 'store'])->name('purchasing.requests.store')->middleware('can:create purchase requests');
+        Route::get('/purchasing/requests/{purchaseRequest}/print', [PurchaseRequestController::class, 'print'])->name('purchasing.requests.print');
+
+        Route::middleware(['can:manage purchase requests'])->group(function () {
+            Route::post('/purchasing/requests/{purchaseRequest}/approve', [PurchaseRequestController::class, 'approve'])->name('purchasing.requests.approve');
+            Route::post('/purchasing/requests/{purchaseRequest}/decline', [PurchaseRequestController::class, 'decline'])->name('purchasing.requests.decline');
+            Route::delete('/purchasing/requests/{purchaseRequest}', [PurchaseRequestController::class, 'destroy'])->name('purchasing.requests.destroy');
+        });
+    });
 
     // Inventory
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index')->middleware('can:view inventory');

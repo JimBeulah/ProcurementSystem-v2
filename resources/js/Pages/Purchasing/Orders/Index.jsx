@@ -2,7 +2,7 @@ import React from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { usePermissions } from '@/Hooks/usePermissions';
-import { ShoppingCart, Plus, Calendar, MapPin, Package } from 'lucide-react';
+import { ShoppingCart, Plus, Calendar, MapPin, Package, Printer } from 'lucide-react';
 
 export default function PurchaseOrdersIndex() {
     const { orders } = usePage().props;
@@ -46,8 +46,11 @@ export default function PurchaseOrdersIndex() {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
+                                        <a href={`/purchasing/orders/${po.id}/print`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors flex items-center justify-center" title="Print PO">
+                                            <Printer size={16} />
+                                        </a>
                                         {(po.status === 'APPROVED' || po.status === 'PARTIALLY DELIVERED') && can('create receiving') && (
-                                            <Link href={`/inventory/receiving/create?poId=${po.id}`} onClick={e => e.stopPropagation()} className="p-1.5 text-slate-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-colors flex items-center justify-center">
+                                            <Link href={`/inventory/receiving/create?poId=${po.id}`} onClick={e => e.stopPropagation()} className="p-1.5 text-slate-400 hover:text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-colors flex items-center justify-center" title="Create Receiving">
                                                 <Package size={16} />
                                             </Link>
                                         )}

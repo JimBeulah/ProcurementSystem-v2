@@ -34,9 +34,9 @@ export default function PurchaseOrderShow() {
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <button className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm transition-colors">
+                        <a href={`/purchasing/orders/${po.id}/print`} target="_blank" rel="noopener noreferrer" className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm transition-colors">
                             <Printer size={18} /> Print
-                        </button>
+                        </a>
                         {po.status === 'PENDING' && (
                             <button onClick={handleApprove} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold transition-colors active:scale-95">
                                 <CheckCircle size={18} /> Approve PO

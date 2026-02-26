@@ -65,4 +65,25 @@ class PurchaseOrderService
 
         return PurchaseRequest::with('items')->find($prId);
     }
+
+    /**
+     * Generate a PDF for the given purchase order.
+     */
+    public function generatePdf(PurchaseOrder $order)
+    {
+        // Load relationships needed for the PDF
+        $order->load(['project', 'supplier', 'items']);
+
+        // Lazy load requester and approver
+        $order->loadMissing(['requester', 'approver']);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('print.purchase-order', [
+            'purchaseOrder' => $order
+        ]);
+
+        // Secure the PDF: Enforce printing only, prevent copy/paste, modification, and assembly
+        $pdf->setEncryption('', config('app.key'), ['print']);
+
+        return $pdf;
+    }
 }

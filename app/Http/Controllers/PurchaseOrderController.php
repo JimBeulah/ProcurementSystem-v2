@@ -70,4 +70,12 @@ class PurchaseOrderController extends Controller
 
         return redirect()->back()->with('success', 'Purchase order approved successfully.');
     }
+
+    public function print(PurchaseOrder $order)
+    {
+        // Delegate PDF generation to the Service layer
+        $pdf = $this->service->generatePdf($order);
+
+        return $pdf->stream('PO-' . str_pad($order->id, 5, '0', STR_PAD_LEFT) . '.pdf');
+    }
 }
