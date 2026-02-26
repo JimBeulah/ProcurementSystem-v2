@@ -17,6 +17,7 @@ use App\Http\Controllers\ReceivingFormController;
 use App\Http\Controllers\RfqController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SiteReleaseController;
+use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\ForcePasswordChangeController;
 use Illuminate\Foundation\Application;
@@ -161,6 +162,11 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
         Route::put('/settings/users/{user}', [UserController::class, 'update'])->name('users.update');
         Route::patch('/settings/users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
         Route::patch('/settings/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+    });
+
+    // Activity Logs (Admin only)
+    Route::middleware(['role:admin'])->group(function () {
+        Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
     });
 });
 

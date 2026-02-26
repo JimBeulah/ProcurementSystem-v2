@@ -119,6 +119,24 @@ h6 {
         -ms-overflow-style: none;
         scrollbar-width: none;
     }
+
+    /* Minimalist Sidebar Scrollbar */
+    .minimal-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+    .minimal-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .minimal-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(128, 128, 128, 0.15);
+        border-radius: 4px;
+    }
+    .minimal-scrollbar:hover::-webkit-scrollbar-thumb {
+        background: rgba(128, 128, 128, 0.3);
+    }
+    .dark .minimal-scrollbar:hover::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+    }
 }
 
 /* =================== Scrollbar =================== */

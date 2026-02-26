@@ -6,7 +6,7 @@ import {
     Building2, ShoppingCart, FileText, CreditCard, Package,
     Users, Hexagon, X, Briefcase, Shield, ArrowDownCircle,
     ChevronDown, Truck, PieChart, ChevronLeft, ChevronRight,
-    LayoutDashboard, ClipboardList, FileSearch, Factory, Receipt, UserCog, Inbox, ShieldCheck
+    LayoutDashboard, ClipboardList, FileSearch, Factory, Receipt, UserCog, Inbox, ShieldCheck, ScrollText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -65,13 +65,14 @@ const NAVIGATION_CONFIG = [
         group: 'Admin',
         items: [
             { label: 'User Management', href: '/settings/users', icon: <UserCog />, permission: 'manage users', matchPrefix: '/settings/users' },
+            { label: 'Activity Logs', href: '/activity-logs', icon: <ScrollText />, role: 'admin', matchPrefix: '/activity-logs' },
         ],
     },
 ];
 
 export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleCollapse }) {
     const { url } = usePage();
-    const { can } = usePermissions();
+    const { can, hasRole } = usePermissions();
     const [activeTooltip, setActiveTooltip] = useState(null);
 
     const handleLinkClick = () => {
@@ -79,6 +80,7 @@ export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleColl
     };
 
     const isItemVisible = (item) => {
+        if (item.role) return hasRole(item.role);
         if (item.anyPermission) return item.anyPermission.some((p) => can(p));
         if (!item.permission) return true;
         return can(item.permission);
@@ -169,7 +171,7 @@ export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleColl
 
                 {/* Navigation */}
                 <nav
-                    className="flex-1 overflow-y-auto overscroll-contain overflow-x-hidden px-3 py-3 space-y-1 no-scrollbar"
+                    className="flex-1 overflow-y-auto overscroll-contain overflow-x-hidden px-3 py-3 space-y-1 minimal-scrollbar"
                     onMouseLeave={() => setActiveTooltip(null)}
                 >
                     {/* Dashboard - always visible */}
