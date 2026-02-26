@@ -1,7 +1,7 @@
 import React from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { FileText, Plus, CheckCircle2 } from 'lucide-react';
+import { Receipt, Plus, CheckCircle2 } from 'lucide-react';
 
 export default function InvoicesIndex() {
     const { invoices } = usePage().props;
@@ -14,7 +14,7 @@ export default function InvoicesIndex() {
                 <header className="flex justify-between items-center pb-6 border-b border-slate-200 dark:border-slate-700">
                     <div>
                         <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                            <FileText className="text-emerald-500" /> Supplier Invoices
+                            <Receipt className="text-emerald-500" /> Supplier Invoices
                         </h1>
                         <p className="text-slate-500">Manage payable invoices and 3-way matching.</p>
                     </div>
@@ -49,8 +49,8 @@ export default function InvoicesIndex() {
                                     </td>
                                     <td className="p-4 text-center">
                                         <span className={`px-2 py-1 rounded text-xs border font-medium ${inv.status === 'MATCHED' ? 'border-emerald-500 text-emerald-600' :
-                                                inv.status === 'PAID' ? 'border-blue-500 text-blue-600' :
-                                                    'border-amber-500 text-amber-600'
+                                            inv.status === 'PAID' ? 'border-blue-500 text-blue-600' :
+                                                'border-amber-500 text-amber-600'
                                             }`}>{inv.status}</span>
                                     </td>
                                     <td className="p-4 text-right">

@@ -4,7 +4,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { usePermissions } from '@/Hooks/usePermissions';
 import Modal from '@/Components/UI/Modal';
 import {
-    FileText, Plus, CheckCircle, XCircle, Trash2, ChevronDown, ChevronRight,
+    ClipboardList, Plus, CheckCircle, XCircle, Trash2, ChevronDown, ChevronRight,
     Briefcase, Calendar, User, PhilippinePeso, AlertTriangle, Package, ShoppingCart,
     MoreVertical, Printer
 } from 'lucide-react';
@@ -114,7 +114,7 @@ export default function PurchaseRequestsIndex() {
                         <div className="flex items-center gap-2 mb-1">
                             <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
                                 <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl text-white shadow-lg shadow-blue-500/30">
-                                    <FileText size={20} />
+                                    <ClipboardList size={20} />
                                 </div>
                                 <span className="opacity-90">Purchase Requests</span>
                             </h1>
@@ -148,7 +148,7 @@ export default function PurchaseRequestsIndex() {
                                 {list.length === 0 ? (
                                     <tr>
                                         <td colSpan={8} className="p-16 text-center">
-                                            <FileText className="mx-auto mb-4 text-slate-300 dark:text-slate-600" size={48} />
+                                            <ClipboardList className="mx-auto mb-4 text-slate-300 dark:text-slate-600" size={48} />
                                             <p className="text-slate-400 uppercase tracking-widest font-bold text-xs">No Purchase Requests Found</p>
                                             <p className="text-slate-400 text-xs mt-1">Click "New Request" to create one.</p>
                                         </td>

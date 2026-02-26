@@ -2,7 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import { Card } from '@/Components/UI/Card';
 import {
-    Package, Users, ShoppingCart, AlertCircle, FileText, CheckCircle, TrendingUp, ShieldCheck
+    Package, UserCog, ShoppingCart, AlertCircle, ClipboardList, CheckCircle, TrendingUp, ShieldCheck, Database
 } from 'lucide-react';
 
 export default function AdminDashboard({ stats }) {
@@ -36,13 +36,13 @@ export default function AdminDashboard({ stats }) {
                     <StatCard
                         title="Total Users"
                         value={stats?.totalUsers?.toString() || '0'}
-                        icon={<Users className="text-purple-500" size={20} />}
+                        icon={<UserCog className="text-purple-500" size={20} />}
                         color="from-purple-500/10 to-transparent"
                     />
                     <StatCard
                         title="Pending PRs"
                         value={stats?.pendingPRs?.toString() || '0'}
-                        icon={<FileText className="text-orange-500" size={20} />}
+                        icon={<ClipboardList className="text-orange-500" size={20} />}
                         trend={stats?.pendingPRs > 0 ? "Action Required" : null}
                         color="from-orange-500/10 to-transparent"
                     />
@@ -94,7 +94,7 @@ export default function AdminDashboard({ stats }) {
                         <div className="grid grid-cols-2 gap-3">
                             <QuickLink
                                 href="/settings/users"
-                                icon={<Users size={18} />}
+                                icon={<UserCog size={18} />}
                                 label="Manage Users"
                                 desc="Add or edit system roles"
                                 color="bg-purple-50 border-purple-100 text-purple-600 dark:bg-purple-500/10 dark:border-purple-500/20 dark:text-purple-400"
@@ -108,7 +108,7 @@ export default function AdminDashboard({ stats }) {
                             />
                             <QuickLink
                                 href="/settings/master-data"
-                                icon={<FileText size={18} />}
+                                icon={<Database size={18} />}
                                 label="Master Data"
                                 desc="System lookup values"
                                 color="bg-slate-50 border-slate-200 text-slate-600 dark:bg-slate-500/10 dark:border-slate-500/20 dark:text-slate-400"

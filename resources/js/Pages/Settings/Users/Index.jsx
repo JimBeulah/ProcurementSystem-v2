@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage, router, useForm } from '@inertiajs/react';
-import { Users, Plus, Edit2, UserCheck, UserX, X, Eye, EyeOff, KeyRound, Save } from 'lucide-react';
+import { UserCog, Plus, Edit2, UserCheck, UserX, X, Eye, EyeOff, KeyRound, Save } from 'lucide-react';
 
 const ROLES = [
     { value: 'admin', label: 'Admin' },
@@ -51,7 +51,7 @@ function UserModal({ user, onClose }) {
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
                     <h2 className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                        <Users size={16} className="text-blue-500" />
+                        <UserCog size={16} className="text-blue-500" />
                         {isEdit ? 'Edit User' : 'Add New User'}
                     </h2>
                     <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
@@ -166,7 +166,7 @@ export default function UsersIndex() {
                 <header className="flex justify-between items-center">
                     <div>
                         <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
-                            <Users size={20} className="text-blue-500" /> User Management
+                            <UserCog size={20} className="text-blue-500" /> User Management
                         </h1>
                         <p className="text-sm text-slate-500 mt-0.5">Manage system users, roles, and access.</p>
                     </div>
@@ -290,7 +290,7 @@ export default function UsersIndex() {
 
                     {list.length === 0 && (
                         <div className="py-16 text-center text-slate-400">
-                            <Users size={32} className="mx-auto mb-3 opacity-30" />
+                            <UserCog size={32} className="mx-auto mb-3 opacity-30" />
                             <p className="text-sm">No users found. Create one to get started.</p>
                         </div>
                     )}

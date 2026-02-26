@@ -2,7 +2,7 @@ import React from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { usePermissions } from '@/Hooks/usePermissions';
-import { FileText, Plus, Calendar } from 'lucide-react';
+import { FileSearch, Plus, Calendar } from 'lucide-react';
 
 export default function RfqIndex() {
     const { rfqs } = usePage().props;
@@ -16,7 +16,7 @@ export default function RfqIndex() {
                 <header className="flex justify-between items-center pb-6 border-b border-slate-200 dark:border-slate-700">
                     <div>
                         <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                            <FileText className="text-pink-500" /> Request for Quotations (RFQ)
+                            <FileSearch className="text-pink-500" /> Request for Quotations (RFQ)
                         </h1>
                         <p className="text-slate-500">Manage RFQs and supplier pricing.</p>
                     </div>
@@ -31,7 +31,7 @@ export default function RfqIndex() {
 
                 {list.length === 0 ? (
                     <div className="text-center py-12 text-slate-500 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
-                        <FileText size={48} className="mx-auto mb-4 opacity-30" />
+                        <FileSearch size={48} className="mx-auto mb-4 opacity-30" />
                         <p>No RFQs found. Create one to get started.</p>
                     </div>
                 ) : (

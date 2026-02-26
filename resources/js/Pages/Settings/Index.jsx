@@ -1,11 +1,11 @@
 import React from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
-import { Settings, Users, Database, ChevronRight, Package, Shield } from 'lucide-react';
+import { Settings, UserCog, Database, ChevronRight, Package, Shield } from 'lucide-react';
 
 export default function SettingsIndex() {
     const menuItems = [
-        { title: 'User Management', description: 'Manage system users, roles, and access permissions.', icon: Users, href: route('settings.users'), color: 'text-blue-500', bg: 'bg-blue-500/10' },
+        { title: 'User Management', description: 'Manage system users, roles, and access permissions.', icon: UserCog, href: route('settings.users'), color: 'text-blue-500', bg: 'bg-blue-500/10' },
         { title: 'Master Data', description: 'Manage suppliers, materials, and warehouse records.', icon: Database, href: route('settings.master-data'), color: 'text-rose-500', bg: 'bg-rose-500/10' },
         { title: 'Workflows', description: 'Configure approval hierarchy and spending limits.', icon: Shield, href: route('settings.workflows'), color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
         { title: 'Inventory Management', description: 'Configure inventory rules, stock alerts and valuation.', icon: Package, href: '#', color: 'text-amber-500', bg: 'bg-amber-500/10' },

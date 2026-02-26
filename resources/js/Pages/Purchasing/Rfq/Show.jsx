@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import Modal from '@/Components/UI/Modal';
-import { ArrowLeft, Plus, CheckCircle, Building2 } from 'lucide-react';
+import { ArrowLeft, Plus, CheckCircle, Factory } from 'lucide-react';
 
 export default function RfqShow() {
     const { rfq, suppliers } = usePage().props;
@@ -93,7 +93,7 @@ export default function RfqShow() {
                                         <tr key={quote.id} className={`hover:bg-slate-50 dark:hover:bg-slate-700/30 ${quote.is_selected ? 'bg-emerald-50 dark:bg-emerald-500/5' : ''}`}>
                                             <td className="p-4">
                                                 <div className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                                    <Building2 size={16} className="text-slate-400" /> {quote.supplier?.name}
+                                                    <Factory size={16} className="text-slate-400" /> {quote.supplier?.name}
                                                 </div>
                                                 <div className="text-xs text-slate-500">{quote.items?.length || 0} items quoted</div>
                                             </td>

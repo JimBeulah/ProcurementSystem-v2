@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Users, Plus, Search, Building2, FileText, Filter,
     LayoutGrid, List as ListIcon, TrendingUp, ShieldCheck,
-    CreditCard, Loader2, Edit2, Trash2,
+    CreditCard, Loader2, Edit2, Trash2, Factory
 } from 'lucide-react';
 
 export default function ClientsIndex() {
@@ -202,7 +202,7 @@ export default function ClientsIndex() {
                 {filtered.length === 0 ? (
                     <div className="text-center py-20 rounded-2xl">
                         <div className="w-16 h-16 rounded-2xl bg-black/[0.03] dark:bg-white/[0.04] flex items-center justify-center mx-auto mb-5">
-                            <Users className="text-black/20 dark:text-white/20" size={28} />
+                            <Factory className="text-black/20 dark:text-white/20" size={28} />
                         </div>
                         <h3 className="text-base font-semibold text-foreground mb-1">No clients found</h3>
                         <p className="text-[13px] text-black/40 dark:text-white/40 max-w-xs mx-auto">

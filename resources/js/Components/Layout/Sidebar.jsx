@@ -6,7 +6,7 @@ import {
     Building2, ShoppingCart, FileText, CreditCard, Package,
     Users, Hexagon, X, Briefcase, Shield, ArrowDownCircle,
     ChevronDown, Truck, PieChart, ChevronLeft, ChevronRight,
-    LayoutDashboard
+    LayoutDashboard, ClipboardList, FileSearch, Factory, Receipt, UserCog, Inbox, ShieldCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -30,15 +30,15 @@ const NAVIGATION_CONFIG = [
         items: [
             { label: 'Clients', href: '/clients', icon: <Users />, permission: 'view clients', matchPrefix: '/clients' },
             { label: 'Projects', href: '/projects', icon: <Briefcase />, permission: 'view projects', matchPrefix: '/projects' },
-            { label: 'Purchase Requests', href: '/purchasing/requests', icon: <FileText />, permission: 'view purchase requests', matchPrefix: '/purchasing/requests' },
-            { label: 'RFQ', href: '/purchasing/rfq', icon: <FileText />, permission: 'view rfq', matchPrefix: '/purchasing/rfq' },
-            { label: 'Suppliers', href: '/purchasing/suppliers', icon: <Users />, permission: 'view suppliers', matchPrefix: '/purchasing/suppliers' },
+            { label: 'Purchase Requests', href: '/purchasing/requests', icon: <ClipboardList />, permission: 'view purchase requests', matchPrefix: '/purchasing/requests' },
+            { label: 'RFQ', href: '/purchasing/rfq', icon: <FileSearch />, permission: 'view rfq', matchPrefix: '/purchasing/rfq' },
+            { label: 'Suppliers', href: '/purchasing/suppliers', icon: <Factory />, permission: 'view suppliers', matchPrefix: '/purchasing/suppliers' },
             { label: 'Orders', href: '/purchasing/orders', icon: <ShoppingCart />, permission: 'view purchase orders', matchPrefix: '/purchasing/orders' },
             { label: 'Receive Goods', href: '/inventory/receiving', icon: <ArrowDownCircle />, permission: 'view receiving', matchPrefix: '/inventory/receiving' },
             {
                 label: 'Approvals',
                 href: '/purchasing/approvals',
-                icon: <Shield />,
+                icon: <ShieldCheck />,
                 permission: null,
                 matchPrefix: '/purchasing/approvals',
                 anyPermission: ['approve boq', 'approve material requests', 'approve purchase orders', 'manage purchase requests'],
@@ -49,14 +49,14 @@ const NAVIGATION_CONFIG = [
         group: 'Operations',
         items: [
             { label: 'Inventory', href: '/inventory', icon: <Package />, permission: 'view inventory', matchPrefix: '/inventory', exactMatch: true },
-            { label: 'Receiving', href: '/receiving', icon: <Building2 />, permission: 'view receiving', matchPrefix: '/receiving', exactMatch: true },
+            { label: 'Receiving', href: '/receiving', icon: <Inbox />, permission: 'view receiving', matchPrefix: '/receiving', exactMatch: true },
             { label: 'Site Release', href: '/site-release', icon: <Truck />, permission: 'view site release', matchPrefix: '/site-release' },
         ],
     },
     {
         group: 'Finance',
         items: [
-            { label: 'Invoices', href: '/finance/invoices', icon: <FileText />, permission: 'view invoices', matchPrefix: '/finance/invoices' },
+            { label: 'Invoices', href: '/finance/invoices', icon: <Receipt />, permission: 'view invoices', matchPrefix: '/finance/invoices' },
             { label: 'Disbursements', href: '/finance/disbursements', icon: <CreditCard />, permission: 'view disbursements', matchPrefix: '/finance/disbursements' },
             { label: 'Reports', href: '/finance/reports', icon: <PieChart />, permission: 'view financial reports', matchPrefix: '/finance/reports' },
         ],
@@ -64,7 +64,7 @@ const NAVIGATION_CONFIG = [
     {
         group: 'Admin',
         items: [
-            { label: 'User Management', href: '/settings/users', icon: <Users />, permission: 'manage users', matchPrefix: '/settings/users' },
+            { label: 'User Management', href: '/settings/users', icon: <UserCog />, permission: 'manage users', matchPrefix: '/settings/users' },
         ],
     },
 ];
