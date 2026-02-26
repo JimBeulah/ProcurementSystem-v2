@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Disbursement;
 use App\Models\Project;
 use App\Models\SupplierInvoice;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class FinanceController extends Controller
 {
-    public function invoices()
+    public function invoices(): Response
     {
         $invoices = SupplierInvoice::with(['supplier', 'purchaseOrder'])
             ->orderBy('created_at', 'desc')
@@ -19,7 +19,7 @@ class FinanceController extends Controller
         return Inertia::render('Finance/Invoices/Index', ['invoices' => $invoices]);
     }
 
-    public function disbursements()
+    public function disbursements(): Response
     {
         $payments = Disbursement::with(['purchaseOrder.supplier'])
             ->orderBy('payment_date', 'desc')
@@ -28,7 +28,7 @@ class FinanceController extends Controller
         return Inertia::render('Finance/Disbursements/Index', ['payments' => $payments]);
     }
 
-    public function reports()
+    public function reports(): Response
     {
         $projects = Project::with(['purchaseOrders', 'boqItems'])->get();
 

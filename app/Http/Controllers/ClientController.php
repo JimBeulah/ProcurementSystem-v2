@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreClientRequest;
 use App\Models\Client;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class ClientController extends Controller
 {
-    public function index()
+    public function index(): Response
     {
         $clients = Client::withCount('projects')->get();
 
@@ -17,35 +19,21 @@ class ClientController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreClientRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'contact_person' => 'nullable|string|max:255',
-            'contract_type' => 'nullable|string|max:100',
-            'payment_terms' => 'nullable|string|max:100',
-        ]);
-
-        Client::create($validated);
+        Client::create($request->validated());
 
         return redirect()->route('clients.index')->with('success', 'Client created successfully.');
     }
 
-    public function update(Request $request, Client $client)
+    public function update(StoreClientRequest $request, Client $client): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'contact_person' => 'nullable|string|max:255',
-            'contract_type' => 'nullable|string|max:100',
-            'payment_terms' => 'nullable|string|max:100',
-        ]);
-
-        $client->update($validated);
+        $client->update($request->validated());
 
         return redirect()->route('clients.index')->with('success', 'Client updated successfully.');
     }
 
-    public function destroy(Client $client)
+    public function destroy(Client $client): RedirectResponse
     {
         $client->delete();
 

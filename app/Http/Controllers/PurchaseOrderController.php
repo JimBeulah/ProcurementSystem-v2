@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StorePurchaseOrderRequest;
 use App\Models\Material;
-use App\Models\PurchaseOrder;
 use App\Models\Project;
+use App\Models\PurchaseOrder;
 use App\Models\Supplier;
 use App\Services\PurchaseOrderService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class PurchaseOrderController extends Controller
 {
@@ -17,7 +20,7 @@ class PurchaseOrderController extends Controller
     ) {
     }
 
-    public function index()
+    public function index(): Response
     {
         $orders = PurchaseOrder::with(['project', 'supplier', 'requester'])
             ->orderBy('created_at', 'desc')
@@ -28,7 +31,7 @@ class PurchaseOrderController extends Controller
         ]);
     }
 
-    public function show(PurchaseOrder $order)
+    public function show(PurchaseOrder $order): Response
     {
         $order->load(['project', 'supplier', 'requester', 'approver', 'items']);
 
@@ -37,7 +40,7 @@ class PurchaseOrderController extends Controller
         ]);
     }
 
-    public function create(Request $request)
+    public function create(Request $request): Response
     {
         $projects = Project::where('status', 'ACTIVE')->orderBy('name')->get();
         $suppliers = Supplier::orderBy('name')->get();
@@ -54,27 +57,14 @@ class PurchaseOrderController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StorePurchaseOrderRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'project_id' => 'required|exists:projects,id',
-            'supplier_id' => 'required|exists:suppliers,id',
-            'purchase_request_id' => 'nullable|exists:purchase_requests,id',
-            'remarks' => 'nullable|string|max:500',
-            'items' => 'required|array|min:1',
-            'items.*.material_name' => 'required|string|max:255',
-            'items.*.description' => 'nullable|string|max:500',
-            'items.*.quantity' => 'required|numeric|min:0.01',
-            'items.*.unit_price' => 'required|numeric|min:0',
-            'items.*.unit' => 'nullable|string|max:50',
-        ]);
-
-        $this->service->create($validated);
+        $this->service->create($request->validated());
 
         return redirect()->route('purchasing.orders.index')->with('success', 'Purchase order created successfully.');
     }
 
-    public function approve(PurchaseOrder $order)
+    public function approve(PurchaseOrder $order): RedirectResponse
     {
         $this->service->approve($order);
 

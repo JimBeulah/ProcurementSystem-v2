@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\PurchaseOrder;
 use App\Models\Project;
 use App\Models\User;
-use Inertia\Inertia;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
         $user = $request->user();
         $role = $user->getRoleNames()->first();
@@ -26,7 +27,7 @@ class DashboardController extends Controller
         };
     }
 
-    private function adminDashboard()
+    private function adminDashboard(): Response
     {
         $stats = [
             'pendingPOs' => PurchaseOrder::where('status', 'PENDING')->count(),
@@ -41,7 +42,7 @@ class DashboardController extends Controller
         return Inertia::render('Dashboards/AdminDashboard', ['stats' => $stats]);
     }
 
-    private function projectManagerDashboard()
+    private function projectManagerDashboard(): Response
     {
         $stats = [
             'activeProjects' => Project::where('status', 'ACTIVE')->count(),
@@ -54,7 +55,7 @@ class DashboardController extends Controller
         return Inertia::render('Dashboards/ProjectManagerDashboard', ['stats' => $stats]);
     }
 
-    private function procurementOfficerDashboard()
+    private function procurementOfficerDashboard(): Response
     {
         $stats = [
             'pendingPRs' => \App\Models\PurchaseRequest::where('status', 'PENDING')->count(),
@@ -66,7 +67,7 @@ class DashboardController extends Controller
         return Inertia::render('Dashboards/ProcurementOfficerDashboard', ['stats' => $stats]);
     }
 
-    private function warehouseDashboard()
+    private function warehouseDashboard(): Response
     {
         $stats = [
             'inventoryItems' => \App\Models\InventoryItem::count(),
@@ -78,7 +79,7 @@ class DashboardController extends Controller
         return Inertia::render('Dashboards/WarehouseDashboard', ['stats' => $stats]);
     }
 
-    private function financeDashboard()
+    private function financeDashboard(): Response
     {
         $stats = [
             'pendingInvoices' => 0,
@@ -90,7 +91,7 @@ class DashboardController extends Controller
         return Inertia::render('Dashboards/FinanceDashboard', ['stats' => $stats]);
     }
 
-    private function siteEngineerDashboard()
+    private function siteEngineerDashboard(): Response
     {
         $stats = [
             'activeProjects' => Project::where('status', 'ACTIVE')->count(),
@@ -102,7 +103,7 @@ class DashboardController extends Controller
         return Inertia::render('Dashboards/SiteEngineerDashboard', ['stats' => $stats]);
     }
 
-    private function genericDashboard()
+    private function genericDashboard(): Response
     {
         $stats = [
             'pendingPOs' => PurchaseOrder::where('status', 'PENDING')->count(),

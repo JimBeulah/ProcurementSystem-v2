@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AddRfqQuotationRequest;
+use App\Http\Requests\StoreRfqRequest;
 use App\Models\Material;
 use App\Models\Rfq;
 use App\Models\Supplier;
 use App\Models\SupplierQuotation;
 use App\Services\RfqService;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class RfqController extends Controller
 {
@@ -17,7 +20,7 @@ class RfqController extends Controller
     ) {
     }
 
-    public function index()
+    public function index(): Response
     {
         $rfqs = Rfq::with(['createdBy', 'items'])
             ->orderBy('created_at', 'desc')
@@ -28,7 +31,7 @@ class RfqController extends Controller
         ]);
     }
 
-    public function show(Rfq $rfq)
+    public function show(Rfq $rfq): Response
     {
         $rfq->load(['items', 'quotations.supplier', 'quotations.items', 'createdBy']);
         $suppliers = Supplier::orderBy('name')->get();
@@ -39,7 +42,7 @@ class RfqController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(): Response
     {
         $materials = Material::orderBy('name')->get();
         $suppliers = Supplier::orderBy('name')->get();
@@ -50,38 +53,21 @@ class RfqController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreRfqRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'due_date' => 'required|date',
-            'items' => 'required|array|min:1',
-            'items.*.material_name' => 'required|string|max:255',
-            'items.*.quantity' => 'required|numeric|min:0.01',
-            'items.*.unit' => 'nullable|string|max:50',
-        ]);
-
-        $rfq = $this->service->create($validated);
+        $rfq = $this->service->create($request->validated());
 
         return redirect()->route('purchasing.rfq.show', $rfq);
     }
 
-    public function addQuotation(Request $request, Rfq $rfq)
+    public function addQuotation(AddRfqQuotationRequest $request, Rfq $rfq): RedirectResponse
     {
-        $validated = $request->validate([
-            'supplier_id' => 'required|exists:suppliers,id',
-            'items' => 'required|array',
-            'items.*.material_name' => 'required|string',
-            'items.*.quantity' => 'required|numeric',
-            'items.*.unit_price' => 'required|numeric|min:0',
-        ]);
-
-        $this->service->addQuotation($rfq, $validated);
+        $this->service->addQuotation($rfq, $request->validated());
 
         return redirect()->back();
     }
 
-    public function award(Rfq $rfq, SupplierQuotation $quotation)
+    public function award(Rfq $rfq, SupplierQuotation $quotation): RedirectResponse
     {
         $this->service->award($rfq, $quotation);
 

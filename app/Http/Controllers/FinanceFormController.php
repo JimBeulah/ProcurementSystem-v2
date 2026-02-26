@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Disbursement;
+use App\Http\Requests\StoreDisbursementRequest;
+use App\Http\Requests\StoreInvoiceRequest;
 use App\Models\PurchaseOrder;
 use App\Models\ReceivingReport;
 use App\Models\Supplier;
-use App\Models\SupplierInvoice;
 use App\Services\FinanceService;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class FinanceFormController extends Controller
 {
@@ -18,7 +19,7 @@ class FinanceFormController extends Controller
     ) {
     }
 
-    public function createInvoice()
+    public function createInvoice(): Response
     {
         $suppliers = Supplier::orderBy('name')->get();
         $orders = PurchaseOrder::with('supplier')->get();
@@ -31,22 +32,14 @@ class FinanceFormController extends Controller
         ]);
     }
 
-    public function storeInvoice(Request $request)
+    public function storeInvoice(StoreInvoiceRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'invoice_number' => 'required|string',
-            'supplier_id' => 'required|integer',
-            'purchase_order_id' => 'nullable|integer',
-            'receiving_report_id' => 'nullable|integer',
-            'total_amount' => 'required|numeric|min:0',
-        ]);
-
-        $this->service->recordInvoice($validated);
+        $this->service->recordInvoice($request->validated());
 
         return redirect()->route('finance.invoices')->with('success', 'Invoice recorded.');
     }
 
-    public function createDisbursement()
+    public function createDisbursement(): Response
     {
         $orders = PurchaseOrder::with('supplier')
             ->where('status', 'APPROVED')
@@ -55,16 +48,9 @@ class FinanceFormController extends Controller
         return Inertia::render('Finance/Disbursements/Create', ['orders' => $orders]);
     }
 
-    public function storeDisbursement(Request $request)
+    public function storeDisbursement(StoreDisbursementRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'purchase_order_id' => 'nullable|integer',
-            'amount' => 'required|numeric|min:0',
-            'method' => 'required|string',
-            'reference_number' => 'required|string',
-        ]);
-
-        $this->service->processDisbursement($validated);
+        $this->service->processDisbursement($request->validated());
 
         return redirect()->route('finance.disbursements')->with('success', 'Payment processed.');
     }

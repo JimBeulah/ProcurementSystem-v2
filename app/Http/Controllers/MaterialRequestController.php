@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreMaterialRequestRequest;
 use App\Models\BoqItem;
 use App\Models\MaterialRequest;
 use App\Models\Project;
 use App\Services\MaterialRequestService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class MaterialRequestController extends Controller
 {
@@ -16,7 +19,7 @@ class MaterialRequestController extends Controller
     ) {
     }
 
-    public function index(Project $project)
+    public function index(Project $project): Response
     {
         if (auth()->user()->hasRole('site_engineer') && $project->site_engineer_id !== auth()->id()) {
             abort(403, 'Unauthorized access to this project.');
@@ -40,24 +43,13 @@ class MaterialRequestController extends Controller
         ]);
     }
 
-    public function store(Request $request, Project $project)
+    public function store(StoreMaterialRequestRequest $request, Project $project): RedirectResponse
     {
         if (auth()->user()->hasRole('site_engineer') && $project->site_engineer_id !== auth()->id()) {
             abort(403, 'Unauthorized access to this project.');
         }
 
-        $validated = $request->validate([
-            'remarks' => 'nullable|string|max:500',
-            'items' => 'required|array|min:1',
-            'items.*.boq_item_id' => 'nullable|exists:boq_items,id',
-            'items.*.boq_item_component_id' => 'nullable|exists:boq_item_components,id',
-            'items.*.item_description' => 'required|string|max:500',
-            'items.*.unit' => 'required|string|max:50',
-            'items.*.quantity' => 'required|numeric|min:0.01',
-            'items.*.material_unit_price' => 'nullable|numeric|min:0',
-            'items.*.labor_unit_price' => 'nullable|numeric|min:0',
-        ]);
-
+        $validated = $request->validated();
         $violations = $this->service->checkBudgetViolations($validated['items']);
 
         if (!empty($violations)) {
@@ -70,7 +62,7 @@ class MaterialRequestController extends Controller
         return redirect()->back()->with('success', 'Material request submitted successfully.');
     }
 
-    public function approve(MaterialRequest $materialRequest)
+    public function approve(MaterialRequest $materialRequest): RedirectResponse
     {
         if (!in_array(auth()->user()->role, ['admin', 'project_manager'])) {
             abort(403, 'Unauthorized. Only Admins and Project Managers can approve requests.');
@@ -88,7 +80,7 @@ class MaterialRequestController extends Controller
         );
     }
 
-    public function reject(Request $request, MaterialRequest $materialRequest)
+    public function reject(Request $request, MaterialRequest $materialRequest): RedirectResponse
     {
         if (!in_array(auth()->user()->role, ['admin', 'project_manager'])) {
             abort(403, 'Unauthorized. Only Admins and Project Managers can reject requests.');

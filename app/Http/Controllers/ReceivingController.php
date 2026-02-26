@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreReceivingRequest;
 use App\Models\InventoryItem;
 use App\Models\PurchaseOrder;
 use App\Services\ReceivingService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class ReceivingController extends Controller
 {
@@ -15,7 +18,7 @@ class ReceivingController extends Controller
     ) {
     }
 
-    public function index()
+    public function index(): Response
     {
         $reports = \App\Models\ReceivingReport::with(['purchaseOrder.supplier', 'items'])
             ->orderBy('received_date', 'desc')
@@ -24,7 +27,7 @@ class ReceivingController extends Controller
         return Inertia::render('Inventory/Receiving/Index', ['reports' => $reports]);
     }
 
-    public function create(Request $request)
+    public function create(Request $request): Response
     {
         $purchaseOrders = PurchaseOrder::with(['supplier', 'items'])
             ->whereIn('status', ['APPROVED', 'PARTIALLY DELIVERED'])
@@ -36,19 +39,9 @@ class ReceivingController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreReceivingRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'purchase_order_id' => 'required|exists:purchase_orders,id',
-            'delivery_note_no' => 'nullable|string|max:255',
-            'notes' => 'nullable|string|max:1000',
-            'items' => 'required|array|min:1',
-            'items.*.id' => 'required|exists:purchase_order_items,id',
-            'items.*.material_name' => 'required|string|max:255',
-            'items.*.quantity_received' => 'required|numeric|min:0.01',
-        ]);
-
-        $this->service->receive($validated);
+        $this->service->receive($request->validated());
 
         return redirect()->route('receiving.index')
             ->with('success', 'Goods received and inventory updated successfully.');

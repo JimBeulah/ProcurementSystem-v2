@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StorePurchaseRequestRequest;
 use App\Models\Project;
 use App\Models\PurchaseRequest;
 use App\Services\PurchaseRequestService;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class PurchaseRequestController extends Controller
 {
@@ -15,7 +17,7 @@ class PurchaseRequestController extends Controller
     ) {
     }
 
-    public function index()
+    public function index(): Response
     {
         $requests = PurchaseRequest::with(['project', 'requester', 'approver', 'items'])
             ->orderBy('created_at', 'desc')
@@ -29,40 +31,29 @@ class PurchaseRequestController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StorePurchaseRequestRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'project_id' => 'required|exists:projects,id',
-            'purpose' => 'nullable|string|max:500',
-            'remarks' => 'nullable|string|max:1000',
-            'items' => 'required|array|min:1',
-            'items.*.item_description' => 'required|string|max:255',
-            'items.*.quantity' => 'required|numeric|min:0.01',
-            'items.*.unit' => 'required|string|max:50',
-            'items.*.estimated_unit_cost' => 'required|numeric|min:0',
-        ]);
-
-        $this->service->create($validated);
+        $this->service->create($request->validated());
 
         return redirect()->route('purchasing.requests.index')
             ->with('success', 'Purchase Request submitted successfully.');
     }
 
-    public function approve(PurchaseRequest $purchaseRequest)
+    public function approve(PurchaseRequest $purchaseRequest): RedirectResponse
     {
         $this->service->approve($purchaseRequest);
 
         return redirect()->back()->with('success', 'Purchase Request approved.');
     }
 
-    public function decline(PurchaseRequest $purchaseRequest)
+    public function decline(PurchaseRequest $purchaseRequest): RedirectResponse
     {
         $this->service->decline($purchaseRequest);
 
         return redirect()->back()->with('success', 'Purchase Request declined.');
     }
 
-    public function destroy(PurchaseRequest $purchaseRequest)
+    public function destroy(PurchaseRequest $purchaseRequest): RedirectResponse
     {
         $purchaseRequest->delete();
 

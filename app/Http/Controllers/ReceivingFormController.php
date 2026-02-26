@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreReceivingReportRequest;
 use App\Models\PurchaseOrder;
 use App\Models\ReceivingReport;
-use App\Models\ReceivingItem;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class ReceivingFormController extends Controller
 {
-    public function create()
+    public function create(): Response
     {
         $orders = PurchaseOrder::with(['supplier', 'items'])
             ->where('status', 'APPROVED')
@@ -19,17 +20,9 @@ class ReceivingFormController extends Controller
         return Inertia::render('Inventory/Receiving/Create', ['orders' => $orders]);
     }
 
-    public function store(Request $request)
+    public function store(StoreReceivingReportRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'purchase_order_id' => 'required|integer',
-            'delivery_note_no' => 'nullable|string',
-            'notes' => 'nullable|string',
-            'items' => 'required|array|min:1',
-            'items.*.material_name' => 'required|string',
-            'items.*.quantity_received' => 'required|numeric|min:0',
-            'items.*.status' => 'required|string',
-        ]);
+        $validated = $request->validated();
 
         $report = ReceivingReport::create([
             'purchase_order_id' => $validated['purchase_order_id'],

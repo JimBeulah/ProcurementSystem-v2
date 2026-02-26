@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ConfirmReceiptRequest;
 use App\Models\InventoryItem;
 use App\Models\SiteRelease;
 use App\Services\SiteReleaseService;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class SiteReleaseController extends Controller
 {
@@ -15,7 +17,7 @@ class SiteReleaseController extends Controller
     ) {
     }
 
-    public function index()
+    public function index(): Response
     {
         $inventoryQuery = InventoryItem::with('project')
             ->whereNotNull('project_id')
@@ -46,7 +48,7 @@ class SiteReleaseController extends Controller
         ]);
     }
 
-    public function store(\App\Http\Requests\StoreSiteReleaseRequest $request)
+    public function store(\App\Http\Requests\StoreSiteReleaseRequest $request): RedirectResponse
     {
         $validated = $request->validated();
         $item = InventoryItem::findOrFail($validated['inventory_item_id']);
@@ -63,22 +65,17 @@ class SiteReleaseController extends Controller
         );
     }
 
-    public function confirmReceipt(Request $request, SiteRelease $siteRelease)
+    public function confirmReceipt(ConfirmReceiptRequest $request, SiteRelease $siteRelease): RedirectResponse
     {
         if ($siteRelease->status === 'RECEIVED') {
             return redirect()->back()->with('error', 'This release has already been confirmed.');
         }
 
-        $validated = $request->validate([
-            'quantity_received' => 'required|numeric|min:0|max:' . $siteRelease->quantity_released,
-            'receipt_remarks' => 'nullable|string|max:500',
-        ]);
-
-        $this->service->confirmReceipt($siteRelease, $validated);
+        $this->service->confirmReceipt($siteRelease, $request->validated());
 
         return redirect()->back()->with(
             'success',
-            "Receipt confirmed: {$validated['quantity_received']} {$siteRelease->unit} received."
+            "Receipt confirmed: {$request->validated()['quantity_received']} {$siteRelease->unit} received."
         );
     }
 }

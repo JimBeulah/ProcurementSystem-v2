@@ -6,12 +6,14 @@ use App\Http\Requests\StoreBoqComponentRequest;
 use App\Http\Requests\StoreBoqItemRequest;
 use App\Models\BoqItem;
 use App\Models\Project;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class BoqController extends Controller
 {
-    public function index(Project $project)
+    public function index(Project $project): Response
     {
         if (auth()->user()->hasRole('site_engineer')) {
             abort(403, 'Unauthorized. Site Engineers cannot view BOQ details.');
@@ -35,7 +37,7 @@ class BoqController extends Controller
         ]);
     }
 
-    public function approve(Project $project)
+    public function approve(Project $project): RedirectResponse
     {
         if (!in_array(auth()->user()->role, ['admin', 'project_manager'])) {
             abort(403, 'Unauthorized. Only Admins and Project Managers can approve BOQs.');
@@ -53,7 +55,7 @@ class BoqController extends Controller
         return redirect()->back()->with('success', 'Project BOQ approved successfully.');
     }
 
-    public function store(StoreBoqItemRequest $request, Project $project)
+    public function store(StoreBoqItemRequest $request, Project $project): RedirectResponse
     {
         if ($project->approved_by) {
             abort(403, 'Project is approved. Modifications are locked.');
@@ -100,7 +102,7 @@ class BoqController extends Controller
         return redirect()->back()->with('success', 'BOQ item added successfully.');
     }
 
-    public function bulkStore(Request $request, Project $project)
+    public function bulkStore(Request $request, Project $project): RedirectResponse
     {
         if ($project->approved_by) {
             abort(403, 'Project is approved. Modifications are locked.');
@@ -148,7 +150,7 @@ class BoqController extends Controller
         return redirect()->back()->with('success', 'Bulk upload successful.');
     }
 
-    public function update(StoreBoqItemRequest $request, Project $project, BoqItem $boqItem)
+    public function update(StoreBoqItemRequest $request, Project $project, BoqItem $boqItem): RedirectResponse
     {
         if ($boqItem->project_id !== $project->id) {
             abort(403);
@@ -172,7 +174,7 @@ class BoqController extends Controller
         return redirect()->back()->with('success', 'BOQ Item updated successfully.');
     }
 
-    public function destroy(Project $project, BoqItem $boqItem)
+    public function destroy(Project $project, BoqItem $boqItem): RedirectResponse
     {
         if ($boqItem->project_id !== $project->id) {
             abort(403, 'Item does not belong to this project.');
@@ -190,7 +192,7 @@ class BoqController extends Controller
 
     // Components / DUPA Management
 
-    public function storeComponent(StoreBoqComponentRequest $request, Project $project, BoqItem $boqItem)
+    public function storeComponent(StoreBoqComponentRequest $request, Project $project, BoqItem $boqItem): RedirectResponse
     {
         if ($boqItem->project_id !== $project->id) {
             abort(403);
@@ -217,7 +219,7 @@ class BoqController extends Controller
         return redirect()->back()->with('success', 'Resource added successfully.');
     }
 
-    public function updateComponent(StoreBoqComponentRequest $request, Project $project, \App\Models\BoqItemComponent $boqComponent)
+    public function updateComponent(StoreBoqComponentRequest $request, Project $project, \App\Models\BoqItemComponent $boqComponent): RedirectResponse
     {
         // Enforce project ownership via relation check
         if ($project->approved_by) {
@@ -241,7 +243,7 @@ class BoqController extends Controller
         return redirect()->back()->with('success', 'Resource updated successfully.');
     }
 
-    public function destroyComponent(Project $project, \App\Models\BoqItemComponent $boqComponent)
+    public function destroyComponent(Project $project, \App\Models\BoqItemComponent $boqComponent): RedirectResponse
     {
         if ($project->approved_by) {
             abort(403, 'Project is approved. Modifications are locked.');
