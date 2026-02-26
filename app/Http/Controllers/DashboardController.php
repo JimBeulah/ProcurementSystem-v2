@@ -69,7 +69,7 @@ class DashboardController extends Controller
     private function warehouseDashboard()
     {
         $stats = [
-            'inventoryItems' => \App\Models\Inventory::count(),
+            'inventoryItems' => \App\Models\InventoryItem::count(),
             'pendingReceiving' => PurchaseOrder::where('status', 'APPROVED')->count(),
             'siteReleases' => \App\Models\SiteRelease::count(),
             'lowStockAlerts' => 0, // Extend with actual low-stock logic later

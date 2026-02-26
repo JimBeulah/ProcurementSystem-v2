@@ -7,11 +7,17 @@ use App\Models\PurchaseOrder;
 use App\Models\ReceivingReport;
 use App\Models\Supplier;
 use App\Models\SupplierInvoice;
+use App\Services\FinanceService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class FinanceFormController extends Controller
 {
+    public function __construct(
+        protected FinanceService $service
+    ) {
+    }
+
     public function createInvoice()
     {
         $suppliers = Supplier::orderBy('name')->get();
@@ -35,11 +41,7 @@ class FinanceFormController extends Controller
             'total_amount' => 'required|numeric|min:0',
         ]);
 
-        SupplierInvoice::create(array_merge($validated, [
-            'invoice_date' => now(),
-            'status' => 'PENDING',
-            'recorded_by_id' => auth()->id(),
-        ]));
+        $this->service->recordInvoice($validated);
 
         return redirect()->route('finance.invoices')->with('success', 'Invoice recorded.');
     }
@@ -62,11 +64,7 @@ class FinanceFormController extends Controller
             'reference_number' => 'required|string',
         ]);
 
-        Disbursement::create(array_merge($validated, [
-            'payment_date' => now(),
-            'status' => 'COMPLETED',
-            'processed_by_id' => auth()->id(),
-        ]));
+        $this->service->processDisbursement($validated);
 
         return redirect()->route('finance.disbursements')->with('success', 'Payment processed.');
     }

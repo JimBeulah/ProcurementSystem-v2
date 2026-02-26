@@ -2,14 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreSiteReleaseRequest;
 use App\Models\InventoryItem;
 use App\Models\SiteRelease;
+use App\Services\SiteReleaseService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class SiteReleaseController extends Controller
 {
+    public function __construct(
+        protected SiteReleaseService $service
+    ) {
+    }
+
     public function index()
     {
         $inventoryQuery = InventoryItem::with('project')
@@ -41,7 +46,7 @@ class SiteReleaseController extends Controller
         ]);
     }
 
-    public function store(StoreSiteReleaseRequest $request)
+    public function store(\App\Http\Requests\StoreSiteReleaseRequest $request)
     {
         $validated = $request->validated();
         $item = InventoryItem::findOrFail($validated['inventory_item_id']);
@@ -50,21 +55,12 @@ class SiteReleaseController extends Controller
             return redirect()->back()->with('error', 'Release quantity exceeds available stock.');
         }
 
-        SiteRelease::create([
-            'inventory_item_id' => $item->id,
-            'project_id' => $item->project_id,
-            'released_by_id' => auth()->id(),
-            'issued_to' => $validated['issued_to'],
-            'quantity_released' => $validated['quantity_released'],
-            'unit' => $item->unit,
-            'purpose' => $validated['purpose'] ?? null,
-            'release_date' => now(),
-            'status' => 'IN_TRANSIT',
-        ]);
+        $release = $this->service->release($item, $validated);
 
-        $item->decrement('quantity', $validated['quantity_released']);
-
-        return redirect()->back()->with('success', "Released {$validated['quantity_released']} {$item->unit} of {$item->material_name}.");
+        return redirect()->back()->with(
+            'success',
+            "Released {$release->quantity_released} {$item->unit} of {$item->material_name}."
+        );
     }
 
     public function confirmReceipt(Request $request, SiteRelease $siteRelease)
@@ -78,14 +74,11 @@ class SiteReleaseController extends Controller
             'receipt_remarks' => 'nullable|string|max:500',
         ]);
 
-        $siteRelease->update([
-            'status' => 'RECEIVED',
-            'received_by_id' => auth()->id(),
-            'received_date' => now(),
-            'quantity_received' => $validated['quantity_received'],
-            'receipt_remarks' => $validated['receipt_remarks'] ?? null,
-        ]);
+        $this->service->confirmReceipt($siteRelease, $validated);
 
-        return redirect()->back()->with('success', "Receipt confirmed: {$validated['quantity_received']} {$siteRelease->unit} received.");
+        return redirect()->back()->with(
+            'success',
+            "Receipt confirmed: {$validated['quantity_received']} {$siteRelease->unit} received."
+        );
     }
 }

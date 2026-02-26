@@ -4,11 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\PurchaseRequest;
+use App\Services\PurchaseRequestService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class PurchaseRequestController extends Controller
 {
+    public function __construct(
+        protected PurchaseRequestService $service
+    ) {
+    }
+
     public function index()
     {
         $requests = PurchaseRequest::with(['project', 'requester', 'approver', 'items'])
@@ -36,29 +42,7 @@ class PurchaseRequestController extends Controller
             'items.*.estimated_unit_cost' => 'required|numeric|min:0',
         ]);
 
-        $totalCost = collect($validated['items'])->sum(function ($item) {
-            return $item['quantity'] * $item['estimated_unit_cost'];
-        });
-
-        $pr = PurchaseRequest::create([
-            'project_id' => $validated['project_id'],
-            'requester_id' => auth()->id(),
-            'request_date' => now(),
-            'status' => 'PENDING',
-            'purpose' => $validated['purpose'] ?? null,
-            'remarks' => $validated['remarks'] ?? null,
-            'total_estimated_cost' => $totalCost,
-        ]);
-
-        foreach ($validated['items'] as $item) {
-            $pr->items()->create([
-                'item_description' => $item['item_description'],
-                'quantity' => $item['quantity'],
-                'unit' => $item['unit'],
-                'estimated_unit_cost' => $item['estimated_unit_cost'],
-                'estimated_total_cost' => $item['quantity'] * $item['estimated_unit_cost'],
-            ]);
-        }
+        $this->service->create($validated);
 
         return redirect()->route('purchasing.requests.index')
             ->with('success', 'Purchase Request submitted successfully.');
@@ -66,20 +50,14 @@ class PurchaseRequestController extends Controller
 
     public function approve(PurchaseRequest $purchaseRequest)
     {
-        $purchaseRequest->update([
-            'status' => 'APPROVED',
-            'approver_id' => auth()->id(),
-        ]);
+        $this->service->approve($purchaseRequest);
 
         return redirect()->back()->with('success', 'Purchase Request approved.');
     }
 
     public function decline(PurchaseRequest $purchaseRequest)
     {
-        $purchaseRequest->update([
-            'status' => 'DECLINED',
-            'approver_id' => auth()->id(),
-        ]);
+        $this->service->decline($purchaseRequest);
 
         return redirect()->back()->with('success', 'Purchase Request declined.');
     }

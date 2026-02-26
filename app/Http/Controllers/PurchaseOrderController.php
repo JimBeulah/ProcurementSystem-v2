@@ -4,15 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Material;
 use App\Models\PurchaseOrder;
-use App\Models\PurchaseOrderItem;
-use App\Models\PurchaseRequest;
 use App\Models\Project;
 use App\Models\Supplier;
+use App\Services\PurchaseOrderService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class PurchaseOrderController extends Controller
 {
+    public function __construct(
+        protected PurchaseOrderService $service
+    ) {
+    }
+
     public function index()
     {
         $orders = PurchaseOrder::with(['project', 'supplier', 'requester'])
@@ -38,11 +42,7 @@ class PurchaseOrderController extends Controller
         $projects = Project::where('status', 'ACTIVE')->orderBy('name')->get();
         $suppliers = Supplier::orderBy('name')->get();
         $materials = Material::orderBy('name')->get();
-
-        $pr = null;
-        if ($request->query('prId')) {
-            $pr = PurchaseRequest::with('items')->find($request->query('prId'));
-        }
+        $pr = $this->service->findPurchaseRequest($request->query('prId'));
 
         return Inertia::render('Purchasing/Orders/Create', [
             'projects' => $projects,
@@ -69,40 +69,14 @@ class PurchaseOrderController extends Controller
             'items.*.unit' => 'nullable|string|max:50',
         ]);
 
-        $totalAmount = collect($validated['items'])->sum(fn($i) => $i['quantity'] * $i['unit_price']);
-
-        $po = PurchaseOrder::create([
-            'project_id' => $validated['project_id'],
-            'supplier_id' => $validated['supplier_id'],
-            'purchase_request_id' => $validated['purchase_request_id'] ?? null,
-            'requester_id' => auth()->id(),
-            'order_date' => now(),
-            'status' => 'PENDING',
-            'remarks' => $validated['remarks'] ?? null,
-            'total_amount' => $totalAmount,
-        ]);
-
-        foreach ($validated['items'] as $item) {
-            PurchaseOrderItem::create([
-                'purchase_order_id' => $po->id,
-                'material_name' => $item['material_name'],
-                'description' => $item['description'] ?? null,
-                'quantity' => $item['quantity'],
-                'unit_price' => $item['unit_price'],
-                'total_price' => $item['quantity'] * $item['unit_price'],
-                'unit' => $item['unit'] ?? 'pcs',
-            ]);
-        }
+        $this->service->create($validated);
 
         return redirect()->route('purchasing.orders.index')->with('success', 'Purchase order created successfully.');
     }
 
     public function approve(PurchaseOrder $order)
     {
-        $order->update([
-            'status' => 'APPROVED',
-            'approver_id' => auth()->id(),
-        ]);
+        $this->service->approve($order);
 
         return redirect()->back()->with('success', 'Purchase order approved successfully.');
     }
