@@ -49,7 +49,7 @@ const NAVIGATION_CONFIG = [
         group: 'Operations',
         items: [
             { label: 'Inventory', href: '/inventory', icon: <Package />, permission: 'view inventory', matchPrefix: '/inventory', exactMatch: true },
-            { label: 'Receiving', href: '/receiving', icon: <Inbox />, permission: 'view receiving', matchPrefix: '/receiving', exactMatch: true },
+            { label: 'Receiving', href: '/inventory/receiving', icon: <Inbox />, permission: 'view receiving', matchPrefix: '/inventory/receiving', exactMatch: true },
             { label: 'Site Release', href: '/site-release', icon: <Truck />, permission: 'view site release', matchPrefix: '/site-release' },
         ],
     },
