@@ -30,8 +30,8 @@ const NAVIGATION_CONFIG = [
         items: [
             { label: 'Clients', href: '/clients', icon: <Users />, permission: 'view clients', matchPrefix: '/clients' },
             { label: 'Projects', href: '/projects', icon: <Briefcase />, permission: 'view projects', matchPrefix: '/projects' },
-            { label: 'Purchase Requests', href: '/purchasing/requests', icon: <ClipboardList />, permission: 'view purchase requests', matchPrefix: '/purchasing/requests' },
-            { label: 'RFQ', href: '/purchasing/rfq', icon: <FileSearch />, permission: 'view rfq', matchPrefix: '/purchasing/rfq' },
+            { label: 'Purchase Requests', href: '/purchasing/requests', icon: <ClipboardList />, permission: 'view purchase requests', matchPrefix: '/purchasing/requests', badgeKey: 'requests' },
+            { label: 'RFQ', href: '/purchasing/rfq', icon: <FileSearch />, permission: 'view rfq', matchPrefix: '/purchasing/rfq', badgeKey: 'rfqs' },
             { label: 'Suppliers', href: '/purchasing/suppliers', icon: <Factory />, permission: 'view suppliers', matchPrefix: '/purchasing/suppliers' },
             { label: 'Orders', href: '/purchasing/orders', icon: <ShoppingCart />, permission: 'view purchase orders', matchPrefix: '/purchasing/orders' },
             { label: 'Receive Goods', href: '/inventory/receiving', icon: <ArrowDownCircle />, permission: 'view receiving', matchPrefix: '/inventory/receiving' },
@@ -42,6 +42,7 @@ const NAVIGATION_CONFIG = [
                 permission: null,
                 matchPrefix: '/purchasing/approvals',
                 anyPermission: ['approve boq', 'approve material requests', 'approve purchase orders', 'manage purchase requests'],
+                badgeKey: 'approvals',
             },
         ],
     },
@@ -71,7 +72,8 @@ const NAVIGATION_CONFIG = [
 ];
 
 export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleCollapse }) {
-    const { url } = usePage();
+    const { url, props } = usePage();
+    const { sidebar_badges = {} } = props;
     const { can, hasRole } = usePermissions();
     const [activeTooltip, setActiveTooltip] = useState(null);
 
@@ -202,6 +204,7 @@ export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleColl
                                         isCollapsed={isCollapsed}
                                         onClick={handleLinkClick}
                                         onHover={setActiveTooltip}
+                                        badge={item.badgeKey ? sidebar_badges[item.badgeKey] : 0}
                                     />
                                 ))}
                             </NavGroup>
@@ -246,7 +249,7 @@ function NavGroup({ label, children, isCollapsed }) {
     );
 }
 
-function NavItem({ href, icon, label, isActive, isCollapsed, onClick, onHover }) {
+function NavItem({ href, icon, label, isActive, isCollapsed, onClick, onHover, badge = 0 }) {
     const handleMouseEnter = (e) => {
         if (isCollapsed && onHover) {
             const rect = e.currentTarget.getBoundingClientRect();
@@ -285,12 +288,24 @@ function NavItem({ href, icon, label, isActive, isCollapsed, onClick, onHover })
                             initial={{ opacity: 0, x: -5 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -5 }}
-                            className="text-[13px] whitespace-nowrap tracking-tight"
+                            className="text-[13px] whitespace-nowrap tracking-tight flex-1"
                         >
                             {label}
                         </motion.span>
                     )}
                 </AnimatePresence>
+                {!isCollapsed && badge > 0 && (
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] flex items-center justify-center leading-none"
+                    >
+                        {badge > 99 ? '99+' : badge}
+                    </motion.div>
+                )}
+                {isCollapsed && badge > 0 && (
+                    <div className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-background" />
+                )}
             </motion.div>
         </Link>
     );

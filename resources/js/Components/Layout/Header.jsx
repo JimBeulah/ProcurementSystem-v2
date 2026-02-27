@@ -6,7 +6,9 @@ import { ThemeToggle } from '@/Components/UI/ThemeToggle';
 
 export default function Header({ user, onMenuClick }) {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
     const { url } = usePage();
+    const { auth } = usePage().props;
 
     // Generate breadcrumbs from URL
     const { project } = usePage().props;
@@ -86,10 +88,58 @@ export default function Header({ user, onMenuClick }) {
 
                     <ThemeToggle />
 
-                    <button className="p-2 rounded-full hover:bg-muted/10 relative text-muted-foreground hover:text-foreground transition-colors">
-                        <Bell size={18} strokeWidth={2} />
-                        <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 border-2 border-background" />
-                    </button>
+                    {/* Notifications Dropdown */}
+                    <div className="relative">
+                        <button
+                            onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                            className="p-2 rounded-full hover:bg-muted/10 relative text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            <Bell size={18} strokeWidth={2} />
+                            {auth?.notifications_count > 0 && (
+                                <span className="absolute top-1 right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 border border-background text-[9px] font-bold text-white">
+                                    {auth.notifications_count > 99 ? '99+' : auth.notifications_count}
+                                </span>
+                            )}
+                        </button>
+
+                        <AnimatePresence>
+                            {isNotificationsOpen && (
+                                <>
+                                    <div className="fixed inset-0 z-[60]" onClick={() => setIsNotificationsOpen(false)} />
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                                        transition={{ duration: 0.15, ease: "easeOut" }}
+                                        className="absolute right-0 mt-2 w-80 rounded-2xl bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 shadow-xl shadow-black/5 overflow-hidden z-[70] origin-top-right"
+                                    >
+                                        <div className="p-4 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
+                                            <h3 className="text-sm font-semibold text-foreground tracking-tight">Notifications</h3>
+                                            {auth?.notifications_count > 0 && (
+                                                <button className="text-[11px] text-blue-600 hover:text-blue-700 font-medium">Mark all read</button>
+                                            )}
+                                        </div>
+                                        <div className="max-h-[300px] overflow-y-auto overscroll-contain">
+                                            {auth?.notifications?.length > 0 ? (
+                                                <div className="divide-y divide-black/5 dark:divide-white/5">
+                                                    {auth.notifications.map((notification) => (
+                                                        <Link href={notification.data?.url || '#'} key={notification.id} className="block p-4 hover:bg-muted/30 transition-colors">
+                                                            <p className="text-sm text-foreground mb-1">{notification.data?.message || 'New notification'}</p>
+                                                            <p className="text-[11px] text-muted-foreground">{new Date(notification.created_at).toLocaleDateString()}</p>
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="p-8 text-center text-muted-foreground text-sm">
+                                                    No new notifications
+                                                </div>
+                                            )}
+                                        </div>
+                                    </motion.div>
+                                </>
+                            )}
+                        </AnimatePresence>
+                    </div>
 
                     {/* Profile Dropdown */}
                     <div className="relative">
