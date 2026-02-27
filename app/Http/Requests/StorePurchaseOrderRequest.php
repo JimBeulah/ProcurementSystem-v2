@@ -15,7 +15,7 @@ class StorePurchaseOrderRequest extends FormRequest
     {
         return [
             'project_id' => 'required|exists:projects,id',
-            'supplier_id' => 'required|exists:suppliers,id',
+            'supplier_id' => 'nullable|exists:suppliers,id',
             'purchase_request_id' => 'nullable|exists:purchase_requests,id',
             'remarks' => 'nullable|string|max:500',
             'items' => 'required|array|min:1',

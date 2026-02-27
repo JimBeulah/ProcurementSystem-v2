@@ -39,7 +39,7 @@ export default function PurchaseOrdersIndex() {
                                             PO-{po.id.toString().padStart(4, '0')}
                                         </div>
                                         <div>
-                                            <div className="text-slate-900 dark:text-white font-bold">{po.supplier?.name || 'Unknown Supplier'}</div>
+                                            <div className="text-slate-900 dark:text-white font-bold">{po.supplier?.name || 'Internal Fulfillment (Warehouse)'}</div>
                                             <div className="text-xs text-slate-500 flex items-center gap-2">
                                                 <Calendar size={12} /> {new Date(po.order_date).toLocaleDateString()}
                                             </div>

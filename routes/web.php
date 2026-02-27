@@ -90,6 +90,7 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
         Route::get('/purchasing/orders/{order}', [PurchaseOrderController::class, 'show'])->name('purchasing.orders.show');
         Route::get('/purchasing/orders/{order}/print', [PurchaseOrderController::class, 'print'])->name('purchasing.orders.print');
         Route::post('/purchasing/orders/{order}/approve', [PurchaseOrderController::class, 'approve'])->name('purchasing.orders.approve')->middleware('can:approve purchase orders');
+        Route::post('/purchasing/orders/{order}/decline', [PurchaseOrderController::class, 'decline'])->name('purchasing.orders.decline')->middleware('can:approve purchase orders');
     });
 
     // Suppliers
@@ -123,9 +124,10 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index')->middleware('can:view inventory');
 
     // Receiving / GRN
-    Route::get('/inventory/receiving', [ReceivingController::class, 'index'])->name('receiving.index')->middleware('can:view receiving');
-    Route::get('/inventory/receiving/create', [ReceivingController::class, 'create'])->name('receiving.create')->middleware('can:create receiving');
-    Route::post('/inventory/receiving', [ReceivingController::class, 'store'])->name('receiving.store')->middleware('can:create receiving');
+    Route::get('/inventory/receiving', [ReceivingController::class, 'index'])->name('receiving.index')->middleware('role_or_permission:site_engineer|view receiving');
+    Route::get('/inventory/receiving/create', [ReceivingController::class, 'create'])->name('receiving.create')->middleware('role_or_permission:site_engineer|create receiving');
+    Route::post('/inventory/receiving', [ReceivingController::class, 'store'])->name('receiving.store')->middleware('role_or_permission:site_engineer|create receiving');
+    Route::post('/inventory/receiving/{purchaseOrder}/auto', [ReceivingController::class, 'autoReceive'])->name('receiving.auto')->middleware('role_or_permission:site_engineer|create receiving');
 
     // Finance
     Route::get('/finance/invoices', [FinanceController::class, 'invoices'])->name('finance.invoices')->middleware('can:view invoices');
@@ -147,6 +149,12 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
     Route::get('/site-release', [SiteReleaseController::class, 'index'])->name('site-release.index')->middleware('can:view site release');
     Route::post('/site-release', [SiteReleaseController::class, 'store'])->name('site-release.store')->middleware('can:create site release');
     Route::post('/site-release/{siteRelease}/confirm', [SiteReleaseController::class, 'confirmReceipt'])->name('site-release.confirm')->middleware('can:confirm site release');
+
+    // Material Returns
+    Route::get('/inventory/returns', [\App\Http\Controllers\MaterialReturnController::class, 'index'])->name('material-returns.index')->middleware('can:view inventory');
+    Route::post('/inventory/returns', [\App\Http\Controllers\MaterialReturnController::class, 'store'])->name('material-returns.store')->middleware('can:view site release');
+    Route::post('/inventory/returns/{materialReturn}/receive', [\App\Http\Controllers\MaterialReturnController::class, 'receive'])->name('material-returns.receive')->middleware('can:manage inventory');
+
 
     // Settings
     Route::middleware(['can:view settings'])->group(function () {

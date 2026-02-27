@@ -113,16 +113,16 @@ export default function PurchaseRequestsIndex() {
                     <div>
                         <div className="flex items-center gap-2 mb-1">
                             <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                                <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl text-white shadow-lg shadow-blue-500/30">
-                                    <ClipboardList size={20} />
+                                <div className="p-2 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl text-white shadow-lg shadow-violet-500/30">
+                                    <ShoppingCart size={20} />
                                 </div>
-                                <span className="opacity-90">Purchase Requests</span>
+                                <span className="opacity-90">Sourcing Tasklist</span>
                             </h1>
                         </div>
-                        <p className="text-sm text-slate-500 font-medium ml-1">Internal requests for materials and services</p>
+                        <p className="text-sm text-slate-500 font-medium ml-1">Approved material requests ready for procurement action</p>
                     </div>
                     {can('manage purchase requests') && (
-                        <button onClick={() => setShowCreate(true)} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 text-xs font-bold transition-all shadow-lg shadow-blue-600/20 active:scale-95">
+                        <button onClick={() => setShowCreate(true)} className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 text-xs font-bold transition-all shadow-lg shadow-violet-600/20 active:scale-95">
                             <Plus size={18} /> New Request
                         </button>
                     )}
@@ -148,9 +148,9 @@ export default function PurchaseRequestsIndex() {
                                 {list.length === 0 ? (
                                     <tr>
                                         <td colSpan={8} className="p-16 text-center">
-                                            <ClipboardList className="mx-auto mb-4 text-slate-300 dark:text-slate-600" size={48} />
-                                            <p className="text-slate-400 uppercase tracking-widest font-bold text-xs">No Purchase Requests Found</p>
-                                            <p className="text-slate-400 text-xs mt-1">Click "New Request" to create one.</p>
+                                            <ShoppingCart className="mx-auto mb-4 text-slate-300 dark:text-slate-600" size={48} />
+                                            <p className="text-slate-400 uppercase tracking-widest font-bold text-xs">No Sourcing Tasks Yet</p>
+                                            <p className="text-slate-400 text-xs mt-1">Approved material requests will appear here for sourcing.</p>
                                         </td>
                                     </tr>
                                 ) : list.map((pr, idx) => {
@@ -200,6 +200,12 @@ export default function PurchaseRequestsIndex() {
                                                                 <Printer size={14} className="text-slate-400" /> Print PR
                                                             </a>
 
+                                                            {pr.status === 'APPROVED' && can('create purchase orders') && (
+                                                                <Link href={`/purchasing/orders/create?prId=${pr.id}`} className="w-full text-left px-4 py-2 text-xs font-semibold text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/10 flex items-center gap-2">
+                                                                    <ShoppingCart size={14} /> Create PO
+                                                                </Link>
+                                                            )}
+
                                                             {pr.status === 'PENDING' && can('manage purchase requests') && (
                                                                 <>
                                                                     <button onClick={() => handleApprove(pr.id)} className="w-full text-left px-4 py-2 text-xs font-semibold text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 flex items-center gap-2">
@@ -209,12 +215,6 @@ export default function PurchaseRequestsIndex() {
                                                                         <XCircle size={14} /> Decline
                                                                     </button>
                                                                 </>
-                                                            )}
-
-                                                            {pr.status === 'APPROVED' && can('create purchase orders') && (
-                                                                <Link href={`/purchasing/orders/create?prId=${pr.id}`} className="w-full text-left px-4 py-2 text-xs font-semibold text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/10 flex items-center gap-2">
-                                                                    <ShoppingCart size={14} /> Create PO
-                                                                </Link>
                                                             )}
 
                                                             {can('manage purchase requests') && (

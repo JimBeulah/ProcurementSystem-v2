@@ -47,6 +47,25 @@ class PurchaseOrderController extends Controller
         $materials = Material::orderBy('name')->get();
         $pr = $this->service->findPurchaseRequest($request->query('prId'));
 
+        // Smart Inventory Match: for each PR item, check warehouse stock with matching name
+        $inventoryMatches = [];
+        if ($pr && $pr->items) {
+            foreach ($pr->items as $item) {
+                $matches = \App\Models\InventoryItem::where('quantity', '>', 0)
+                    ->where('material_name', 'LIKE', '%' . $item->item_description . '%')
+                    ->get(['id', 'material_name', 'quantity', 'unit', 'project_id'])
+                    ->toArray();
+
+                if (count($matches) > 0) {
+                    $inventoryMatches[$item->item_description] = [
+                        'requested_qty' => (float) $item->quantity,
+                        'unit' => $item->unit,
+                        'stock' => $matches,
+                    ];
+                }
+            }
+        }
+
         return Inertia::render('Purchasing/Orders/Create', [
             'projects' => $projects,
             'suppliers' => $suppliers,
@@ -54,12 +73,19 @@ class PurchaseOrderController extends Controller
             'rfqId' => $request->query('rfqId'),
             'quoteId' => $request->query('quoteId'),
             'purchaseRequest' => $pr,
+            'inventoryMatches' => $inventoryMatches,
         ]);
     }
 
     public function store(StorePurchaseOrderRequest $request): RedirectResponse
     {
-        $this->service->create($request->validated());
+        $po = $this->service->create($request->validated());
+
+        if (!$po) {
+            // Means 100% of the requested items were sourced from the internal warehouse
+            return redirect()->route('purchasing.orders.index')
+                ->with('success', 'Order fully fulfilled from warehouse stock. Site Releases have been auto-generated for the project site.');
+        }
 
         return redirect()->route('purchasing.orders.index')->with('success', 'Purchase order created successfully.');
     }
@@ -70,6 +96,14 @@ class PurchaseOrderController extends Controller
 
         return redirect()->back()->with('success', 'Purchase order approved successfully.');
     }
+
+    public function decline(Request $request, PurchaseOrder $order): RedirectResponse
+    {
+        $this->service->decline($order, $request->input('remarks'));
+
+        return redirect()->back()->with('success', 'Purchase order declined.');
+    }
+
 
     public function print(PurchaseOrder $order)
     {

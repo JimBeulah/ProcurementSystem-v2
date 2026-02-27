@@ -15,8 +15,53 @@ class PurchaseOrderService
     public function create(array $validated): PurchaseOrder
     {
         return \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
-            $totalAmount = collect($validated['items'])
-                ->sum(fn($i) => $i['quantity'] * $i['unit_price']);
+            // Segregate items meant for the supplier vs items sourced from the warehouse
+            $supplierItems = [];
+            $warehouseItems = [];
+
+            foreach ($validated['items'] as $item) {
+                if (($item['description'] ?? '') === 'Sourced from Warehouse') {
+                    $warehouseItems[] = $item;
+                } else {
+                    $supplierItems[] = $item;
+                }
+            }
+
+            // 1. Process Warehouse Items by auto-generating Site Releases
+            foreach ($warehouseItems as $wItem) {
+                // Find matching warehouse inventory
+                $inventory = \App\Models\InventoryItem::where('material_name', $wItem['material_name'])
+                    ->where('quantity', '>', 0)
+                    ->whereNotNull('warehouse_id')
+                    ->first();
+
+                if ($inventory) {
+                    $qtyToRelease = min($wItem['quantity'], $inventory->quantity);
+
+                    \App\Models\SiteRelease::create([
+                        'inventory_item_id' => $inventory->id,
+                        'project_id' => $validated['project_id'],
+                        'released_by_id' => Auth::id(),
+                        'issued_to' => 'Site Engineer',
+                        'quantity_released' => $qtyToRelease,
+                        'unit' => $wItem['unit'] ?? 'pcs',
+                        'purpose' => 'Auto-sourced during PR fulfillment',
+                        'release_date' => now(),
+                        'status' => 'PENDING', // PENDING so the Site Engineer can confirm receipt
+                    ]);
+
+                    // Deduct from warehouse stock
+                    $inventory->decrement('quantity', $qtyToRelease);
+                }
+            }
+
+            // 2. Create the Purchase Order ONLY for the supplier items (if any exist)
+            if (empty($supplierItems)) {
+                // Entire order fulfilled from warehouse! No PO needed.
+                return null;
+            }
+
+            $totalAmount = collect($supplierItems)->sum(fn($i) => $i['quantity'] * $i['unit_price']);
 
             $po = PurchaseOrder::create([
                 'project_id' => $validated['project_id'],
@@ -29,7 +74,7 @@ class PurchaseOrderService
                 'total_amount' => $totalAmount,
             ]);
 
-            $itemsData = collect($validated['items'])->map(function ($item) {
+            $itemsData = collect($supplierItems)->map(function ($item) {
                 return [
                     'material_name' => $item['material_name'],
                     'description' => $item['description'] ?? null,
@@ -39,7 +84,6 @@ class PurchaseOrderService
                     'unit' => $item['unit'] ?? 'pcs',
                 ];
             })->toArray();
-
             $po->items()->createMany($itemsData);
 
             return $po;
@@ -56,6 +100,18 @@ class PurchaseOrderService
             'approver_id' => Auth::id(),
         ]);
     }
+
+    /**
+     * Decline a purchase order.
+     */
+    public function decline(PurchaseOrder $order, ?string $remarks = null): void
+    {
+        $order->update([
+            'status' => 'DECLINED',
+            'remarks' => $remarks ?? $order->remarks,
+        ]);
+    }
+
 
     /**
      * Optionally find a purchase request for pre-filling the PO create form.

@@ -93,14 +93,52 @@ class DashboardController extends Controller
 
     private function siteEngineerDashboard(): Response
     {
+        $user = auth()->user();
+
+        // 1. Fetch pending site releases (from warehouse)
+        $pendingSiteReleases = \App\Models\SiteRelease::with('project')
+            ->where('status', 'PENDING')
+            ->latest()
+            ->get()
+            ->map(fn($r) => [
+                'id' => $r->id,
+                'type' => 'site_release',
+                'title' => 'Warehouse Dispatch #' . str_pad($r->id, 4, '0', STR_PAD_LEFT),
+                'project_name' => $r->project?->name ?? 'N/A',
+                'created_at' => $r->created_at->diffForHumans(),
+            ]);
+
+        // 2. Fetch approved purchase orders (direct supplier delivery)
+        // We look for POs linked to the Site Engineer's projects
+        $projectIds = \App\Models\Project::where('site_engineer_id', $user->id)->pluck('id');
+
+        $pendingPOs = PurchaseOrder::with('project')
+            ->whereIn('status', ['APPROVED', 'PARTIALLY DELIVERED'])
+            ->whereIn('project_id', $projectIds)
+            ->latest()
+            ->get()
+            ->map(fn($po) => [
+                'id' => $po->id,
+                'type' => 'purchase_order',
+                'title' => 'PO-' . str_pad($po->id, 4, '0', STR_PAD_LEFT) . ' Delivery',
+                'project_name' => $po->project?->name ?? 'N/A',
+                'created_at' => $po->updated_at->diffForHumans(), // Using updated_at since it's when it was approved
+            ]);
+
+        // Merge both streams for the dashboard widget
+        $allDeliveries = $pendingSiteReleases->concat($pendingPOs)->sortByDesc('created_at')->values();
+
         $stats = [
             'activeProjects' => Project::where('status', 'ACTIVE')->count(),
-            'myMRs' => \App\Models\MaterialRequest::count(),
-            'pendingMRs' => \App\Models\MaterialRequest::where('status', 'PENDING')->count(),
-            'pendingSiteReleases' => \App\Models\SiteRelease::where('status', 'PENDING')->count(),
+            'myMRs' => \App\Models\MaterialRequest::where('requester_id', $user->id)->count(),
+            'pendingMRs' => \App\Models\MaterialRequest::where('requester_id', $user->id)->where('status', 'PENDING')->count(),
+            'pendingSiteReleases' => $allDeliveries->count(),
         ];
 
-        return Inertia::render('Dashboards/SiteEngineerDashboard', ['stats' => $stats]);
+        return Inertia::render('Dashboards/SiteEngineerDashboard', [
+            'stats' => $stats,
+            'pendingReleases' => $allDeliveries,
+        ]);
     }
 
     private function genericDashboard(): Response

@@ -2,9 +2,11 @@ import React from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, CheckCircle, Printer } from 'lucide-react';
+import { usePermissions } from '@/Hooks/usePermissions';
 
 export default function PurchaseOrderShow() {
     const { order: po } = usePage().props;
+    const { can } = usePermissions();
 
     if (!po) return <div className="p-12 text-center text-red-500">PO Not Found</div>;
 
@@ -37,7 +39,7 @@ export default function PurchaseOrderShow() {
                         <a href={`/purchasing/orders/${po.id}/print`} target="_blank" rel="noopener noreferrer" className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm transition-colors">
                             <Printer size={18} /> Print
                         </a>
-                        {po.status === 'PENDING' && (
+                        {po.status === 'PENDING' && can('approve purchase orders') && (
                             <button onClick={handleApprove} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold transition-colors active:scale-95">
                                 <CheckCircle size={18} /> Approve PO
                             </button>
@@ -48,9 +50,9 @@ export default function PurchaseOrderShow() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-xl">
                         <h2 className="text-xs text-slate-500 uppercase font-bold mb-4 tracking-widest">Supplier Details</h2>
-                        <div className="text-slate-900 dark:text-white font-bold text-lg mb-1">{po.supplier?.name}</div>
-                        <div className="text-slate-500 text-sm">{po.supplier?.address || 'No address'}</div>
-                        <div className="text-slate-500 text-sm">{po.supplier?.contact_person}</div>
+                        <div className="text-slate-900 dark:text-white font-bold text-lg mb-1">{po.supplier?.name || 'Internal Fulfillment'}</div>
+                        <div className="text-slate-500 text-sm">{po.supplier?.address || 'Warehouse Stock'}</div>
+                        {po.supplier && <div className="text-slate-500 text-sm">{po.supplier.contact_person}</div>}
                     </div>
                     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-xl">
                         <h2 className="text-xs text-slate-500 uppercase font-bold mb-4 tracking-widest">Delivery To</h2>

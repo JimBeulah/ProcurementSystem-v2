@@ -26,10 +26,6 @@ class ReceivingService
             'notes' => $validated['notes'] ?? null,
         ]);
 
-        $warehouse = Warehouse::firstOrCreate(
-            ['name' => 'Main Warehouse'],
-            ['location' => 'HQ', 'type' => 'CENTRAL']
-        );
 
         foreach ($validated['items'] as $itemData) {
             ReceivingItem::create([
@@ -45,7 +41,7 @@ class ReceivingService
                 [
                     'material_name' => $itemData['material_name'],
                     'project_id' => $po->project_id,
-                    'warehouse_id' => $warehouse->id,
+                    'warehouse_id' => null,
                 ],
                 [
                     'quantity' => 0,
@@ -54,6 +50,47 @@ class ReceivingService
             );
 
             $inventoryItem->increment('quantity', $itemData['quantity_received']);
+        }
+
+        $po->update(['status' => 'COMPLETED']);
+
+        return $report;
+    }
+
+
+    /**
+     * Automatically receive the full requested quantity for a Purchase Order (Direct-to-site).
+     */
+    public function autoReceiveFullOrder(PurchaseOrder $po): ReceivingReport
+    {
+        $report = ReceivingReport::create([
+            'purchase_order_id' => $po->id,
+            'received_by_id' => Auth::id(),
+            'received_date' => now(),
+            'notes' => 'Auto-received full quantity by Site Engineer.',
+        ]);
+
+        foreach ($po->items as $poItem) {
+            ReceivingItem::create([
+                'receiving_report_id' => $report->id,
+                'material_name' => $poItem->material_name,
+                'quantity_received' => $poItem->quantity,
+                'status' => 'GOOD',
+            ]);
+
+            $inventoryItem = InventoryItem::firstOrCreate(
+                [
+                    'material_name' => $poItem->material_name,
+                    'project_id' => $po->project_id,
+                    'warehouse_id' => null,
+                ],
+                [
+                    'quantity' => 0,
+                    'unit' => $poItem->unit,
+                ]
+            );
+
+            $inventoryItem->increment('quantity', $poItem->quantity);
         }
 
         $po->update(['status' => 'COMPLETED']);

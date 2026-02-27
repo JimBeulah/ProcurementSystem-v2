@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage, router } from '@inertiajs/react';
 import { ShieldCheck, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react';
+import { usePermissions } from '@/Hooks/usePermissions';
 
 export default function ApprovalsIndex() {
     const { pendingPos, pendingMrs } = usePage().props;
+    const { can } = usePermissions();
     const pos = pendingPos || [];
     const mrs = pendingMrs || [];
-    const [tab, setTab] = useState('po');
+    const [tab, setTab] = useState('mr');
     const [processing, setProcessing] = useState(null);
 
     const handleApprove = (type, id) => {
@@ -26,12 +28,13 @@ export default function ApprovalsIndex() {
 
     const handleReject = (type, id) => {
         if (processing) return;
-        const remarks = window.prompt('Reason for rejection (optional):');
+        const remarks = window.prompt('Reason for declining (optional):');
         if (remarks === null) return; // User cancelled
         setProcessing(id);
         if (type === 'po') {
-            // PO rejection not yet implemented
-            setProcessing(null);
+            router.post(route('purchasing.orders.decline', id), { remarks }, {
+                onFinish: () => setProcessing(null),
+            });
         } else if (type === 'mr') {
             router.post(route('material-requests.reject', id), { remarks }, {
                 onFinish: () => setProcessing(null),
@@ -53,12 +56,12 @@ export default function ApprovalsIndex() {
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
                         <ShieldCheck className="text-blue-500" /> Pending Approvals
                     </h1>
-                    <p className="text-slate-500">Review and approve purchase requests and orders.</p>
+                    <p className="text-slate-500">Your centralized inbox — review Material Requests and Purchase Orders before they proceed.</p>
                 </header>
 
                 <div className="flex border-b border-slate-200 dark:border-slate-700">
-                    <TabBtn id="po" label="Purchase Orders" count={pos.length} />
                     <TabBtn id="mr" label="Material Requests" count={mrs.length} />
+                    <TabBtn id="po" label="Purchase Orders" count={pos.length} />
                 </div>
 
                 <div className="grid gap-4">
@@ -70,12 +73,16 @@ export default function ApprovalsIndex() {
                                 <div className="text-sm font-mono text-blue-600 dark:text-cyan-400 mt-1">₱{Number(po.total_amount).toLocaleString()}</div>
                             </div>
                             <div className="flex gap-2">
-                                <button onClick={() => handleApprove('po', po.id)} disabled={processing === po.id} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1 disabled:opacity-50">
-                                    <CheckCircle size={16} /> Approve
-                                </button>
-                                <button className="bg-red-600/10 text-red-500 hover:bg-red-500 hover:text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors">
-                                    <XCircle size={16} /> Decline
-                                </button>
+                                {can('approve purchase orders') && (
+                                    <>
+                                        <button onClick={() => handleApprove('po', po.id)} disabled={processing === po.id} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1 disabled:opacity-50">
+                                            <CheckCircle size={16} /> Approve
+                                        </button>
+                                        <button onClick={() => handleReject('po', po.id)} disabled={processing === po.id} className="bg-red-600/10 text-red-500 hover:bg-red-500 hover:text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors disabled:opacity-50">
+                                            <XCircle size={16} /> Decline
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         </div>
                     ))}
@@ -89,12 +96,16 @@ export default function ApprovalsIndex() {
                                     <div className="flex items-center gap-1 text-amber-500 text-xs mt-1"><Clock size={12} /> Pending Review</div>
                                 </div>
                                 <div className="flex gap-2">
-                                    <button onClick={() => handleApprove('mr', mr.id)} disabled={processing === mr.id} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1 disabled:opacity-50 transition-all active:scale-95">
-                                        <CheckCircle size={16} /> {processing === mr.id ? 'Processing...' : 'Approve'}
-                                    </button>
-                                    <button onClick={() => handleReject('mr', mr.id)} disabled={processing === mr.id} className="bg-red-600/10 text-red-500 hover:bg-red-500 hover:text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors disabled:opacity-50 active:scale-95">
-                                        <XCircle size={16} /> Decline
-                                    </button>
+                                    {can('approve material requests') && (
+                                        <>
+                                            <button onClick={() => handleApprove('mr', mr.id)} disabled={processing === mr.id} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1 disabled:opacity-50 transition-all active:scale-95">
+                                                <CheckCircle size={16} /> {processing === mr.id ? 'Processing...' : 'Approve'}
+                                            </button>
+                                            <button onClick={() => handleReject('mr', mr.id)} disabled={processing === mr.id} className="bg-red-600/10 text-red-500 hover:bg-red-500 hover:text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors disabled:opacity-50 active:scale-95">
+                                                <XCircle size={16} /> Decline
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                             {/* Item details */}

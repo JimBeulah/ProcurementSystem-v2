@@ -20,18 +20,32 @@ class ReceivingController extends Controller
 
     public function index(): Response
     {
-        $reports = \App\Models\ReceivingReport::with(['purchaseOrder.supplier', 'items'])
-            ->orderBy('received_date', 'desc')
-            ->get();
+        $query = \App\Models\ReceivingReport::with(['purchaseOrder.supplier', 'items'])
+            ->orderBy('received_date', 'desc');
+
+        if (auth()->user()->hasRole('site_engineer')) {
+            $projectIds = \App\Models\Project::where('site_engineer_id', auth()->id())->pluck('id');
+            $query->whereHas('purchaseOrder', function ($q) use ($projectIds) {
+                $q->whereIn('project_id', $projectIds);
+            });
+        }
+
+        $reports = $query->get();
 
         return Inertia::render('Inventory/Receiving/Index', ['reports' => $reports]);
     }
 
     public function create(Request $request): Response
     {
-        $purchaseOrders = PurchaseOrder::with(['supplier', 'items'])
-            ->whereIn('status', ['APPROVED', 'PARTIALLY DELIVERED'])
-            ->get();
+        $query = PurchaseOrder::with(['supplier', 'items'])
+            ->whereIn('status', ['APPROVED', 'PARTIALLY DELIVERED']);
+
+        if (auth()->user()->hasRole('site_engineer')) {
+            $projectIds = \App\Models\Project::where('site_engineer_id', auth()->id())->pluck('id');
+            $query->whereIn('project_id', $projectIds);
+        }
+
+        $purchaseOrders = $query->get();
 
         return Inertia::render('Inventory/Receiving/Create', [
             'purchaseOrders' => $purchaseOrders,
@@ -45,5 +59,16 @@ class ReceivingController extends Controller
 
         return redirect()->route('receiving.index')
             ->with('success', 'Goods received and inventory updated successfully.');
+    }
+
+    public function autoReceive(PurchaseOrder $purchaseOrder): RedirectResponse
+    {
+        if ($purchaseOrder->status !== 'APPROVED' && $purchaseOrder->status !== 'PARTIALLY DELIVERED') {
+            return redirect()->back()->with('error', 'Only approved or partially delivered POs can be received.');
+        }
+
+        $this->service->autoReceiveFullOrder($purchaseOrder);
+
+        return redirect()->back()->with('success', 'Purchase Order ' . str_pad($purchaseOrder->id, 4, '0', STR_PAD_LEFT) . ' fully received.');
     }
 }

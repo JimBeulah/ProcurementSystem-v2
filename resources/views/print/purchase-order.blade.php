@@ -24,7 +24,7 @@
             </td>
             <td style="border: none; width: 50%; text-align: right;">
                 <strong>Project:</strong> {{ $purchaseOrder->project->name ?? 'N/A' }}<br>
-                <strong>Supplier:</strong> {{ $purchaseOrder->supplier->name ?? 'N/A' }}<br>
+                <strong>Supplier:</strong> {{ $purchaseOrder->supplier->name ?? 'Internal Fulfillment (Warehouse)' }}<br>
                 <strong>Contact:</strong> {{ $purchaseOrder->supplier->contact_person ?? 'N/A' }}
             </td>
         </tr>
@@ -58,7 +58,8 @@
             <tr>
                 <td colspan="4" style="text-align: right; font-weight: bold;">TOTAL AMOUNT (PHP)</td>
                 <td style="text-align: right; font-weight: bold; font-size: 14px; color: #16a34a;">
-                    {{ number_format($purchaseOrder->total_amount, 2) }}</td>
+                    {{ number_format($purchaseOrder->total_amount, 2) }}
+                </td>
             </tr>
         </tfoot>
     </table>

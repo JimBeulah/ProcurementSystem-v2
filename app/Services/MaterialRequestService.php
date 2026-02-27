@@ -96,15 +96,16 @@ class MaterialRequestService
 
             $materialRequest->load('items');
 
-            $totalCost = $materialRequest->items->sum(
+            $totalCost = collect($materialRequest->items)->sum(
                 fn($item) => $item->quantity * ($item->material_unit_price + $item->labor_unit_price)
             );
 
             $pr = PurchaseRequest::create([
                 'project_id' => $materialRequest->project_id,
                 'requester_id' => $materialRequest->requester_id,
+                'approver_id' => Auth::id(),
                 'request_date' => now(),
-                'status' => 'PENDING',
+                'status' => 'APPROVED',
                 'purpose' => 'Generated from MR-' . str_pad($materialRequest->id, 5, '0', STR_PAD_LEFT),
                 'remarks' => $materialRequest->remarks,
                 'total_estimated_cost' => $totalCost,

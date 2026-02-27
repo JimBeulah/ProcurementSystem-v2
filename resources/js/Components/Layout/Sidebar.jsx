@@ -6,7 +6,7 @@ import {
     Building2, ShoppingCart, FileText, CreditCard, Package,
     Users, Hexagon, X, Briefcase, Shield, ArrowDownCircle,
     ChevronDown, Truck, PieChart, ChevronLeft, ChevronRight,
-    LayoutDashboard, ClipboardList, FileSearch, Factory, Receipt, UserCog, Inbox, ShieldCheck, ScrollText
+    LayoutDashboard, ClipboardList, FileSearch, Factory, Receipt, UserCog, Inbox, ShieldCheck, ScrollText, RotateCcw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -30,7 +30,7 @@ const NAVIGATION_CONFIG = [
         items: [
             { label: 'Clients', href: '/clients', icon: <Users />, permission: 'view clients', matchPrefix: '/clients' },
             { label: 'Projects', href: '/projects', icon: <Briefcase />, permission: 'view projects', matchPrefix: '/projects' },
-            { label: 'Purchase Requests', href: '/purchasing/requests', icon: <ClipboardList />, permission: 'view purchase requests', matchPrefix: '/purchasing/requests', badgeKey: 'requests' },
+            { label: 'Sourcing Tasklist', href: '/purchasing/requests', icon: <ShoppingCart />, permission: 'view purchase requests', matchPrefix: '/purchasing/requests', badgeKey: 'requests' },
             { label: 'RFQ', href: '/purchasing/rfq', icon: <FileSearch />, permission: 'view rfq', matchPrefix: '/purchasing/rfq', badgeKey: 'rfqs' },
             { label: 'Suppliers', href: '/purchasing/suppliers', icon: <Factory />, permission: 'view suppliers', matchPrefix: '/purchasing/suppliers' },
             { label: 'Orders', href: '/purchasing/orders', icon: <ShoppingCart />, permission: 'view purchase orders', matchPrefix: '/purchasing/orders' },
@@ -52,6 +52,7 @@ const NAVIGATION_CONFIG = [
             { label: 'Inventory', href: '/inventory', icon: <Package />, permission: 'view inventory', matchPrefix: '/inventory', exactMatch: true },
             { label: 'Receiving', href: '/inventory/receiving', icon: <Inbox />, permission: 'view receiving', matchPrefix: '/inventory/receiving', exactMatch: true },
             { label: 'Site Release', href: '/site-release', icon: <Truck />, permission: 'view site release', matchPrefix: '/site-release' },
+            { label: 'Material Returns', href: '/inventory/returns', icon: <RotateCcw />, permission: 'view inventory', matchPrefix: '/inventory/returns' },
         ],
     },
     {
