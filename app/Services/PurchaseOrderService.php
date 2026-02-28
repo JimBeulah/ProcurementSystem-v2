@@ -47,7 +47,7 @@ class PurchaseOrderService
                         'unit' => $wItem['unit'] ?? 'pcs',
                         'purpose' => 'Auto-sourced during PR fulfillment',
                         'release_date' => now(),
-                        'status' => 'PENDING', // PENDING so the Site Engineer can confirm receipt
+                        'status' => 'IN_TRANSIT', // IN_TRANSIT so the Site Engineer can confirm receipt
                     ]);
 
                     // Deduct from warehouse stock
