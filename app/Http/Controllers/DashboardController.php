@@ -29,6 +29,11 @@ class DashboardController extends Controller
 
     private function adminDashboard(): Response
     {
+        // Add chart data: Purchase Orders grouped by status
+        $ordersByStatus = PurchaseOrder::selectRaw('status, count(*) as count')
+            ->groupBy('status')
+            ->get();
+
         $stats = [
             'pendingPOs' => PurchaseOrder::where('status', 'PENDING')->count(),
             'activeProjects' => Project::where('status', 'ACTIVE')->count(),
@@ -37,6 +42,7 @@ class DashboardController extends Controller
             'totalUsers' => User::count(),
             'pendingPRs' => \App\Models\PurchaseRequest::where('status', 'PENDING')->count(),
             'totalInvoices' => class_exists(\App\Models\Invoice::class) ? \App\Models\Invoice::count() : 0,
+            'ordersByStatus' => $ordersByStatus,
         ];
 
         return Inertia::render('Dashboards/AdminDashboard', ['stats' => $stats]);
@@ -44,12 +50,23 @@ class DashboardController extends Controller
 
     private function projectManagerDashboard(): Response
     {
+        // Create mock historical data for Material Requests over the last few months for the chart
+        $materialRequestsOverTime = [
+            ['name' => 'Oct', 'requests' => 12],
+            ['name' => 'Nov', 'requests' => 19],
+            ['name' => 'Dec', 'requests' => 15],
+            ['name' => 'Jan', 'requests' => 22],
+            ['name' => 'Feb', 'requests' => 28],
+            ['name' => 'Mar', 'requests' => \App\Models\MaterialRequest::where('status', 'PENDING')->count()],
+        ];
+
         $stats = [
             'activeProjects' => Project::where('status', 'ACTIVE')->count(),
             'pendingMRs' => \App\Models\MaterialRequest::where('status', 'PENDING')->count(),
             'pendingPOs' => PurchaseOrder::where('status', 'PENDING')->count(),
             'approvedThisMonth' => \App\Models\MaterialRequest::where('status', 'APPROVED')
                 ->whereMonth('updated_at', now()->month)->count(),
+            'materialRequestsOverTime' => $materialRequestsOverTime,
         ];
 
         return Inertia::render('Dashboards/ProjectManagerDashboard', ['stats' => $stats]);

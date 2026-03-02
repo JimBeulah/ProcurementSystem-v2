@@ -5,8 +5,11 @@ import { motion } from 'framer-motion';
 import { usePage } from '@inertiajs/react';
 import { Toaster } from 'sonner';
 import FlashNotifications from '@/Components/FlashNotifications';
+import SubNavigationTabs from '@/Components/Layout/SubNavigationTabs';
+import { NAVIGATION_CONFIG } from '@/Config/Navigation';
 
 export default function AuthenticatedLayout({ children }) {
+    const { url } = usePage();
     const { auth } = usePage().props;
     const user = auth.user;
 
@@ -25,6 +28,13 @@ export default function AuthenticatedLayout({ children }) {
         localStorage.setItem('sidebarCollapsed', String(newState));
     };
 
+    // Find the current active group to display its children in the SubNavigationTabs
+    const activeGroup = NAVIGATION_CONFIG.find(group =>
+        group.items.some(item =>
+            item.exactMatch ? url === item.matchPrefix : url.startsWith(item.matchPrefix)
+        )
+    );
+
     return (
         <div className="flex h-screen bg-background overflow-hidden transition-colors duration-300">
             {/* Sidebar */}
@@ -40,7 +50,7 @@ export default function AuthenticatedLayout({ children }) {
             <motion.div
                 layout
                 initial={false}
-                animate={{ marginLeft: isCollapsed ? "4rem" : "16rem" }}
+                animate={{ marginLeft: isCollapsed ? "5rem" : "14rem" }}
                 transition={SPRING_TRANSITION}
                 className="flex-1 flex flex-col h-screen overflow-hidden"
             >
@@ -49,12 +59,18 @@ export default function AuthenticatedLayout({ children }) {
                     onMenuClick={() => setSidebarOpen(true)}
                 />
 
-                <main className="flex-1 overflow-y-auto p-4 md:p-8 relative z-10 w-full overflow-x-hidden">
-                    {/* Ambient glows */}
-                    <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
-                    <div className="fixed bottom-0 right-[20%] w-[400px] h-[400px] bg-purple-500/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
+                <main className="flex-1 flex flex-col overflow-y-auto relative z-10 w-full overflow-x-hidden">
+                    {/* Sub Navigation Tabs */}
+                    {activeGroup && <SubNavigationTabs items={activeGroup.items} />}
 
-                    {children}
+                    {/* Page Content */}
+                    <div className="pt-4 pb-8 px-4 md:pt-6 md:pb-8 md:px-8 flex-1 w-full">
+                        {/* Ambient glows */}
+                        <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
+                        <div className="fixed bottom-0 right-[20%] w-[400px] h-[400px] bg-purple-500/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
+
+                        {children}
+                    </div>
                 </main>
                 <Toaster position="top-right" richColors closeButton />
                 <FlashNotifications />

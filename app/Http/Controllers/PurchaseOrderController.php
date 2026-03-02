@@ -52,6 +52,7 @@ class PurchaseOrderController extends Controller
         if ($pr && $pr->items) {
             foreach ($pr->items as $item) {
                 $matches = \App\Models\InventoryItem::where('quantity', '>', 0)
+                    ->whereNull('project_id')
                     ->where('material_name', 'LIKE', '%' . $item->item_description . '%')
                     ->get(['id', 'material_name', 'quantity', 'unit', 'project_id'])
                     ->toArray();
