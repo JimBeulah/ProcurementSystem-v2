@@ -12,7 +12,7 @@ class ClientController extends Controller
 {
     public function index(): Response
     {
-        $clients = Client::withCount('projects')->get();
+        $clients = Client::withCount('projects')->with('contacts')->get();
 
         return Inertia::render('Clients/Index', [
             'clients' => $clients,
@@ -21,14 +21,53 @@ class ClientController extends Controller
 
     public function store(StoreClientRequest $request): RedirectResponse
     {
-        Client::create($request->validated());
+        $validated = $request->validated();
+        $client = Client::create(['name' => $validated['name']]);
+
+        if (!empty($validated['contacts'])) {
+            foreach ($validated['contacts'] as $contactData) {
+                $client->contacts()->create([
+                    'name' => $contactData['name'],
+                    'phone' => $contactData['phone'] ?? null,
+                ]);
+            }
+        }
 
         return redirect()->route('clients.index')->with('success', 'Client created successfully.');
     }
 
     public function update(StoreClientRequest $request, Client $client): RedirectResponse
     {
-        $client->update($request->validated());
+        $validated = $request->validated();
+        $client->update(['name' => $validated['name']]);
+
+        // Sync contacts
+        $existingContactIds = [];
+        if (!empty($validated['contacts'])) {
+            foreach ($validated['contacts'] as $contactData) {
+                if (!empty($contactData['id'])) {
+                    // Update existing
+                    $contact = $client->contacts()->find($contactData['id']);
+                    if ($contact) {
+                        $contact->update([
+                            'name' => $contactData['name'],
+                            'phone' => $contactData['phone'] ?? null,
+                        ]);
+                        $existingContactIds[] = $contact->id;
+                    }
+                } else {
+                    // Create new
+                    $newContact = $client->contacts()->create([
+                        'name' => $contactData['name'],
+                        'phone' => $contactData['phone'] ?? null,
+                    ]);
+                    $existingContactIds[] = $newContact->id;
+                }
+            }
+        }
+
+        // Remove contacts that were deleted
+        $client->contacts()->whereNotIn('id', $existingContactIds)->delete();
 
         return redirect()->route('clients.index')->with('success', 'Client updated successfully.');
     }

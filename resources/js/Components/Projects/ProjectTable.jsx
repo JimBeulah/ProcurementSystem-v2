@@ -38,7 +38,10 @@ export default function ProjectTable({ projects, onEdit, onDelete, auth }) {
                                 <td className="p-3">
                                     <div className="flex flex-col gap-1">
                                         <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300"><MapPin size={10} className="opacity-50" /> {project.location || 'N/A'}</span>
-                                        <span className="text-[9px] text-slate-400 font-mono bg-slate-100 dark:bg-slate-700/50 px-1.5 py-0.5 rounded w-fit">{project.contract_id || 'No Contract ID'}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[9px] text-slate-400 font-mono bg-slate-100 dark:bg-slate-700/50 px-1.5 py-0.5 rounded w-fit capitalize">{project.duration_days ? `${project.duration_days} Days` : 'No Duration'}</span>
+                                            <span className="text-[9px] text-slate-500 font-mono font-medium">{project.target_end_date ? new Date(project.target_end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'No End Date'}</span>
+                                        </div>
                                     </div>
                                 </td>
                                 <td className="p-3 text-center">

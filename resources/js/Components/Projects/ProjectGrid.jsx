@@ -29,7 +29,15 @@ export default function ProjectGrid({ projects, onEdit, onDelete, auth }) {
                             </>
                         )}
                         <div className="flex justify-between items-center py-1 border-b border-slate-100 dark:border-slate-700/50"><span className="text-slate-500">Status</span><span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${project.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-600' : 'text-slate-500 bg-slate-100 dark:bg-slate-700'}`}>{project.status}</span></div>
-                        <div className="flex justify-between items-center py-1"><span className="text-slate-500">Contract ID</span><span className="font-mono text-slate-900 dark:text-white">{project.contract_id || '-'}</span></div>
+                        <div className="flex justify-between items-center py-1 border-b border-slate-100 dark:border-slate-700/50"><span className="text-slate-500">Contract</span><span className="font-mono text-slate-900 dark:text-white">{project.contract_id || '-'} <span className="text-[10px] text-slate-400">({project.contract_type || 'N/A'})</span></span></div>
+                        <div className="flex justify-between items-center py-1 border-b border-slate-100 dark:border-slate-700/50"><span className="text-slate-500">Terms</span><span className="font-mono text-slate-900 dark:text-white">{project.payment_terms || '-'}</span></div>
+                        <div className="flex justify-between items-center py-1">
+                            <span className="text-slate-500">Duration</span>
+                            <span className="font-mono text-slate-900 dark:text-white truncate max-w-[150px] text-right">
+                                {project.duration_days ? `${project.duration_days} Days` : '-'}
+                                {project.target_end_date && <span className="block text-[9px] text-slate-400">Ends {new Date(project.target_end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>}
+                            </span>
+                        </div>
                     </div>
                 </div>
             ))}

@@ -23,10 +23,11 @@ export default function ProjectsIndex() {
     const [submitting, setSubmitting] = useState(false);
 
     const initialFormData = {
-        name: '', client_id: '', location: '', budget: '', duration: '',
+        name: '', client_id: '', location: '', budget: '', target_start_date: '', target_end_date: '', duration_days: '',
         total_floor_area: '', carport_area: '', status: 'ACTIVE',
         project_type: 'BUILDING', appropriation: '', source_of_fund: '',
-        contract_id: '', project_component_id: '', net_length: '', site_engineer_id: ''
+        contract_id: '', project_component_id: '', net_length: '', site_engineer_id: '',
+        contract_type: 'Lump Sum', payment_terms: '30 Days'
     };
     const [formData, setFormData] = useState(initialFormData);
 
@@ -37,6 +38,7 @@ export default function ProjectsIndex() {
             ...formData,
             client_id: Number(formData.client_id),
             budget: Number(formData.budget),
+            duration_days: formData.duration_days ? Number(formData.duration_days) : null,
             total_floor_area: Number(formData.total_floor_area) || 0,
             carport_area: Number(formData.carport_area) || 0,
             appropriation: Number(formData.appropriation) || 0,
@@ -66,7 +68,9 @@ export default function ProjectsIndex() {
             client_id: project.client_id?.toString() || '',
             location: project.location || '',
             budget: project.budget?.toString() || '',
-            duration: project.duration || '',
+            target_start_date: project.target_start_date || '',
+            target_end_date: project.target_end_date || '',
+            duration_days: project.duration_days?.toString() || '',
             total_floor_area: project.total_floor_area?.toString() || '',
             carport_area: project.carport_area?.toString() || '',
             status: project.status || 'ACTIVE',
@@ -77,6 +81,8 @@ export default function ProjectsIndex() {
             project_component_id: project.project_component_id || '',
             net_length: project.net_length?.toString() || '',
             site_engineer_id: project.site_engineer_id?.toString() || '',
+            contract_type: project.contract_type || 'Lump Sum',
+            payment_terms: project.payment_terms || '30 Days',
         });
         setShowModal(true);
     };
@@ -174,13 +180,63 @@ export default function ProjectsIndex() {
                                     <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Contract ID</label>
                                     <input className="w-full bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 rounded p-2 text-xs text-slate-900 dark:text-white focus:border-cyan-500 outline-none" value={formData.contract_id} onChange={e => setFormData({ ...formData, contract_id: e.target.value })} placeholder="e.g. 24L00123" />
                                 </div>
-                                <div>
-                                    <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Duration</label>
-                                    <input className="w-full bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 rounded p-2 text-xs text-slate-900 dark:text-white focus:border-cyan-500 outline-none" value={formData.duration} onChange={e => setFormData({ ...formData, duration: e.target.value })} placeholder="e.g. 180 C.D." />
+                                <div className="col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4 border-t border-slate-200/50 dark:border-slate-700/50 pt-3 mt-3">
+                                    <div>
+                                        <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Start Date</label>
+                                        <input type="date" className="w-full bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 rounded p-2 text-xs text-slate-900 dark:text-white focus:border-cyan-500 outline-none uppercase font-mono" value={formData.target_start_date} onChange={e => {
+                                            const newStartDate = e.target.value;
+                                            setFormData(prev => {
+                                                const updates = { target_start_date: newStartDate };
+                                                if (newStartDate && prev.duration_days) {
+                                                    const endDate = new Date(newStartDate);
+                                                    endDate.setDate(endDate.getDate() + Number(prev.duration_days));
+                                                    updates.target_end_date = endDate.toISOString().split('T')[0];
+                                                }
+                                                return { ...prev, ...updates };
+                                            });
+                                        }} />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Duration (Days)</label>
+                                        <input type="number" min="0" className="w-full bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 rounded p-2 text-xs text-slate-900 dark:text-white focus:border-cyan-500 outline-none uppercase font-mono" value={formData.duration_days} onChange={e => {
+                                            const newDuration = e.target.value;
+                                            setFormData(prev => {
+                                                const updates = { duration_days: newDuration };
+                                                if (prev.target_start_date && newDuration) {
+                                                    const endDate = new Date(prev.target_start_date);
+                                                    endDate.setDate(endDate.getDate() + Number(newDuration));
+                                                    updates.target_end_date = endDate.toISOString().split('T')[0];
+                                                }
+                                                return { ...prev, ...updates };
+                                            });
+                                        }} placeholder="e.g. 180" />
+                                    </div>
+                                    <div className="col-span-2 md:col-span-1">
+                                        <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">End Date</label>
+                                        <input type="date" className="w-full bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 rounded p-2 text-xs text-slate-900 dark:text-white focus:border-cyan-500 outline-none uppercase font-mono" value={formData.target_end_date} onChange={e => setFormData({ ...formData, target_end_date: e.target.value })} />
+                                    </div>
                                 </div>
-                                <div className="col-span-2">
+                                <div className="col-span-2 grid grid-cols-2 gap-4 mt-2 border-t border-slate-200/50 dark:border-slate-700/50 pt-3">
                                     <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Source of Fund</label>
                                     <input className="w-full bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 rounded p-2 text-xs text-slate-900 dark:text-white focus:border-cyan-500 outline-none" value={formData.source_of_fund} onChange={e => setFormData({ ...formData, source_of_fund: e.target.value })} placeholder="e.g. GAA 2024" />
+                                </div>
+                                <div className="col-span-2 grid grid-cols-2 gap-4 mt-2 border-t border-slate-200/50 dark:border-slate-700/50 pt-3">
+                                    <div>
+                                        <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Contract Type</label>
+                                        <Select
+                                            value={formData.contract_type}
+                                            onChange={val => setFormData({ ...formData, contract_type: val })}
+                                            options={[
+                                                { value: "Lump Sum", label: "Lump Sum" },
+                                                { value: "Cost Plus", label: "Cost Plus" },
+                                                { value: "Unit Price", label: "Unit Price" },
+                                            ]}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Payment Terms</label>
+                                        <input className="w-full bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 rounded p-2 text-xs text-slate-900 dark:text-white focus:border-cyan-500 outline-none" value={formData.payment_terms} onChange={e => setFormData({ ...formData, payment_terms: e.target.value })} placeholder="e.g. 30 Days" />
+                                    </div>
                                 </div>
                             </div>
                             {formData.project_type === 'BUILDING' ? (

@@ -51,32 +51,37 @@ export function ClientCard({ client, onEdit, onDelete }) {
                         <h3 className="text-[15px] font-semibold text-foreground mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1 tracking-[-0.01em]">
                             {client.name}
                         </h3>
-                        <div className="flex items-center gap-1.5 text-xs text-black/40 dark:text-white/40">
-                            <Users size={12} />
-                            <span className="truncate">{client.contact_person || 'No contact'}</span>
-                        </div>
-                    </div>
-
-                    {/* Footer — Contract & Terms */}
-                    <div className="grid grid-cols-2 gap-3 pt-3 mt-auto border-t border-black/[0.04] dark:border-white/[0.04]">
-                        <div>
-                            <p className="text-[10px] font-medium text-black/30 dark:text-white/30 uppercase tracking-wider mb-0.5">Contract</p>
-                            <div className="flex items-center gap-1.5">
-                                <FileText size={12} className="text-black/25 dark:text-white/25" />
-                                <span className="text-xs font-medium text-foreground">{client.contract_type}</span>
+                        {client.contacts && client.contacts.length > 0 ? (
+                            <div className="flex flex-col gap-1 mt-2">
+                                {client.contacts.slice(0, 2).map((contact, idx) => (
+                                    <div key={idx} className="flex flex-col text-xs">
+                                        <div className="flex items-center gap-1.5 text-black/60 dark:text-white/60">
+                                            <Users size={12} />
+                                            <span className="truncate font-medium">{contact.name}</span>
+                                        </div>
+                                        {contact.phone && (
+                                            <div className="text-[11px] text-black/40 dark:text-white/40 pl-4">
+                                                {contact.phone}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                                {client.contacts.length > 2 && (
+                                    <div className="text-[11px] text-blue-600/70 dark:text-blue-400/70 font-medium pl-4">
+                                        +{client.contacts.length - 2} more contact(s)
+                                    </div>
+                                )}
                             </div>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-[10px] font-medium text-black/30 dark:text-white/30 uppercase tracking-wider mb-0.5">Terms</p>
-                            <div className="flex items-center gap-1.5 justify-end">
-                                <Clock size={12} className="text-black/25 dark:text-white/25" />
-                                <span className="text-xs font-medium text-foreground">{client.payment_terms}</span>
+                        ) : (
+                            <div className="flex items-center gap-1.5 text-xs text-black/40 dark:text-white/40 mt-2">
+                                <Users size={12} />
+                                <span className="truncate">No contacts added</span>
                             </div>
-                        </div>
+                        )}
                     </div>
 
                     {/* Projects Badge */}
-                    <div className="mt-3 flex items-center justify-between">
+                    <div className="mt-auto pt-3 border-t border-black/[0.04] dark:border-white/[0.04] flex items-center justify-between">
                         <span className="text-[11px] font-medium text-blue-600/80 dark:text-blue-400/80 bg-blue-500/[0.06] px-2.5 py-1 rounded-full">
                             {client.projects_count || 0} Project{client.projects_count !== 1 && 's'}
                         </span>

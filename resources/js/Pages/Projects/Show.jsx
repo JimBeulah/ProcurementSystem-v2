@@ -97,6 +97,18 @@ export default function ProjectShow() {
                                     <MapPin size={14} className="opacity-70" />
                                     <span>{project.location || 'No Location'}</span>
                                 </div>
+                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/5 dark:bg-white/5 backdrop-blur-md border border-black/5 dark:border-white/5">
+                                    <ClipboardList size={14} className="opacity-70" />
+                                    <span>{project.contract_type || 'No Contract Type'}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/5 dark:bg-white/5 backdrop-blur-md border border-black/5 dark:border-white/5">
+                                    <Calendar size={14} className="opacity-70" />
+                                    <span>
+                                        {project.target_start_date ? new Date(project.target_start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'}
+                                        {' - '}
+                                        {project.target_end_date ? new Date(project.target_end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'}
+                                    </span>
+                                </div>
                             </motion.div>
                         </div>
 

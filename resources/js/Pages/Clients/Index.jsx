@@ -29,9 +29,7 @@ export default function ClientsIndex() {
 
     const [formData, setFormData] = useState({
         name: '',
-        contact_person: '',
-        contract_type: 'Lump Sum',
-        payment_terms: '30 Days',
+        contacts: [{ name: '', phone: '' }],
     });
 
     const handleSubmit = (e) => {
@@ -59,16 +57,14 @@ export default function ClientsIndex() {
     };
 
     const resetForm = () => {
-        setFormData({ name: '', contact_person: '', contract_type: 'Lump Sum', payment_terms: '30 Days' });
+        setFormData({ name: '', contacts: [{ name: '', phone: '' }] });
     };
 
     const handleEdit = (client) => {
         setEditingClient(client);
         setFormData({
             name: client.name,
-            contact_person: client.contact_person || '',
-            contract_type: client.contract_type || 'Lump Sum',
-            payment_terms: client.payment_terms || '30 Days',
+            contacts: client.contacts?.length > 0 ? client.contacts : [{ name: '', phone: '' }],
         });
         setShowModal(true);
     };
@@ -91,13 +87,12 @@ export default function ClientsIndex() {
 
     const filtered = clients.filter(c => {
         const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            c.contact_person?.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesFilter = filterType === 'All' || c.contract_type === filterType;
-        return matchesSearch && matchesFilter;
+            (c.contacts && c.contacts.some(contact => contact.name.toLowerCase().includes(searchTerm.toLowerCase())));
+        return matchesSearch;
     });
 
     const activeContracts = clients.filter(c => (c.projects_count || 0) > 0).length;
-    const lsumContracts = clients.filter(c => c.contract_type === 'Lump Sum').length;
+    const totalContacts = clients.reduce((acc, c) => acc + (c.contacts?.length || 0), 0);
 
     return (
         <AuthenticatedLayout>
@@ -119,9 +114,9 @@ export default function ClientsIndex() {
                         color="emerald"
                     />
                     <StatCard
-                        title="Lump Sum"
-                        value={lsumContracts.toString()}
-                        icon={<ShieldCheck size={18} />}
+                        title="Total Contacts"
+                        value={totalContacts.toString()}
+                        icon={<Users size={18} />}
                         color="orange"
                     />
                 </div>
@@ -155,22 +150,6 @@ export default function ClientsIndex() {
                                 <Plus size={15} strokeWidth={2.5} /> Add Client
                             </button>
                         )}
-
-                        {/* Filter */}
-                        <div className="relative flex-1 md:flex-none">
-                            <Select
-                                value={filterType}
-                                onChange={setFilterType}
-                                options={[
-                                    { value: "All", label: "All Types" },
-                                    { value: "Lump Sum", label: "Lump Sum" },
-                                    { value: "Cost Plus", label: "Cost Plus" },
-                                    { value: "Unit Price", label: "Unit Price" },
-                                ]}
-                                icon={Filter}
-                                className="w-full md:w-auto min-w-[160px]"
-                            />
-                        </div>
 
                         {/* View Toggle — segmented control */}
                         <div className="flex items-center bg-black/[0.03] dark:bg-white/[0.04] p-0.5 rounded-lg">
@@ -246,21 +225,19 @@ export default function ClientsIndex() {
                                             <div className="flex items-center gap-2 mt-0.5">
                                                 <span className="text-[11px] font-mono text-black/30 dark:text-white/30">#{client.id}</span>
                                                 <span className="text-[11px] text-black/40 dark:text-white/40 flex items-center gap-1">
-                                                    <Users size={11} /> {client.contact_person || 'No contact'}
+                                                    <Users size={11} /> {client.contacts?.length || 0} Contacts
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto pt-3 md:pt-0 border-t md:border-t-0 border-black/[0.04] dark:border-white/[0.04]">
-                                        <div className="text-left md:text-right">
-                                            <p className="text-[10px] text-black/30 dark:text-white/30 uppercase font-medium tracking-wider">Contract</p>
-                                            <p className="text-[13px] font-medium text-foreground">{client.contract_type}</p>
-                                        </div>
-                                        <div className="text-left md:text-right">
-                                            <p className="text-[10px] text-black/30 dark:text-white/30 uppercase font-medium tracking-wider">Terms</p>
-                                            <p className="text-[13px] font-medium text-foreground">{client.payment_terms}</p>
-                                        </div>
+                                        {client.contacts && client.contacts.length > 0 && (
+                                            <div className="text-left md:text-right hidden sm:block">
+                                                <p className="text-[10px] text-black/30 dark:text-white/30 uppercase font-medium tracking-wider">Primary Contact</p>
+                                                <p className="text-[13px] font-medium text-foreground">{client.contacts[0].name}</p>
+                                            </div>
+                                        )}
                                         <div className="flex items-center gap-1 pl-3 md:border-l border-black/[0.04] dark:border-white/[0.04] opacity-0 group-hover:opacity-100 transition-opacity">
                                             {can('manage clients') && (
                                                 <>
@@ -293,36 +270,59 @@ export default function ClientsIndex() {
                             />
                         </FormField>
 
-                        <FormField label="Contact Person" icon={<Users size={16} />}>
-                            <input
-                                className="form-input-macos"
-                                placeholder="Full name of representative"
-                                value={formData.contact_person}
-                                onChange={e => setFormData({ ...formData, contact_person: e.target.value })}
-                            />
-                        </FormField>
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <label className="text-[11px] font-medium text-black/40 dark:text-white/40 uppercase tracking-wider ml-0.5">Contacts</label>
+                                <button
+                                    type="button"
+                                    onClick={() => setFormData({ ...formData, contacts: [...formData.contacts, { name: '', phone: '' }] })}
+                                    className="text-[11px] text-blue-600 dark:text-blue-400 font-medium hover:underline flex items-center gap-1 cursor-pointer"
+                                >
+                                    <Plus size={12} /> Add Contact
+                                </button>
+                            </div>
 
-                        <div className="grid grid-cols-2 gap-3">
-                            <FormField label="Contract Type">
-                                <Select
-                                    value={formData.contract_type}
-                                    onChange={val => setFormData({ ...formData, contract_type: val })}
-                                    options={[
-                                        { value: "Lump Sum", label: "Lump Sum" },
-                                        { value: "Cost Plus", label: "Cost Plus" },
-                                        { value: "Unit Price", label: "Unit Price" },
-                                    ]}
-                                    icon={FileText}
-                                />
-                            </FormField>
-                            <FormField label="Payment Terms" icon={<CreditCard size={16} />}>
-                                <input
-                                    className="form-input-macos"
-                                    placeholder="e.g. 30 Days"
-                                    value={formData.payment_terms}
-                                    onChange={e => setFormData({ ...formData, payment_terms: e.target.value })}
-                                />
-                            </FormField>
+                            {formData.contacts.map((contact, index) => (
+                                <div key={index} className="flex gap-2 items-start relative bg-black/[0.02] dark:bg-white/[0.02] p-2.5 rounded-xl border border-black/[0.03] dark:border-white/[0.03]">
+                                    <div className="flex-1 space-y-2">
+                                        <input
+                                            className="w-full px-3 py-2 bg-white dark:bg-white/[0.04] border border-black/5 dark:border-white/5 rounded-lg text-[13px] text-foreground focus:ring-2 focus:ring-blue-500/20 outline-none transition-all duration-150 placeholder:text-black/25 dark:placeholder:text-white/25 font-medium"
+                                            placeholder="Contact Name"
+                                            value={contact.name}
+                                            onChange={(e) => {
+                                                const newContacts = [...formData.contacts];
+                                                newContacts[index].name = e.target.value;
+                                                setFormData({ ...formData, contacts: newContacts });
+                                            }}
+                                            required
+                                        />
+                                        <input
+                                            className="w-full px-3 py-2 bg-white dark:bg-white/[0.04] border border-black/5 dark:border-white/5 rounded-lg text-[13px] text-foreground focus:ring-2 focus:ring-blue-500/20 outline-none transition-all duration-150 placeholder:text-black/25 dark:placeholder:text-white/25 font-medium"
+                                            placeholder="Phone Number (Optional)"
+                                            value={contact.phone}
+                                            onChange={(e) => {
+                                                const newContacts = [...formData.contacts];
+                                                newContacts[index].phone = e.target.value;
+                                                setFormData({ ...formData, contacts: newContacts });
+                                            }}
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const newContacts = formData.contacts.filter((_, i) => i !== index);
+                                            setFormData({ ...formData, contacts: newContacts });
+                                        }}
+                                        className="mt-1 p-2 text-red-500/70 hover:text-red-600 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer"
+                                        title="Remove Contact"
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                </div>
+                            ))}
+                            {formData.contacts.length === 0 && (
+                                <p className="text-xs text-black/40 dark:text-white/40 italic">No contacts added.</p>
+                            )}
                         </div>
 
                         <div className="flex flex-col gap-2.5 pt-3">
