@@ -35,7 +35,7 @@ export default function RfqShow() {
     return (
         <AuthenticatedLayout>
             <Head title={rfq.title} />
-            <div className="p-6 space-y-6 max-w-7xl mx-auto">
+            <div className="space-y-6 max-w-7xl mx-auto">
                 <header className="flex items-center justify-between pb-6 border-b border-slate-200 dark:border-slate-700">
                     <div className="flex items-center gap-4">
                         <Link href="/purchasing/rfq" className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-400 transition-colors">

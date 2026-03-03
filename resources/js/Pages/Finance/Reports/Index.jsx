@@ -14,7 +14,7 @@ export default function FinancialReports() {
     return (
         <AuthenticatedLayout>
             <Head title="Financial Reports" />
-            <div className="p-6 space-y-6 max-w-7xl mx-auto">
+            <div className="space-y-6 max-w-7xl mx-auto">
                 <header className="pb-6 border-b border-slate-200 dark:border-slate-700">
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
                         <PieChart className="text-indigo-500" /> Financial Reports

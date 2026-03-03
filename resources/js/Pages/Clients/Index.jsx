@@ -98,7 +98,7 @@ export default function ClientsIndex() {
         <AuthenticatedLayout>
             <Head title="Clients" />
 
-            <div className="space-y-6 max-w-7xl mx-auto px-4 md:px-0">
+            <div className="space-y-6 max-w-7xl mx-auto">
                 {/* Stats Row — macOS widget style */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <StatCard

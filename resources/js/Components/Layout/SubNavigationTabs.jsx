@@ -26,7 +26,7 @@ export default function SubNavigationTabs({ items }) {
 
     return (
         <div className="w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border sticky top-0 z-30">
-            <div className="px-4 md:px-8 max-w-[1600px] mx-auto">
+            <div className="px-2 md:px-4 max-w-[1600px] mx-auto">
                 <nav
                     className="-mb-px flex space-x-6 overflow-x-auto minimal-scrollbar scroll-smooth"
                     aria-label="Sub Navigation"

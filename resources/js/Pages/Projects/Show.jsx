@@ -61,7 +61,7 @@ export default function ProjectShow() {
         <AuthenticatedLayout>
             <Head title={project.name} />
 
-            <div className="p-6 max-w-7xl mx-auto space-y-8">
+            <div className="max-w-7xl mx-auto space-y-8">
                 {/* Header Section */}
                 <header className="relative">
                     <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">

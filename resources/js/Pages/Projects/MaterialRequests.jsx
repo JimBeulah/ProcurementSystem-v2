@@ -139,7 +139,7 @@ export default function ProjectMaterialRequests() {
             <Head title={`Material Requests - ${project.name}`} />
             <Toaster position="top-right" richColors />
 
-            <div className="p-6 space-y-6 max-w-7xl mx-auto">
+            <div className="space-y-6 max-w-7xl mx-auto">
 
                 {/* Breadcrumb + Header */}
                 <div className="flex items-center gap-2 text-slate-500 text-sm">

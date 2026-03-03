@@ -119,7 +119,7 @@ export default function InventoryIndex() {
     return (
         <AuthenticatedLayout>
             <Head title="Inventory Tracker" />
-            <div className="p-6 max-w-7xl mx-auto space-y-6">
+            <div className="max-w-7xl mx-auto space-y-6">
 
 
 

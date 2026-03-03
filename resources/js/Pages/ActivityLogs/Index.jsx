@@ -65,7 +65,7 @@ export default function ActivityLogsIndex({ logs }) {
     return (
         <AuthenticatedLayout>
             <Head title="Activity Logs" />
-            <div className="p-6 max-w-7xl mx-auto space-y-6">
+            <div className="max-w-7xl mx-auto space-y-6">
                 {/* Header */}
                 <header className="pb-6 border-b border-slate-200 dark:border-slate-700">
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">

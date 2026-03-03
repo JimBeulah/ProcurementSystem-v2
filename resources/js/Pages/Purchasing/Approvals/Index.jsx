@@ -51,7 +51,7 @@ export default function ApprovalsIndex() {
     return (
         <AuthenticatedLayout>
             <Head title="Pending Approvals" />
-            <div className="p-6 max-w-7xl mx-auto space-y-6">
+            <div className="max-w-7xl mx-auto space-y-6">
                 <header className="pb-6 border-b border-slate-200 dark:border-slate-700">
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
                         <ShieldCheck className="text-blue-500" /> Pending Approvals

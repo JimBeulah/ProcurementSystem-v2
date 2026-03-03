@@ -13,7 +13,7 @@ export default function WorkflowsIndex() {
     return (
         <AuthenticatedLayout>
             <Head title="Approval Workflows" />
-            <div className="p-6 max-w-7xl mx-auto space-y-6">
+            <div className="max-w-7xl mx-auto space-y-6">
                 <header className="flex justify-between items-center pb-6 border-b border-slate-200 dark:border-slate-700">
                     <div>
                         <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3"><Shield className="text-emerald-500" /> Approval Workflows</h1>

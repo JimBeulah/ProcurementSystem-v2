@@ -48,7 +48,7 @@ export default function SuppliersIndex() {
     return (
         <AuthenticatedLayout>
             <Head title="Suppliers" />
-            <div className="p-6 space-y-6 max-w-7xl mx-auto">
+            <div className="space-y-6 max-w-7xl mx-auto">
                 <header className="flex justify-between items-center pb-6 border-b border-slate-200 dark:border-slate-700">
                     <div>
                         <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
