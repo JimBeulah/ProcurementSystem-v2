@@ -4,108 +4,91 @@ import { Card } from '@/Components/UI/Card';
 import {
     Package, UserCog, ShoppingCart, AlertCircle, ClipboardList, CheckCircle, TrendingUp, ShieldCheck, Database
 } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
+import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 
 export default function AdminDashboard({ stats }) {
-    // Process chart data for the Donut Chart
-    const STATUS_COLORS = {
-        'PENDING': '#f59e0b', // amber-500
-        'APPROVED': '#10b981', // emerald-500
-        'DECLINED': '#ef4444', // red-500
-        'DELIVERED': '#3b82f6', // blue-500
-        'PARTIALLY DELIVERED': '#06b6d4', // cyan-500
-    };
-
-    const chartData = stats?.ordersByStatus?.map(item => ({
-        name: item.status,
-        value: item.count,
-        color: STATUS_COLORS[item.status] || '#94a3b8' // slate-400 default
-    })) || [];
 
     return (
         <AuthenticatedLayout>
             <Head title="Admin Dashboard" />
-            <div className="space-y-6 max-w-7xl mx-auto">
+            <div className="space-y-4 max-w-7xl mx-auto">
                 {/* Welcome Banner */}
-                <div className="rounded-3xl bg-zinc-900 dark:bg-zinc-950 p-8 text-white relative overflow-hidden shadow-2xl border border-zinc-800/50">
-                    <div className="absolute top-0 right-0 p-12 opacity-30 pointer-events-none">
+                <div className="rounded-3xl bg-zinc-900 dark:bg-zinc-950 p-5 text-white relative overflow-hidden shadow-2xl border border-zinc-800/50">
+                    <div className="absolute top-0 right-0 p-8 opacity-30 pointer-events-none">
                         <div className="w-64 h-64 bg-indigo-500/30 rounded-full blur-3xl absolute -top-10 -right-10"></div>
                         <div className="w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl absolute top-20 right-20"></div>
                     </div>
 
                     <div className="relative z-10">
-                        <div className="flex items-center gap-3 mb-4">
+                        <div className="flex items-center gap-3 mb-2">
                             <div className="p-2 bg-indigo-500/20 rounded-xl border border-indigo-500/30 backdrop-blur-md">
-                                <ShieldCheck className="text-indigo-400" size={24} />
+                                <ShieldCheck className="text-indigo-400" size={20} />
                             </div>
                             <div>
-                                <h1 className="text-2xl font-bold tracking-tight text-white mb-0.5">System Administrator</h1>
-                                <p className="text-zinc-400 text-sm font-medium">Control Panel & Overview</p>
+                                <h1 className="text-xl font-bold tracking-tight text-white mb-0.5">System Administrator</h1>
+                                <p className="text-zinc-400 text-xs font-medium">Control Panel & Overview</p>
                             </div>
                         </div>
-                        <p className="text-zinc-300 text-base max-w-xl leading-relaxed">
+                        <p className="text-zinc-300 text-sm max-w-xl leading-relaxed">
                             Good metrics today! You have <span className="font-semibold text-emerald-400">{stats?.pendingPOs || 0} pending orders</span> and <span className={`font-semibold ${stats?.alerts > 0 ? 'text-red-400' : 'text-emerald-400'}`}>{stats?.alerts || 0} system alerts</span> requiring attention.
                         </p>
                     </div>
                 </div>
 
                 {/* Primary Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <ModernStatCard
                         title="Active Projects"
                         value={stats?.activeProjects?.toString() || '0'}
-                        icon={<Package size={22} />}
+                        icon={<Package size={20} />}
                         accentColor="blue"
                     />
                     <ModernStatCard
                         title="Total Users"
                         value={stats?.totalUsers?.toString() || '0'}
-                        icon={<UserCog size={22} />}
+                        icon={<UserCog size={20} />}
                         accentColor="purple"
                     />
                     <ModernStatCard
                         title="Pending PRs"
                         value={stats?.pendingPRs?.toString() || '0'}
-                        icon={<ClipboardList size={22} />}
+                        icon={<ClipboardList size={20} />}
                         accentColor="orange"
                         trend={stats?.pendingPRs > 0 ? "Action Required" : null}
                     />
                     <ModernStatCard
                         title="Total Orders"
                         value={stats?.totalOrders?.toString() || '0'}
-                        icon={<ShoppingCart size={22} />}
+                        icon={<ShoppingCart size={20} />}
                         accentColor="indigo"
                     />
                 </div>
 
                 {/* Main Content Area */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
                     {/* Charts Section */}
-                    <Card className="lg:col-span-2 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50 shadow-sm p-6 rounded-3xl">
-                        <div className="mb-6">
-                            <h3 className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Order Overview</h3>
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400">Distribution of all purchase orders by their current status.</p>
+                    <Card className="lg:col-span-2 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50 shadow-sm p-5 rounded-3xl">
+                        <div className="mb-4">
+                            <h3 className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                                <TrendingUp size={20} className="text-emerald-500" />
+                                Spend Analysis & Profit
+                            </h3>
+                            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Budget utilization versus actual spend and generated profit/savings.</p>
                         </div>
 
-                        <div className="h-[300px] w-full mt-4">
-                            {chartData.length > 0 ? (
+                        <div className="h-[280px] w-full mt-2">
+                            {stats?.spendAnalysis?.length > 0 ? (
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={chartData}
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={80}
-                                            outerRadius={110}
-                                            paddingAngle={5}
-                                            dataKey="value"
-                                            stroke="none"
-                                        >
-                                            {chartData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.color} />
-                                            ))}
-                                        </Pie>
+                                    <ComposedChart data={stats.spendAnalysis} margin={{ top: 20, right: 20, bottom: 0, left: -20 }}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e4e4e7" className="dark:stroke-zinc-800" />
+                                        <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#71717a', fontSize: 12 }} dy={10} />
+                                        <YAxis
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tick={{ fill: '#71717a', fontSize: 12 }}
+                                            tickFormatter={(value) => `₱${value >= 1000000 ? (value / 1000000).toFixed(1) + 'M' : value / 1000 + 'k'}`}
+                                        />
                                         <RechartsTooltip
                                             contentStyle={{
                                                 borderRadius: '12px',
@@ -113,26 +96,31 @@ export default function AdminDashboard({ stats }) {
                                                 boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
                                                 backgroundColor: 'rgba(255, 255, 255, 0.95)',
                                                 backdropFilter: 'blur(8px)',
+                                                color: '#18181b',
+                                                fontWeight: 500
                                             }}
-                                            itemStyle={{ color: '#18181b', fontWeight: 600 }}
+                                            formatter={(value) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(value)}
                                         />
-                                        <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                                    </PieChart>
+                                        <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px', fontWeight: 600, color: '#3f3f46' }} />
+                                        <Bar dataKey="budget" name="Original Budget" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={24} />
+                                        <Bar dataKey="spend" name="Actual Spend" fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={24} />
+                                        <Line type="monotone" dataKey="profit" name="Profit / Savings" stroke="#10b981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                                    </ComposedChart>
                                 </ResponsiveContainer>
                             ) : (
                                 <div className="flex flex-col items-center justify-center h-full text-zinc-400 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl">
                                     <Database size={32} className="mb-3 opacity-20" />
-                                    <p className="text-sm font-medium">No order data available for visualization.</p>
+                                    <p className="text-sm font-medium">No financial data available for visualization.</p>
                                 </div>
                             )}
                         </div>
                     </Card>
 
                     {/* Alerts & Actions sidebar */}
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         {/* System Alerts */}
-                        <Card className="bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50 shadow-sm p-6 rounded-3xl">
-                            <div className="flex justify-between items-center mb-5">
+                        <Card className="bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50 shadow-sm p-5 rounded-3xl">
+                            <div className="flex justify-between items-center mb-3">
                                 <h3 className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                                     System Alerts
                                 </h3>
@@ -143,9 +131,9 @@ export default function AdminDashboard({ stats }) {
                                 )}
                             </div>
 
-                            <div className="space-y-4">
+                            <div className="space-y-3">
                                 {stats?.alerts > 0 ? (
-                                    <div className="group relative overflow-hidden rounded-2xl border border-red-200 dark:border-red-500/20 bg-red-50/50 dark:bg-red-500/5 p-4 transition-all hover:bg-red-50 dark:hover:bg-red-500/10">
+                                    <div className="group relative overflow-hidden rounded-2xl border border-red-200 dark:border-red-500/20 bg-red-50/50 dark:bg-red-500/5 p-3 transition-all hover:bg-red-50 dark:hover:bg-red-500/10">
                                         <div className="absolute left-0 top-0 h-full w-1 bg-red-500" />
                                         <div className="flex gap-3">
                                             <div className="mt-0.5 rounded-full bg-red-100 dark:bg-red-500/20 p-1.5 shrink-0">
@@ -175,8 +163,8 @@ export default function AdminDashboard({ stats }) {
                         </Card>
 
                         {/* Quick Links Modern */}
-                        <Card className="bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50 shadow-sm p-6 rounded-3xl">
-                            <h3 className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-5">Quick Actions</h3>
+                        <Card className="bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50 shadow-sm p-5 rounded-3xl">
+                            <h3 className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-3">Quick Actions</h3>
                             <div className="grid grid-cols-2 gap-3">
                                 <ModernQuickLink href="/settings/users" icon={<UserCog size={18} />} label="Users" brand="purple" />
                                 <ModernQuickLink href="/projects" icon={<Package size={18} />} label="Projects" brand="blue" />
@@ -203,24 +191,24 @@ function ModernStatCard({ title, value, icon, trend, accentColor }) {
     const theme = colors[accentColor] || colors.blue;
 
     return (
-        <Card className={`relative overflow-hidden group bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-zinc-200/50 dark:border-zinc-800/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-3xl p-6`}>
+        <Card className={`relative overflow-hidden group bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-zinc-200/50 dark:border-zinc-800/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl p-4`}>
             {/* Background Glow Effect */}
-            <div className={`absolute -right-10 -top-10 w-40 h-40 bg-gradient-to-br ${theme.split(' ')[0]} ${theme.split(' ')[1]} rounded-full blur-3xl opacity-40 group-hover:opacity-60 transition-opacity duration-500 pointer-events-none`} />
+            <div className={`absolute -right-10 -top-10 w-32 h-32 bg-gradient-to-br ${theme.split(' ')[0]} ${theme.split(' ')[1]} rounded-full blur-3xl opacity-40 group-hover:opacity-60 transition-opacity duration-500 pointer-events-none`} />
 
             <div className="relative z-10">
-                <div className="flex justify-between items-start mb-6">
-                    <div className={`p-3 rounded-2xl ${theme.split(' ').slice(2).join(' ')} group-hover:scale-110 transition-transform duration-300 shadow-sm`}>
+                <div className="flex justify-between items-start mb-3">
+                    <div className={`p-2.5 rounded-xl ${theme.split(' ').slice(2).join(' ')} group-hover:scale-110 transition-transform duration-300 shadow-sm`}>
                         {icon}
                     </div>
                     {trend && (
-                        <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30">
+                        <div className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30">
                             {trend}
                         </div>
                     )}
                 </div>
                 <div>
-                    <h3 className="text-4xl font-black mb-1 tracking-tight text-zinc-900 dark:text-white font-sans">{value}</h3>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium tracking-wide">{title}</p>
+                    <h3 className="text-2xl font-black mb-0.5 tracking-tight text-zinc-900 dark:text-white font-sans">{value}</h3>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium tracking-wide">{title}</p>
                 </div>
             </div>
         </Card>
@@ -238,7 +226,7 @@ function ModernQuickLink({ href, icon, label, brand }) {
     return (
         <Link
             href={href}
-            className={`group flex items-center gap-3 p-3 rounded-2xl border border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-800/30 transition-all duration-200 ${brands[brand]}`}
+            className={`group flex items-center gap-3 p-2.5 rounded-xl border border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-800/30 transition-all duration-200 ${brands[brand]}`}
         >
             <div className="text-zinc-400 dark:text-zinc-500 transition-colors duration-200">
                 {icon}

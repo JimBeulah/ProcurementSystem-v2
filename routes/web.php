@@ -159,8 +159,27 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
     // Settings
     Route::middleware(['can:view settings'])->group(function () {
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
-        Route::get('/settings/master-data', [SettingsController::class, 'masterData'])->name('settings.master-data')->middleware('can:manage master data');
-        Route::get('/settings/workflows', [SettingsController::class, 'workflows'])->name('settings.workflows')->middleware('can:manage master data');
+
+        Route::middleware(['can:manage master data'])->group(function () {
+            Route::get('/settings/master-data', [SettingsController::class, 'masterData'])->name('settings.master-data');
+
+            // Suppliers CRUD
+            Route::post('/settings/master-data/suppliers', [SettingsController::class, 'storeSupplier'])->name('master-data.suppliers.store');
+            Route::put('/settings/master-data/suppliers/{supplier}', [SettingsController::class, 'updateSupplier'])->name('master-data.suppliers.update');
+            Route::delete('/settings/master-data/suppliers/{supplier}', [SettingsController::class, 'destroySupplier'])->name('master-data.suppliers.destroy');
+
+            // Materials CRUD
+            Route::post('/settings/master-data/materials', [SettingsController::class, 'storeMaterial'])->name('master-data.materials.store');
+            Route::put('/settings/master-data/materials/{material}', [SettingsController::class, 'updateMaterial'])->name('master-data.materials.update');
+            Route::delete('/settings/master-data/materials/{material}', [SettingsController::class, 'destroyMaterial'])->name('master-data.materials.destroy');
+
+            // Warehouses CRUD
+            Route::post('/settings/master-data/warehouses', [SettingsController::class, 'storeWarehouse'])->name('master-data.warehouses.store');
+            Route::put('/settings/master-data/warehouses/{warehouse}', [SettingsController::class, 'updateWarehouse'])->name('master-data.warehouses.update');
+            Route::delete('/settings/master-data/warehouses/{warehouse}', [SettingsController::class, 'destroyWarehouse'])->name('master-data.warehouses.destroy');
+
+            Route::get('/settings/workflows', [SettingsController::class, 'workflows'])->name('settings.workflows');
+        });
     });
 
     // User Management (Admin only)

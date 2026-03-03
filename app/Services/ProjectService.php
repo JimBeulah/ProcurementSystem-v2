@@ -14,6 +14,12 @@ class ProjectService
     public function getAllForUser(User $user): \Illuminate\Database\Eloquent\Collection
     {
         return Project::with(['client', 'siteEngineer'])
+            ->addSelect([
+                'projects.*',
+                'total_profit' => \App\Models\BoqItemComponent::selectRaw('COALESCE(SUM(client_total_cost - altapil_total_cost), 0)')
+                    ->join('boq_items', 'boq_items.id', '=', 'boq_item_components.boq_item_id')
+                    ->whereColumn('boq_items.project_id', 'projects.id')
+            ])
             ->forUser($user)
             ->orderBy('created_at', 'desc')
             ->get();

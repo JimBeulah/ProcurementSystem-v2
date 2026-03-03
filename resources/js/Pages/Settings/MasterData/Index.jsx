@@ -14,7 +14,30 @@ export default function MasterDataIndex() {
     const data = usePage().props[activeTab] || [];
 
     const handleEdit = (item) => { setEditingItem(item); setFormData({ ...item }); setShowModal(true); };
-    const handleDelete = (id) => { if (confirm(`Delete this ${activeTab.slice(0, -1)}?`)) { /* router.delete */ } };
+
+    const handleDelete = (id) => {
+        if (confirm(`Delete this ${activeTab.slice(0, -1)}?`)) {
+            router.delete(`/settings/master-data/${activeTab}/${id}`, {
+                preserveScroll: true
+            });
+        }
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        if (editingItem) {
+            router.put(`/settings/master-data/${activeTab}/${editingItem.id}`, formData, {
+                onSuccess: () => { setShowModal(false); setEditingItem(null); setFormData({}); },
+                preserveScroll: true
+            });
+        } else {
+            router.post(`/settings/master-data/${activeTab}`, formData, {
+                onSuccess: () => { setShowModal(false); setEditingItem(null); setFormData({}); },
+                preserveScroll: true
+            });
+        }
+    };
 
     const TabButton = ({ id, label, icon: Icon }) => (
         <button onClick={() => setActiveTab(id)} className={`flex items-center gap-2 px-4 py-3 border-b-2 text-sm font-bold transition-colors ${activeTab === id ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>
@@ -33,7 +56,7 @@ export default function MasterDataIndex() {
                         <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3"><Package className="text-rose-500" /> Master Data</h1>
                         <p className="text-slate-500">Manage standard data lists and codes.</p>
                     </div>
-                    <button onClick={() => { setEditingItem(null); setFormData({}); setShowModal(true); }} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-xs font-bold">
+                    <button onClick={() => { setEditingItem(null); setFormData(activeTab === 'warehouses' ? { type: 'CENTRAL' } : {}); setShowModal(true); }} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-xs font-bold">
                         <Plus size={18} /> Add {activeTab.slice(0, -1)}
                     </button>
                 </header>
@@ -58,8 +81,8 @@ export default function MasterDataIndex() {
                             {data.map(item => (
                                 <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group">
                                     {activeTab === 'suppliers' && <><td className="p-4 font-bold text-slate-900 dark:text-white">{item.name}</td><td className="p-4 text-slate-500">{item.contact_person}</td><td className="p-4 text-slate-500">{item.email}</td></>}
-                                    {activeTab === 'materials' && <><td className="p-4 font-mono text-blue-600 dark:text-cyan-400">{item.code}</td><td className="p-4 font-bold text-slate-900 dark:text-white">{item.name}</td><td className="p-4 text-slate-500">{item.unit}</td><td className="p-4"><span className="text-xs font-bold uppercase bg-slate-100 dark:bg-slate-700 text-slate-500 border border-slate-200 dark:border-slate-600 rounded px-2 py-0.5">{item.category}</span></td></>}
-                                    {activeTab === 'warehouses' && <><td className="p-4 font-bold text-slate-900 dark:text-white">{item.name}</td><td className="p-4 text-slate-500">{item.location}</td><td className="p-4 text-xs text-slate-500">{item.type}</td></>}
+                                    {activeTab === 'materials' && <><td className="p-4 font-mono text-blue-600 dark:text-cyan-400">{item.code}</td><td className="p-4 font-bold text-slate-900 dark:text-white">{item.name}</td><td className="p-4 text-slate-500">{item.unit || '-'}</td><td className="p-4"><span className="text-xs font-bold uppercase bg-slate-100 dark:bg-slate-700 text-slate-500 border border-slate-200 dark:border-slate-600 rounded px-2 py-0.5">{item.category || '-'}</span></td></>}
+                                    {activeTab === 'warehouses' && <><td className="p-4 font-bold text-slate-900 dark:text-white">{item.name}</td><td className="p-4 text-slate-500">{item.location || '-'}</td><td className="p-4 text-xs text-slate-500">{item.type}</td></>}
                                     <td className="p-4 text-right">
                                         <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button onClick={() => handleEdit(item)} className="p-1.5 hover:bg-blue-500/10 text-slate-400 hover:text-blue-500 rounded"><Edit2 size={14} /></button>
@@ -74,17 +97,19 @@ export default function MasterDataIndex() {
                 </div>
 
                 <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingItem(null); }} title={editingItem ? `Edit ${activeTab.slice(0, -1)}` : `Add New ${activeTab.slice(0, -1)}`}>
-                    <form onSubmit={e => { e.preventDefault(); setShowModal(false); }} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         {activeTab === 'suppliers' && <>
                             <input placeholder="Company Name" className={inputCls} value={formData.name || ''} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
                             <input placeholder="Contact Person" className={inputCls} value={formData.contact_person || ''} onChange={e => setFormData({ ...formData, contact_person: e.target.value })} />
-                            <input placeholder="Email" className={inputCls} value={formData.email || ''} onChange={e => setFormData({ ...formData, email: e.target.value })} />
+                            <input placeholder="Email" className={inputCls} type="email" value={formData.email || ''} onChange={e => setFormData({ ...formData, email: e.target.value })} />
                             <input placeholder="Phone" className={inputCls} value={formData.phone || ''} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
                             <textarea placeholder="Address" className={`${inputCls} h-20`} value={formData.address || ''} onChange={e => setFormData({ ...formData, address: e.target.value })} />
                         </>}
                         {activeTab === 'materials' && <>
                             <input placeholder="Material Code" className={`${inputCls} font-mono`} value={formData.code || ''} onChange={e => setFormData({ ...formData, code: e.target.value })} required />
                             <input placeholder="Material Name" className={inputCls} value={formData.name || ''} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
+                            <input placeholder="Unit of Measure (e.g., pcs, kg)" className={inputCls} value={formData.unit || ''} onChange={e => setFormData({ ...formData, unit: e.target.value })} />
+                            <input placeholder="Category" className={inputCls} value={formData.category || ''} onChange={e => setFormData({ ...formData, category: e.target.value })} />
                             <textarea placeholder="Description" className={`${inputCls} h-20`} value={formData.description || ''} onChange={e => setFormData({ ...formData, description: e.target.value })} />
                         </>}
                         {activeTab === 'warehouses' && <>

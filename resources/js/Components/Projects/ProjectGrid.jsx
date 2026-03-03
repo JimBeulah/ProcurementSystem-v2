@@ -23,7 +23,10 @@ export default function ProjectGrid({ projects, onEdit, onDelete, auth }) {
                     <p className="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-4">{project.client?.name || 'Internal'}</p>
                     <div className="space-y-2 text-xs">
                         {!isSiteEngineer && (
-                            <div className="flex justify-between items-center py-1 border-b border-slate-100 dark:border-slate-700/50"><span className="text-slate-500">Budget</span><span className="font-mono font-bold text-emerald-600">₱ {Number(project.budget).toLocaleString()}</span></div>
+                            <>
+                                <div className="flex justify-between items-center py-1 border-b border-slate-100 dark:border-slate-700/50"><span className="text-slate-500">Budget</span><span className="font-mono font-bold text-emerald-600">₱ {Number(project.budget).toLocaleString()}</span></div>
+                                <div className="flex justify-between items-center py-1 border-b border-slate-100 dark:border-slate-700/50"><span className="text-purple-500/80">Total Profit</span><span className="font-mono font-bold text-purple-600 dark:text-purple-400">₱ {Number(project.total_profit || 0).toLocaleString()}</span></div>
+                            </>
                         )}
                         <div className="flex justify-between items-center py-1 border-b border-slate-100 dark:border-slate-700/50"><span className="text-slate-500">Status</span><span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${project.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-600' : 'text-slate-500 bg-slate-100 dark:bg-slate-700'}`}>{project.status}</span></div>
                         <div className="flex justify-between items-center py-1"><span className="text-slate-500">Contract ID</span><span className="font-mono text-slate-900 dark:text-white">{project.contract_id || '-'}</span></div>

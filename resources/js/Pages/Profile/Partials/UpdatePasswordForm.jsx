@@ -47,11 +47,7 @@ export default function UpdatePasswordForm({ className = '' }) {
     return (
         <section className={className}>
             <header>
-                <h2 className="text-lg font-medium text-gray-900">
-                    Update Password
-                </h2>
-
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
                     Ensure your account is using a long, random password to stay
                     secure.
                 </p>
@@ -130,7 +126,7 @@ export default function UpdatePasswordForm({ className = '' }) {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                className="text-sm text-gray-600"
+                                className="text-sm text-green-600 dark:text-green-500 font-medium"
                             >
                                 Saved.
                             </motion.p>

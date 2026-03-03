@@ -15,7 +15,12 @@ export default function ProjectTable({ projects, onEdit, onDelete, auth }) {
                             <th className="p-3 min-w-[200px]">Project Name / Client</th>
                             <th className="p-3">Location / Contract</th>
                             <th className="p-3 text-center">Type</th>
-                            {!isSiteEngineer && <th className="p-3 text-right">Budget</th>}
+                            {!isSiteEngineer && (
+                                <>
+                                    <th className="p-3 text-right">Budget</th>
+                                    <th className="p-3 text-right text-purple-500">Total Profit</th>
+                                </>
+                            )}
                             <th className="p-3 text-center">Status</th>
                             {(onEdit || onDelete) && <th className="p-3 text-center">Actions</th>}
                         </tr>
@@ -42,7 +47,10 @@ export default function ProjectTable({ projects, onEdit, onDelete, auth }) {
                                     </span>
                                 </td>
                                 {!isSiteEngineer && (
-                                    <td className="p-3 text-right font-mono text-slate-900 dark:text-white">₱ {Number(project.budget).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                    <>
+                                        <td className="p-3 text-right font-mono text-slate-900 dark:text-white">₱ {Number(project.budget).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                        <td className="p-3 text-right font-mono text-purple-600 dark:text-purple-400 bg-purple-50/10 dark:bg-purple-900/10">₱ {Number(project.total_profit || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                    </>
                                 )}
                                 <td className="p-3 text-center">
                                     <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${project.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'}`}>{project.status}</span>

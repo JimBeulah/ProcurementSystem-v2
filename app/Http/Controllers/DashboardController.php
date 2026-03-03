@@ -34,6 +34,16 @@ class DashboardController extends Controller
             ->groupBy('status')
             ->get();
 
+        // Financial Metrics Mapping (Budget vs Spend vs Profit)
+        $spendAnalysis = [
+            ['month' => 'Sep', 'budget' => 1200000, 'spend' => 1100000, 'profit' => 100000],
+            ['month' => 'Oct', 'budget' => 1200000, 'spend' => 1150000, 'profit' => 50000],
+            ['month' => 'Nov', 'budget' => 1200000, 'spend' => 900000, 'profit' => 300000],
+            ['month' => 'Dec', 'budget' => 1500000, 'spend' => 1600000, 'profit' => -100000],
+            ['month' => 'Jan', 'budget' => 1500000, 'spend' => 1350000, 'profit' => 150000],
+            ['month' => 'Feb', 'budget' => 1500000, 'spend' => 1200000, 'profit' => 300000],
+        ];
+
         $stats = [
             'pendingPOs' => PurchaseOrder::where('status', 'PENDING')->count(),
             'activeProjects' => Project::where('status', 'ACTIVE')->count(),
@@ -43,6 +53,7 @@ class DashboardController extends Controller
             'pendingPRs' => \App\Models\PurchaseRequest::where('status', 'PENDING')->count(),
             'totalInvoices' => class_exists(\App\Models\Invoice::class) ? \App\Models\Invoice::count() : 0,
             'ordersByStatus' => $ordersByStatus,
+            'spendAnalysis' => $spendAnalysis,
         ];
 
         return Inertia::render('Dashboards/AdminDashboard', ['stats' => $stats]);
@@ -60,6 +71,15 @@ class DashboardController extends Controller
             ['name' => 'Mar', 'requests' => \App\Models\MaterialRequest::where('status', 'PENDING')->count()],
         ];
 
+        $spendAnalysis = [
+            ['month' => 'Sep', 'budget' => 800000, 'spend' => 750000, 'profit' => 50000],
+            ['month' => 'Oct', 'budget' => 800000, 'spend' => 820000, 'profit' => -20000],
+            ['month' => 'Nov', 'budget' => 800000, 'spend' => 600000, 'profit' => 200000],
+            ['month' => 'Dec', 'budget' => 1000000, 'spend' => 950000, 'profit' => 50000],
+            ['month' => 'Jan', 'budget' => 1000000, 'spend' => 900000, 'profit' => 100000],
+            ['month' => 'Feb', 'budget' => 1000000, 'spend' => 780000, 'profit' => 220000],
+        ];
+
         $stats = [
             'activeProjects' => Project::where('status', 'ACTIVE')->count(),
             'pendingMRs' => \App\Models\MaterialRequest::where('status', 'PENDING')->count(),
@@ -67,6 +87,7 @@ class DashboardController extends Controller
             'approvedThisMonth' => \App\Models\MaterialRequest::where('status', 'APPROVED')
                 ->whereMonth('updated_at', now()->month)->count(),
             'materialRequestsOverTime' => $materialRequestsOverTime,
+            'spendAnalysis' => $spendAnalysis,
         ];
 
         return Inertia::render('Dashboards/ProjectManagerDashboard', ['stats' => $stats]);
