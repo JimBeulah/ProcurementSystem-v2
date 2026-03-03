@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage, router, useForm } from '@inertiajs/react';
-import { UserCog, Plus, Edit2, UserCheck, UserX, X, Eye, EyeOff, KeyRound, Save } from 'lucide-react';
-
+import { UserCog, Plus, Edit2, UserCheck, UserX, X, KeyRound, Save, MoreVertical, Filter, Shield, Activity } from 'lucide-react';
+import { DataTable } from '@/Components/UI/DataTable';
+import Select from '@/Components/UI/Select';
+import Dropdown from '@/Components/Dropdown';
 const ROLES = [
     { value: 'admin', label: 'Admin' },
     { value: 'project_manager', label: 'Project Manager' },
@@ -136,6 +138,16 @@ export default function UsersIndex() {
     const { users, auth } = usePage().props;
     const list = users || [];
     const [modal, setModal] = useState(null); // null | 'add' | { user object }
+    const [roleFilter, setRoleFilter] = useState('all');
+    const [statusFilter, setStatusFilter] = useState('all');
+
+    const filteredUsers = React.useMemo(() => {
+        return list.filter(u => {
+            const roleMatch = roleFilter === 'all' || u.role === roleFilter;
+            const statusMatch = statusFilter === 'all' || (statusFilter === 'active' ? u.is_active : !u.is_active);
+            return roleMatch && statusMatch;
+        });
+    }, [list, roleFilter, statusFilter]);
 
     const handleToggleActive = (user) => {
         router.patch(route('users.toggle-active', user.id), {}, {
@@ -149,6 +161,122 @@ export default function UsersIndex() {
             preserveScroll: true,
         });
     };
+
+    // Define TanStack columns mimicking exactly what was there before
+    const columns = React.useMemo(() => [
+        {
+            accessorKey: 'name',
+            header: 'User',
+            cell: ({ row }) => {
+                const u = row.original;
+                return (
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 font-bold text-sm shrink-0">
+                            {u.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <p className="font-semibold text-slate-900 dark:text-white">{u.name}</p>
+                            <p className="text-xs text-slate-400">{u.email || '—'}</p>
+                        </div>
+                    </div>
+                );
+            },
+        },
+        {
+            accessorKey: 'username',
+            header: 'Username',
+            cell: ({ getValue }) => (
+                <span className="font-mono text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded">
+                    {getValue() || '—'}
+                </span>
+            ),
+        },
+        {
+            accessorKey: 'role',
+            header: 'Role',
+            cell: ({ getValue }) => {
+                const role = getValue();
+                return (
+                    <span className={`px-2 py-0.5 rounded-full text-xs border font-medium ${roleBadge(role)}`}>
+                        {roleLabel(role)}
+                    </span>
+                );
+            },
+        },
+        {
+            accessorKey: 'is_active',
+            header: 'Status',
+            cell: ({ row }) => {
+                const u = row.original;
+                return (
+                    <div className="flex flex-col gap-1 w-fit">
+                        {u.is_active ? (
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Active
+                            </span>
+                        ) : (
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-red-500">
+                                <span className="w-1.5 h-1.5 rounded-full bg-red-500" /> Inactive
+                            </span>
+                        )}
+                        {u.must_change_password && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-full w-fit">
+                                🔑 Temp PW
+                            </span>
+                        )}
+                    </div>
+                );
+            },
+        },
+        {
+            id: 'actions',
+            header: () => <div className="flex justify-center items-center w-full">Actions</div>,
+            cell: ({ row }) => {
+                const u = row.original;
+                return (
+                    <div className="flex justify-center items-center">
+                        <Dropdown>
+                            <Dropdown.Trigger>
+                                <button className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                                    <MoreVertical size={16} />
+                                </button>
+                            </Dropdown.Trigger>
+                            <Dropdown.Content align="right" width="48" contentClasses="py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                                <button
+                                    onClick={() => setModal(u)}
+                                    className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition"
+                                >
+                                    <Edit2 size={14} className="text-blue-500" /> Edit User
+                                </button>
+
+                                {u.id !== auth?.user?.id && (
+                                    <>
+                                        <button
+                                            onClick={() => handleResetPassword(u)}
+                                            className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition"
+                                        >
+                                            <KeyRound size={14} className="text-amber-500" /> Reset Password
+                                        </button>
+
+                                        <button
+                                            onClick={() => handleToggleActive(u)}
+                                            className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition"
+                                        >
+                                            {u.is_active ? (
+                                                <><UserX size={14} className="text-red-500" /> Deactivate User</>
+                                            ) : (
+                                                <><UserCheck size={14} className="text-emerald-500" /> Activate User</>
+                                            )}
+                                        </button>
+                                    </>
+                                )}
+                            </Dropdown.Content>
+                        </Dropdown>
+                    </div>
+                );
+            },
+        },
+    ], [auth, setModal, handleResetPassword, handleToggleActive]);
 
     return (
         <AuthenticatedLayout>
@@ -192,108 +320,56 @@ export default function UsersIndex() {
                     ))}
                 </div>
 
-                {/* Table */}
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm">
-                    <table className="w-full text-left text-sm">
-                        <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-400 uppercase text-xs tracking-wider border-b border-slate-100 dark:border-slate-700">
-                            <tr>
-                                <th className="px-5 py-3">User</th>
-                                <th className="px-5 py-3">Username</th>
-                                <th className="px-5 py-3">Role</th>
-                                <th className="px-5 py-3">Status</th>
-                                <th className="px-5 py-3 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
-                            {list.map(u => (
-                                <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors group">
-                                    {/* User */}
-                                    <td className="px-5 py-3.5">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 font-bold text-sm shrink-0">
-                                                {u.name.charAt(0).toUpperCase()}
-                                            </div>
-                                            <div>
-                                                <p className="font-semibold text-slate-900 dark:text-white">{u.name}</p>
-                                                <p className="text-xs text-slate-400">{u.email || '—'}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    {/* Username */}
-                                    <td className="px-5 py-3.5">
-                                        <span className="font-mono text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded">
-                                            {u.username || '—'}
-                                        </span>
-                                    </td>
-                                    {/* Role */}
-                                    <td className="px-5 py-3.5">
-                                        <span className={`px-2 py-0.5 rounded-full text-xs border font-medium ${roleBadge(u.role)}`}>
-                                            {roleLabel(u.role)}
-                                        </span>
-                                    </td>
-                                    {/* Status */}
-                                    <td className="px-5 py-3.5">
-                                        <div className="flex flex-col gap-1">
-                                            {u.is_active ? (
-                                                <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Active
-                                                </span>
-                                            ) : (
-                                                <span className="inline-flex items-center gap-1 text-xs font-medium text-red-500">
-                                                    <span className="w-1.5 h-1.5 rounded-full bg-red-500" /> Inactive
-                                                </span>
-                                            )}
-                                            {u.must_change_password && (
-                                                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-full w-fit">
-                                                    🔑 Temp PW
-                                                </span>
-                                            )}
-                                        </div>
-                                    </td>
-                                    {/* Actions */}
-                                    <td className="px-5 py-3.5 text-right">
-                                        <div className="flex justify-end items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            {/* Edit */}
-                                            <button
-                                                onClick={() => setModal(u)}
-                                                title="Edit user"
-                                                className="p-1.5 rounded-lg text-slate-400 hover:text-blue-500 hover:bg-blue-500/10 transition"
-                                            >
-                                                <Edit2 size={14} />
-                                            </button>
-                                            {/* Reset Password */}
-                                            {u.id !== auth?.user?.id && (
-                                                <button
-                                                    onClick={() => handleResetPassword(u)}
-                                                    title="Reset password to default"
-                                                    className="p-1.5 rounded-lg text-slate-400 hover:text-amber-500 hover:bg-amber-500/10 transition"
-                                                >
-                                                    <KeyRound size={14} />
-                                                </button>
-                                            )}
-                                            {/* Toggle Active */}
-                                            {u.id !== auth?.user?.id && (
-                                                <button
-                                                    onClick={() => handleToggleActive(u)}
-                                                    title={u.is_active ? 'Deactivate user' : 'Activate user'}
-                                                    className={`p-1.5 rounded-lg transition ${u.is_active ? 'text-slate-400 hover:text-red-500 hover:bg-red-500/10' : 'text-slate-400 hover:text-emerald-500 hover:bg-emerald-500/10'}`}
-                                                >
-                                                    {u.is_active ? <UserX size={14} /> : <UserCheck size={14} />}
-                                                </button>
-                                            )}
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                {/* Table & Filters */}
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm">
+                    <DataTable
+                        columns={columns}
+                        data={filteredUsers}
+                        showSearch={true}
+                        showPagination={true}
+                        customToolbar={
+                            <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mr-1">
+                                    <Filter size={15} />
+                                    <span className="text-[10px] font-bold uppercase tracking-wider">Filters</span>
+                                </div>
 
-                    {list.length === 0 && (
-                        <div className="py-16 text-center text-slate-400">
-                            <UserCog size={32} className="mx-auto mb-3 opacity-30" />
-                            <p className="text-sm">No users found. Create one to get started.</p>
-                        </div>
-                    )}
+                                <div className="w-40">
+                                    <Select
+                                        value={roleFilter}
+                                        onChange={setRoleFilter}
+                                        icon={Shield}
+                                        options={[
+                                            { value: 'all', label: 'All Roles' },
+                                            ...ROLES
+                                        ]}
+                                    />
+                                </div>
+
+                                <div className="w-40">
+                                    <Select
+                                        value={statusFilter}
+                                        onChange={setStatusFilter}
+                                        icon={Activity}
+                                        options={[
+                                            { value: 'all', label: 'All Status' },
+                                            { value: 'active', label: 'Active' },
+                                            { value: 'inactive', label: 'Inactive' },
+                                        ]}
+                                    />
+                                </div>
+
+                                {(roleFilter !== 'all' || statusFilter !== 'all') && (
+                                    <button
+                                        onClick={() => { setRoleFilter('all'); setStatusFilter('all'); }}
+                                        className="text-[11px] font-semibold text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition whitespace-nowrap"
+                                    >
+                                        Clear
+                                    </button>
+                                )}
+                            </div>
+                        }
+                    />
                 </div>
             </div>
         </AuthenticatedLayout>
