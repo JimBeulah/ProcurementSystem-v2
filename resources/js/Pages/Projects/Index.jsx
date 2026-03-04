@@ -114,32 +114,14 @@ export default function ProjectsIndex() {
 
                 <ProjectMetrics projects={projects} auth={auth} />
 
-                {/* Toolbar */}
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white/50 dark:bg-slate-800/50 backdrop-blur-md p-3 rounded-xl border border-slate-200 dark:border-slate-700 sticky top-0 z-20">
-                    <div className="relative group max-w-xs w-full md:w-auto">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan-500 transition-colors" size={14} />
-                        <input
-                            type="text" placeholder="Search projects..."
-                            className="w-full md:w-64 bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg pl-9 pr-4 py-2 text-slate-900 dark:text-white text-xs focus:border-cyan-500/50 outline-none transition-all"
-                            value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                        />
-                    </div>
-                    <div className="flex items-center gap-2 w-full md:w-auto justify-end">
-                        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
-                            <button onClick={() => setViewMode('table')} className={`p-1.5 rounded transition-all ${viewMode === 'table' ? 'bg-white dark:bg-slate-900 shadow-sm text-cyan-600' : 'text-slate-400 hover:text-slate-700 dark:hover:text-white'}`} title="Table View"><ListIcon size={14} /></button>
-                            <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-slate-900 shadow-sm text-cyan-600' : 'text-slate-400 hover:text-slate-700 dark:hover:text-white'}`} title="Grid View"><LayoutGrid size={14} /></button>
-                        </div>
-                        {can('create projects') && (
-                            <button onClick={() => { setEditingProject(null); setFormData(initialFormData); setShowModal(true); }}
-                                className="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-xs font-bold shadow-lg shadow-cyan-500/20 transition-all active:scale-95">
-                                <Plus size={16} /> <span>New Project</span>
-                            </button>
-                        )}
-                    </div>
-                </div>
-
                 {viewMode === 'table'
-                    ? <ProjectTable auth={auth} projects={filteredProjects} onEdit={can('edit projects') ? handleEdit : null} onDelete={can('delete projects') ? handleDeleteClick : null} />
+                    ? <ProjectTable
+                        auth={auth}
+                        projects={projects}
+                        onEdit={can('edit projects') ? handleEdit : null}
+                        onDelete={can('delete projects') ? handleDeleteClick : null}
+                        onCreate={can('create projects') ? () => { setEditingProject(null); setFormData(initialFormData); setShowModal(true); } : null}
+                    />
                     : <ProjectGrid auth={auth} projects={filteredProjects} onEdit={can('edit projects') ? handleEdit : null} onDelete={can('delete projects') ? handleDeleteClick : null} />
                 }
 

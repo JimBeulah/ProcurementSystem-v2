@@ -3,13 +3,13 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, usePage } from '@inertiajs/react';
 import { usePermissions } from '@/Hooks/usePermissions';
 import { Card } from '@/Components/UI/Card';
-import { ClientCard } from '@/Components/Clients/ClientCard';
 import Modal from '@/Components/UI/Modal';
-import Select from '@/Components/UI/Select';
+import { DataTable } from '@/Components/UI/DataTable';
+import Dropdown from '@/Components/Dropdown';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Users, Plus, Search, Building2, FileText, Filter,
-    LayoutGrid, List as ListIcon, TrendingUp, ShieldCheck,
+    TrendingUp, ShieldCheck, MoreVertical,
     CreditCard, Loader2, Edit2, Trash2, Factory
 } from 'lucide-react';
 
@@ -21,9 +21,6 @@ export default function ClientsIndex() {
     const [showModal, setShowModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [clientToDelete, setClientToDelete] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [viewMode, setViewMode] = useState('grid');
-    const [filterType, setFilterType] = useState('All');
     const [submitting, setSubmitting] = useState(false);
     const [editingClient, setEditingClient] = useState(null);
 
@@ -85,21 +82,106 @@ export default function ClientsIndex() {
         }
     };
 
-    const filtered = clients.filter(c => {
-        const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (c.contacts && c.contacts.some(contact => contact.name.toLowerCase().includes(searchTerm.toLowerCase())));
-        return matchesSearch;
-    });
-
     const activeContracts = clients.filter(c => (c.projects_count || 0) > 0).length;
     const totalContacts = clients.reduce((acc, c) => acc + (c.contacts?.length || 0), 0);
+
+    const columns = React.useMemo(() => [
+        {
+            accessorKey: 'name',
+            header: 'Client',
+            enableSorting: false,
+            cell: ({ row }) => {
+                const c = row.original;
+                return (
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 font-bold text-sm shrink-0">
+                            {c.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <p className="font-semibold text-slate-900 dark:text-white">{c.name}</p>
+                            <p className="text-xs text-slate-400">ID: #{c.id}</p>
+                        </div>
+                    </div>
+                );
+            },
+        },
+        {
+            id: 'contacts_count',
+            header: 'Contacts',
+            enableSorting: false,
+            cell: ({ row }) => {
+                const c = row.original;
+                return (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium border border-slate-200 dark:border-slate-700 w-fit">
+                        <Users size={12} />
+                        {c.contacts?.length || 0}
+                    </span>
+                );
+            }
+        },
+        {
+            id: 'primary_contact',
+            header: 'Primary Contact',
+            enableSorting: false,
+            cell: ({ row }) => {
+                const c = row.original;
+                if (c.contacts && c.contacts.length > 0) {
+                    return (
+                        <div className="flex flex-col">
+                            <span className="text-sm font-medium text-slate-900 dark:text-white">{c.contacts[0].name}</span>
+                            {c.contacts[0].phone && (
+                                <span className="text-[12px] text-slate-500 dark:text-slate-400">{c.contacts[0].phone}</span>
+                            )}
+                        </div>
+                    );
+                }
+                return <span className="text-slate-400 dark:text-slate-500 italic text-sm">No contacts</span>;
+            }
+        },
+        {
+            id: 'actions',
+            header: () => <div className="flex justify-center items-center w-full">Actions</div>,
+            enableSorting: false,
+            cell: ({ row }) => {
+                const c = row.original;
+                return (
+                    <div className="flex justify-center items-center">
+                        <Dropdown>
+                            <Dropdown.Trigger>
+                                <button className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                                    <MoreVertical size={16} />
+                                </button>
+                            </Dropdown.Trigger>
+                            <Dropdown.Content align="right" width="48" contentClasses="py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                                {can('manage clients') && (
+                                    <>
+                                        <button
+                                            onClick={() => handleEdit(c)}
+                                            className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition"
+                                        >
+                                            <Edit2 size={14} className="text-blue-500" /> Edit Client
+                                        </button>
+                                        <button
+                                            onClick={() => confirmDelete(c)}
+                                            className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition"
+                                        >
+                                            <Trash2 size={14} className="text-red-500" /> Delete Client
+                                        </button>
+                                    </>
+                                )}
+                            </Dropdown.Content>
+                        </Dropdown>
+                    </div>
+                );
+            }
+        }
+    ], [can]);
 
     return (
         <AuthenticatedLayout>
             <Head title="Clients" />
 
             <div className="space-y-6 max-w-7xl mx-auto">
-                {/* Stats Row — macOS widget style */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <StatCard
                         title="Total Clients"
@@ -121,141 +203,29 @@ export default function ClientsIndex() {
                     />
                 </div>
 
-                {/* macOS-style Toolbar */}
-                <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
-                    {/* Search */}
-                    <div className="relative w-full md:w-80 group">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-black/30 dark:text-white/30 group-focus-within:text-blue-500 transition-colors duration-150" size={15} />
-                        <input
-                            type="text"
-                            placeholder="Search clients..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-9 pr-4 py-2 bg-black/[0.03] dark:bg-white/[0.04] border-none focus:bg-white dark:focus:bg-white/[0.08] rounded-lg outline-none ring-0 focus:ring-2 focus:ring-blue-500/25 text-[13px] text-foreground placeholder:text-black/30 dark:placeholder:text-white/30 transition-all duration-200 font-medium"
-                        />
-                    </div>
-
-                    {/* Right Controls */}
-                    <div className="flex items-center gap-2 w-full md:w-auto">
-                        {/* Add Button */}
-                        {can('manage clients') && (
-                            <button
-                                onClick={() => {
-                                    setEditingClient(null);
-                                    resetForm();
-                                    setShowModal(true);
-                                }}
-                                className="bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-semibold transition-all duration-150 text-[13px] whitespace-nowrap shadow-sm cursor-pointer"
-                            >
-                                <Plus size={15} strokeWidth={2.5} /> Add Client
-                            </button>
-                        )}
-
-                        {/* View Toggle — segmented control */}
-                        <div className="flex items-center bg-black/[0.03] dark:bg-white/[0.04] p-0.5 rounded-lg">
-                            <button
-                                onClick={() => setViewMode('grid')}
-                                className={`p-1.5 rounded-md transition-all duration-150 cursor-pointer ${viewMode === 'grid'
-                                    ? 'bg-white dark:bg-white/[0.1] text-foreground shadow-sm'
-                                    : 'text-black/40 dark:text-white/40 hover:text-foreground'
-                                    }`}
-                                title="Grid View"
-                            >
-                                <LayoutGrid size={15} />
-                            </button>
-                            <button
-                                onClick={() => setViewMode('list')}
-                                className={`p-1.5 rounded-md transition-all duration-150 cursor-pointer ${viewMode === 'list'
-                                    ? 'bg-white dark:bg-white/[0.1] text-foreground shadow-sm'
-                                    : 'text-black/40 dark:text-white/40 hover:text-foreground'
-                                    }`}
-                                title="List View"
-                            >
-                                <ListIcon size={15} />
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Client Grid / List */}
-                {filtered.length === 0 ? (
-                    <div className="text-center py-20 rounded-2xl">
-                        <div className="w-16 h-16 rounded-2xl bg-black/[0.03] dark:bg-white/[0.04] flex items-center justify-center mx-auto mb-5">
-                            <Factory className="text-black/20 dark:text-white/20" size={28} />
-                        </div>
-                        <h3 className="text-base font-semibold text-foreground mb-1">No clients found</h3>
-                        <p className="text-[13px] text-black/40 dark:text-white/40 max-w-xs mx-auto">
-                            Try adjusting your search or add a new client to get started.
-                        </p>
-                    </div>
-                ) : viewMode === 'grid' ? (
-                    <motion.div
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
-                        initial="hidden"
-                        animate="visible"
-                        variants={{
-                            hidden: { opacity: 0 },
-                            visible: { opacity: 1, transition: { staggerChildren: 0.04 } }
-                        }}
-                    >
-                        <AnimatePresence mode="popLayout">
-                            {filtered.map(client => (
-                                <ClientCard key={client.id} client={client} onEdit={handleEdit} onDelete={() => confirmDelete(client)} />
-                            ))}
-                        </AnimatePresence>
-                    </motion.div>
-                ) : (
-                    <div className="space-y-2">
-                        <AnimatePresence mode="popLayout">
-                            {filtered.map(client => (
-                                <motion.div
-                                    key={client.id}
-                                    layout
-                                    initial={{ opacity: 0, y: 4 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -4 }}
-                                    className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-white/70 dark:bg-white/[0.03] backdrop-blur-xl rounded-xl hover:bg-white/90 dark:hover:bg-white/[0.05] transition-all duration-200 group gap-4 cursor-pointer"
+                {/* Table & Filters */}
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm">
+                    <DataTable
+                        columns={columns}
+                        data={clients}
+                        showSearch={true}
+                        showPagination={true}
+                        customToolbar={
+                            can('manage clients') && (
+                                <button
+                                    onClick={() => {
+                                        setEditingClient(null);
+                                        resetForm();
+                                        setShowModal(true);
+                                    }}
+                                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg shadow transition"
                                 >
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-[14px] bg-blue-500/10 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:bg-blue-500/15 transition-colors">
-                                            <Building2 size={18} />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-[14px] font-semibold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{client.name}</h3>
-                                            <div className="flex items-center gap-2 mt-0.5">
-                                                <span className="text-[11px] font-mono text-black/30 dark:text-white/30">#{client.id}</span>
-                                                <span className="text-[11px] text-black/40 dark:text-white/40 flex items-center gap-1">
-                                                    <Users size={11} /> {client.contacts?.length || 0} Contacts
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto pt-3 md:pt-0 border-t md:border-t-0 border-black/[0.04] dark:border-white/[0.04]">
-                                        {client.contacts && client.contacts.length > 0 && (
-                                            <div className="text-left md:text-right hidden sm:block">
-                                                <p className="text-[10px] text-black/30 dark:text-white/30 uppercase font-medium tracking-wider">Primary Contact</p>
-                                                <p className="text-[13px] font-medium text-foreground">{client.contacts[0].name}</p>
-                                            </div>
-                                        )}
-                                        <div className="flex items-center gap-1 pl-3 md:border-l border-black/[0.04] dark:border-white/[0.04] opacity-0 group-hover:opacity-100 transition-opacity">
-                                            {can('manage clients') && (
-                                                <>
-                                                    <button onClick={() => handleEdit(client)} className="p-2 hover:bg-black/[0.04] dark:hover:bg-white/[0.06] text-black/40 dark:text-white/40 hover:text-blue-600 rounded-lg transition-all cursor-pointer" title="Edit">
-                                                        <Edit2 size={15} />
-                                                    </button>
-                                                    <button onClick={() => confirmDelete(client)} className="p-2 hover:bg-red-500/10 text-black/40 dark:text-white/40 hover:text-red-500 rounded-lg transition-all cursor-pointer" title="Delete">
-                                                        <Trash2 size={15} />
-                                                    </button>
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </AnimatePresence>
-                    </div>
-                )}
+                                    <Plus size={15} /> Add Client
+                                </button>
+                            )
+                        }
+                    />
+                </div>
 
                 {/* Create / Edit Modal */}
                 <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingClient(null); }} title={editingClient ? "Edit Client" : "New Client"}>

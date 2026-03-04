@@ -3,10 +3,14 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { usePermissions } from '@/Hooks/usePermissions';
 import Modal from '@/Components/UI/Modal';
+import Drawer from '@/Components/UI/Drawer';
+import {
+    Table, TableBody, TableCell, TableHead, TableHeader, TableRow
+} from '@/Components/UI/Table';
 import {
     ClipboardList, Plus, CheckCircle, XCircle, Trash2, ChevronDown, ChevronRight,
     Briefcase, Calendar, User, PhilippinePeso, AlertTriangle, Package, ShoppingCart,
-    MoreVertical, Printer
+    MoreVertical, Printer, Eye, Search
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -21,15 +25,21 @@ function StatusBadge({ status }) {
 }
 
 export default function PurchaseRequestsIndex() {
-    const { requests, projects, flash } = usePage().props;
+    const { requests, projects, filters, flash } = usePage().props;
     const list = requests?.data || [];
     const paginationLinks = requests?.links || [];
     const { can } = usePermissions();
 
     const [showCreate, setShowCreate] = useState(false);
-    const [expandedRows, setExpandedRows] = useState(new Set());
+    const [selectedPr, setSelectedPr] = useState(null);
+    const [showDrawer, setShowDrawer] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState(null);
+
+    // Filters
+    const [search, setSearch] = useState(filters?.search || '');
+    const [dateFilter, setDateFilter] = useState(filters?.date || '');
+    const [statusFilter, setStatusFilter] = useState(filters?.status || 'ALL');
 
     // Create Form State
     const [projectId, setProjectId] = useState('');
@@ -48,14 +58,29 @@ export default function PurchaseRequestsIndex() {
         if (flash?.error) toast.error(flash.error);
     }, [flash]);
 
-    const toggleRow = (id) => {
-        setExpandedRows(prev => {
-            const next = new Set(prev);
-            next.has(id) ? next.delete(id) : next.add(id);
-            return next;
-        });
-    };
+    // Handle search/filter with debounce
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (
+                search !== (filters?.search || '') ||
+                dateFilter !== (filters?.date || '') ||
+                statusFilter !== (filters?.status || 'ALL')
+            ) {
+                router.get('/purchasing/requests', {
+                    search,
+                    date: dateFilter,
+                    status: statusFilter,
+                }, {
+                    preserveState: true,
+                    preserveScroll: true,
+                    replace: true,
+                });
+            }
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [search, dateFilter, statusFilter]);
 
+    // Expanded rows logic removed in favor of Drawer
     const addToCart = () => {
         if (!itemDesc || !itemQty || Number(itemQty) <= 0 || !itemUnit) return;
         setCart([...cart, {
@@ -86,19 +111,24 @@ export default function PurchaseRequestsIndex() {
     const handleApprove = (id) => {
         router.post(`/purchasing/requests/${id}/approve`, {}, {
             preserveScroll: true,
+            onSuccess: () => setShowDrawer(false)
         });
     };
 
     const handleDecline = (id) => {
         router.post(`/purchasing/requests/${id}/decline`, {}, {
             preserveScroll: true,
+            onSuccess: () => setShowDrawer(false)
         });
     };
 
     const handleDelete = () => {
         if (!deleteTarget) return;
         router.delete(`/purchasing/requests/${deleteTarget.id}`, {
-            onSuccess: () => setDeleteTarget(null),
+            onSuccess: () => {
+                setDeleteTarget(null);
+                setShowDrawer(false);
+            },
             preserveScroll: true,
         });
     };
@@ -108,178 +138,142 @@ export default function PurchaseRequestsIndex() {
             <Head title="Purchase Requests" />
 
             <div className="p-6 max-w-[1920px] mx-auto space-y-6">
-                {/* Header */}
-                <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl p-5 rounded-3xl border border-white/20 shadow-lg shadow-black/5">
-                    <div>
-                        <div className="flex items-center gap-2 mb-1">
-                            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                                <div className="p-2 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl text-white shadow-lg shadow-violet-500/30">
-                                    <ShoppingCart size={20} />
-                                </div>
-                                <span className="opacity-90">Sourcing Tasklist</span>
-                            </h1>
-                        </div>
-                        <p className="text-sm text-slate-500 font-medium ml-1">Approved material requests ready for procurement action</p>
-                    </div>
-                    {can('manage purchase requests') && (
-                        <button onClick={() => setShowCreate(true)} className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 text-xs font-bold transition-all shadow-lg shadow-violet-600/20 active:scale-95">
-                            <Plus size={18} /> New Request
-                        </button>
-                    )}
-                </header>
 
                 {/* PR Table */}
-                <div className="bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl border border-white/20 dark:border-slate-700/30 rounded-3xl overflow-hidden shadow-2xl shadow-black/5">
-                    <div className="overflow-auto custom-scrollbar">
-                        <table className="w-full text-left border-collapse">
-                            <thead className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10 shadow-sm">
-                                <tr className="border-b border-slate-200/60 dark:border-slate-700/60 text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">
-                                    <th className="p-4 w-12 text-center">#</th>
-                                    <th className="p-4 min-w-[120px]">PR Number</th>
-                                    <th className="p-4 min-w-[200px]">Project</th>
-                                    <th className="p-4 min-w-[120px]">Requested By</th>
-                                    <th className="p-4 text-center">Status</th>
-                                    <th className="p-4">Date</th>
-                                    <th className="p-4 text-right">Est. Cost</th>
-                                    <th className="p-4 w-32 text-center">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-sm text-slate-700 dark:text-slate-200">
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm relative z-0">
+
+                    {/* Quick Filters */}
+                    <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+                        {['ALL', 'PENDING', 'APPROVED', 'DECLINED', 'CANCELLED'].map((status) => (
+                            <button
+                                key={status}
+                                onClick={() => setStatusFilter(status)}
+                                className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${statusFilter === status
+                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                                    : 'bg-slate-100 dark:bg-slate-900/50 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'
+                                    }`}
+                            >
+                                {status === 'ALL' ? 'All Requests' : status}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Filters */}
+                    <div className="flex flex-col sm:flex-row gap-3 mb-5 items-center justify-between">
+                        <div className="flex items-center gap-3 w-full sm:w-auto">
+                            <div className="relative w-full sm:w-64">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                                <input
+                                    type="text"
+                                    placeholder="Search PR, Project, Purpose..."
+                                    value={search}
+                                    onChange={e => setSearch(e.target.value)}
+                                    className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-900 dark:text-white placeholder:text-slate-400"
+                                />
+                            </div>
+                            <div className="relative w-full sm:w-auto">
+                                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                                <input
+                                    type="date"
+                                    value={dateFilter}
+                                    onChange={e => setDateFilter(e.target.value)}
+                                    className="w-full sm:w-auto pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 dark:text-slate-300"
+                                />
+                                {dateFilter && (
+                                    <button
+                                        onClick={() => setDateFilter('')}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                                    >
+                                        <XCircle size={14} />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                        <div className="w-full sm:w-auto text-right">
+                            {can('manage purchase requests') && (
+                                <button onClick={() => setShowCreate(true)} className="w-full sm:w-auto bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-all shadow-lg shadow-violet-600/20 active:scale-95">
+                                    <Plus size={18} /> New Request
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-12 text-center">#</TableHead>
+                                    <TableHead>PR Number</TableHead>
+                                    <TableHead>Project</TableHead>
+                                    <TableHead>Requested By</TableHead>
+                                    <TableHead className="text-center">Status</TableHead>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead className="text-right">Est. Cost</TableHead>
+                                    <TableHead className="w-24 text-center">Details</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
                                 {list.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={8} className="p-16 text-center">
+                                    <TableRow>
+                                        <TableCell colSpan={8} className="h-48 text-center pt-10">
                                             <ShoppingCart className="mx-auto mb-4 text-slate-300 dark:text-slate-600" size={48} />
                                             <p className="text-slate-400 uppercase tracking-widest font-bold text-xs">No Sourcing Tasks Yet</p>
                                             <p className="text-slate-400 text-xs mt-1">Approved material requests will appear here for sourcing.</p>
-                                        </td>
-                                    </tr>
-                                ) : list.map((pr, idx) => {
-                                    const isExpanded = expandedRows.has(pr.id);
-                                    return (
-                                        <React.Fragment key={pr.id}>
-                                            <tr className="group hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all duration-200 cursor-pointer" onClick={() => toggleRow(pr.id)}>
-                                                <td className="py-3 px-4 text-center text-slate-400 font-mono text-xs border-l-4 border-transparent group-hover:border-blue-500/50 transition-all">{idx + 1}</td>
-                                                <td className="py-3 px-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <button className={`p-1 rounded-md transition-all ${isExpanded ? 'bg-slate-200 dark:bg-slate-600 rotate-90' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
-                                                            <ChevronRight size={14} />
-                                                        </button>
-                                                        <span className="font-mono font-bold text-blue-600 dark:text-blue-400">PR-{pr.id.toString().padStart(5, '0')}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="py-3 px-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <Briefcase size={14} className="text-slate-400" />
-                                                        <span className="font-semibold text-slate-900 dark:text-white">{pr.project?.name || 'N/A'}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="py-3 px-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <User size={14} className="text-slate-400" />
-                                                        <span className="text-slate-600 dark:text-slate-300">{pr.requester?.name || 'N/A'}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="py-3 px-4 text-center"><StatusBadge status={pr.status} /></td>
-                                                <td className="py-3 px-4">
-                                                    <div className="flex items-center gap-1.5 text-slate-500 text-xs">
-                                                        <Calendar size={12} />
-                                                        {new Date(pr.request_date).toLocaleDateString()}
-                                                    </div>
-                                                </td>
-                                                <td className="py-3 px-4 text-right font-mono font-bold text-slate-900 dark:text-white">
-                                                    <span className="text-[10px] text-slate-400 mr-1">₱</span>
-                                                    {Number(pr.total_estimated_cost).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                                </td>
-                                                <td className="py-3 px-4 text-center" onClick={e => e.stopPropagation()}>
-                                                    <div className="relative group/actions inline-block">
-                                                        <button className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors flex items-center justify-center">
-                                                            <MoreVertical size={16} />
-                                                        </button>
-                                                        <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-slate-800 rounded-xl shadow-xl shadow-black/10 border border-slate-100 dark:border-slate-700/50 opacity-0 invisible group-hover/actions:opacity-100 group-hover/actions:visible group-focus-within/actions:opacity-100 group-focus-within/actions:visible transition-all z-50 py-1">
-                                                            <a href={`/purchasing/requests/${pr.id}/print`} target="_blank" rel="noopener noreferrer" className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center gap-2">
-                                                                <Printer size={14} className="text-slate-400" /> Print PR
-                                                            </a>
-
-                                                            {pr.status === 'APPROVED' && can('create purchase orders') && (
-                                                                <Link href={`/purchasing/orders/create?prId=${pr.id}`} className="w-full text-left px-4 py-2 text-xs font-semibold text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/10 flex items-center gap-2">
-                                                                    <ShoppingCart size={14} /> Create PO
-                                                                </Link>
-                                                            )}
-
-                                                            {pr.status === 'PENDING' && can('manage purchase requests') && (
-                                                                <>
-                                                                    <button onClick={() => handleApprove(pr.id)} className="w-full text-left px-4 py-2 text-xs font-semibold text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 flex items-center gap-2">
-                                                                        <CheckCircle size={14} /> Approve
-                                                                    </button>
-                                                                    <button onClick={() => handleDecline(pr.id)} className="w-full text-left px-4 py-2 text-xs font-semibold text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/10 flex items-center gap-2">
-                                                                        <XCircle size={14} /> Decline
-                                                                    </button>
-                                                                </>
-                                                            )}
-
-                                                            {can('manage purchase requests') && (
-                                                                <button onClick={() => setDeleteTarget(pr)} className="w-full text-left px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 flex items-center gap-2">
-                                                                    <Trash2 size={14} /> Delete
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            {isExpanded && (
-                                                <tr className="bg-slate-50/50 dark:bg-black/20">
-                                                    <td colSpan={8} className="p-0">
-                                                        <div className="pl-12 pr-4 py-4">
-                                                            <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-xl border border-slate-200/60 dark:border-slate-700/60 overflow-hidden shadow-sm">
-                                                                <div className="bg-slate-50/80 dark:bg-slate-900/50 px-4 py-2 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
-                                                                    <h3 className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                                                                        <Package size={14} className="text-slate-400" /> Requested Items
-                                                                    </h3>
-                                                                    {pr.purpose && <span className="text-[10px] text-slate-400 italic">Purpose: {pr.purpose}</span>}
-                                                                </div>
-                                                                {pr.items && pr.items.length > 0 ? (
-                                                                    <div className="w-full text-xs">
-                                                                        <div className="grid grid-cols-[1fr_80px_80px_120px_120px] gap-2 px-4 py-2 border-b border-slate-100 dark:border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-                                                                            <div>Description</div>
-                                                                            <div className="text-center">Qty</div>
-                                                                            <div className="text-center">Unit</div>
-                                                                            <div className="text-right">Unit Cost</div>
-                                                                            <div className="text-right">Total</div>
-                                                                        </div>
-                                                                        {pr.items.map(item => (
-                                                                            <div key={item.id} className="grid grid-cols-[1fr_80px_80px_120px_120px] gap-2 px-4 py-2.5 items-center border-b last:border-0 border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-700/20 transition-colors">
-                                                                                <div className="font-medium text-slate-700 dark:text-slate-300">{item.item_description}</div>
-                                                                                <div className="text-center font-mono text-slate-600 dark:text-slate-400">{Number(item.quantity).toFixed(2)}</div>
-                                                                                <div className="text-center text-slate-500 uppercase text-[10px]">{item.unit}</div>
-                                                                                <div className="text-right font-mono text-slate-500">₱ {Number(item.estimated_unit_cost).toLocaleString()}</div>
-                                                                                <div className="text-right font-mono font-bold text-slate-800 dark:text-slate-200">₱ {Number(item.estimated_total_cost).toLocaleString()}</div>
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                ) : (
-                                                                    <div className="p-8 text-center text-slate-400 text-xs italic">No items.</div>
-                                                                )}
-                                                                {pr.approver && (
-                                                                    <div className="px-4 py-2 border-t border-slate-100 dark:border-slate-800 text-[10px] text-emerald-600 flex items-center gap-1">
-                                                                        <CheckCircle size={12} /> Processed by {pr.approver.name}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            )}
-                                        </React.Fragment>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                                        </TableCell>
+                                    </TableRow>
+                                ) : list.map((pr, idx) => (
+                                    <TableRow
+                                        key={pr.id}
+                                        className={`cursor-pointer transition-colors ${pr.status === 'PENDING'
+                                            ? 'bg-amber-50/50 hover:bg-amber-50 dark:bg-amber-500/5 dark:hover:bg-amber-500/10'
+                                            : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                                            }`}
+                                        onClick={() => { setSelectedPr(pr); setShowDrawer(true); }}
+                                    >
+                                        <TableCell className="text-center text-slate-400 font-mono text-xs">{idx + 1}</TableCell>
+                                        <TableCell>
+                                            <span className="font-mono font-bold text-blue-600 dark:text-blue-400">PR-{pr.id.toString().padStart(5, '0')}</span>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <Briefcase size={14} className="text-slate-400" />
+                                                <span className="font-semibold text-slate-900 dark:text-white">{pr.project?.name || 'N/A'}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <User size={14} className="text-slate-400" />
+                                                <span className="text-slate-600 dark:text-slate-300">{pr.requester?.name || 'N/A'}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-center"><StatusBadge status={pr.status} /></TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-1.5 text-slate-500 text-xs">
+                                                <Calendar size={12} />
+                                                {new Date(pr.request_date).toLocaleDateString()}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-right font-mono font-bold text-slate-900 dark:text-white">
+                                            <span className="text-[10px] text-slate-400 mr-1">₱</span>
+                                            {Number(pr.total_estimated_cost).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <button
+                                                className="p-1.5 text-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors inline-flex"
+                                            >
+                                                <Eye size={16} />
+                                            </button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
                     </div>
                     {/* Pagination */}
-                    {paginationLinks.length > 3 && (
+                    {paginationLinks.length > 0 && (
                         <div className="bg-slate-50/80 dark:bg-slate-900/50 px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
                             <span className="text-xs text-slate-500">
-                                Showing <span className="font-bold text-slate-900 dark:text-white">{requests.from}</span> to <span className="font-bold text-slate-900 dark:text-white">{requests.to}</span> of <span className="font-bold text-slate-900 dark:text-white">{requests.total}</span> requests
+                                Showing <span className="font-bold text-slate-900 dark:text-white">{requests.from || 0}</span> to <span className="font-bold text-slate-900 dark:text-white">{requests.to || 0}</span> of <span className="font-bold text-slate-900 dark:text-white">{requests.total || 0}</span> requests
                             </span>
                             <div className="flex gap-1">
                                 {paginationLinks.map((link, i) => (
@@ -411,6 +405,122 @@ export default function PurchaseRequestsIndex() {
                         </div>
                     </div>
                 </Modal>
+                {/* Drawer for PR Details */}
+                <Drawer
+                    isOpen={showDrawer}
+                    onClose={() => setShowDrawer(false)}
+                    title={selectedPr ? `PR-${selectedPr.id.toString().padStart(5, '0')} Details` : 'PR Details'}
+                >
+                    {selectedPr && (
+                        <div className="space-y-6">
+                            {/* Actions Header */}
+                            <div className="flex flex-wrap items-center gap-2 pb-4 border-b border-slate-100 dark:border-slate-700/50">
+                                <a href={`/purchasing/requests/${selectedPr.id}/print`} target="_blank" rel="noopener noreferrer" className="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors flex items-center gap-2">
+                                    <Printer size={14} /> Print PR
+                                </a>
+
+                                {selectedPr.status === 'APPROVED' && can('create purchase orders') && (
+                                    <Link href={`/purchasing/orders/create?prId=${selectedPr.id}`} className="px-4 py-2 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 rounded-xl transition-colors flex items-center gap-2 shadow-sm shadow-violet-600/20 cursor-pointer">
+                                        <ShoppingCart size={14} /> Create PO
+                                    </Link>
+                                )}
+
+                                {selectedPr.status === 'PENDING' && can('manage purchase requests') && (
+                                    <>
+                                        <button onClick={() => handleApprove(selectedPr.id)} className="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-colors flex items-center gap-2 shadow-sm shadow-emerald-600/20">
+                                            <CheckCircle size={14} /> Approve
+                                        </button>
+                                        <button onClick={() => handleDecline(selectedPr.id)} className="px-4 py-2 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-500 rounded-xl transition-colors flex items-center gap-2 shadow-sm shadow-amber-600/20">
+                                            <XCircle size={14} /> Decline
+                                        </button>
+                                    </>
+                                )}
+
+                                {can('manage purchase requests') && (
+                                    <button onClick={() => setDeleteTarget(selectedPr)} className="px-4 py-2 text-xs font-semibold text-red-600 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 rounded-xl transition-colors flex items-center gap-2 ml-auto">
+                                        <Trash2 size={14} /> Delete
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Details Info */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-[10px] uppercase font-bold text-slate-400">Project</label>
+                                    <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">{selectedPr.project?.name || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] uppercase font-bold text-slate-400">Requested By</label>
+                                    <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">{selectedPr.requester?.name || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] uppercase font-bold text-slate-400">Date</label>
+                                    <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">{new Date(selectedPr.request_date).toLocaleDateString()}</p>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] uppercase font-bold text-slate-400">Status</label>
+                                    <div className="mt-1"><StatusBadge status={selectedPr.status} /></div>
+                                </div>
+                                {selectedPr.purpose && (
+                                    <div className="col-span-2">
+                                        <label className="text-[10px] uppercase font-bold text-slate-400">Purpose</label>
+                                        <p className="text-sm text-slate-700 dark:text-slate-300 mt-1">{selectedPr.purpose}</p>
+                                    </div>
+                                )}
+                                {selectedPr.remarks && (
+                                    <div className="col-span-2">
+                                        <label className="text-[10px] uppercase font-bold text-slate-400">Remarks</label>
+                                        <p className="text-sm text-slate-700 dark:text-slate-300 mt-1">{selectedPr.remarks}</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Items List */}
+                            <div>
+                                <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2 mb-3">
+                                    <Package size={14} className="text-blue-500" /> Requested Items
+                                </h3>
+
+                                {selectedPr.items && selectedPr.items.length > 0 ? (
+                                    <div className="border border-slate-200 dark:border-slate-700/60 rounded-xl overflow-hidden shadow-sm">
+                                        <div className="grid grid-cols-[1fr_60px_60px_90px_90px] gap-2 px-3 py-2 bg-slate-50 dark:bg-slate-800/50 text-slate-500 font-bold uppercase tracking-wider text-[9px] border-b border-slate-200 dark:border-slate-700/60">
+                                            <div>Description</div>
+                                            <div className="text-center">Qty</div>
+                                            <div className="text-center">Unit</div>
+                                            <div className="text-right">Unit Cost</div>
+                                            <div className="text-right">Total</div>
+                                        </div>
+                                        <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
+                                            {selectedPr.items.map(item => (
+                                                <div key={item.id} className="grid grid-cols-[1fr_60px_60px_90px_90px] gap-2 px-3 py-2.5 items-center text-[11px] hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors bg-white dark:bg-slate-900">
+                                                    <div className="font-medium text-slate-800 dark:text-slate-200">{item.item_description}</div>
+                                                    <div className="text-center font-mono text-blue-600 dark:text-blue-400">{Number(item.quantity).toFixed(2)}</div>
+                                                    <div className="text-center text-slate-500 uppercase">{item.unit}</div>
+                                                    <div className="text-right font-mono text-slate-500">₱{Number(item.estimated_unit_cost).toLocaleString()}</div>
+                                                    <div className="text-right font-mono font-bold text-slate-800 dark:text-slate-200">₱{Number(item.estimated_total_cost).toLocaleString()}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="bg-slate-50 dark:bg-slate-800/80 px-3 py-2.5 border-t border-slate-200 dark:border-slate-700 text-right flex items-center justify-end gap-3">
+                                            <span className="text-[10px] font-bold text-slate-500 uppercase">Total Est. Cost</span>
+                                            <span className="text-sm font-mono font-bold text-emerald-600 dark:text-emerald-400">₱{Number(selectedPr.total_estimated_cost).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="p-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                                        <p className="text-slate-400 text-xs italic">No items listed.</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {selectedPr.approver && (
+                                <div className="p-3 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-100 dark:border-emerald-500/20 text-xs text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
+                                    <CheckCircle size={14} /> Processed by <b className="ml-1">{selectedPr.approver.name}</b>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </Drawer>
             </div>
         </AuthenticatedLayout>
     );

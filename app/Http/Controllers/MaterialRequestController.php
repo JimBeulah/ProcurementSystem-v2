@@ -36,10 +36,15 @@ class MaterialRequestController extends Controller
             ->with('components')
             ->get();
 
+        $inventoryItems = \App\Models\InventoryItem::whereNull('project_id')
+            ->with('warehouse')
+            ->get();
+
         return Inertia::render('Projects/MaterialRequests', [
             'project' => $project,
             'materialRequests' => $materialRequests,
             'boqItems' => $boqItems,
+            'inventoryItems' => $inventoryItems,
         ]);
     }
 

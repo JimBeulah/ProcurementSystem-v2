@@ -21,7 +21,7 @@ export const NAVIGATION_CONFIG = [
         items: [
             { label: 'Clients', href: '/clients', icon: <Users />, permission: 'view clients', matchPrefix: '/clients' },
             { label: 'Projects', href: '/projects', icon: <Building2 />, permission: 'view projects', matchPrefix: '/projects' },
-            { label: 'Sourcing Tasklist', href: '/purchasing/requests', icon: <ShoppingCart />, permission: 'view purchase requests', matchPrefix: '/purchasing/requests', badgeKey: 'requests' },
+            { label: 'Purchase Requests', href: '/purchasing/requests', icon: <ShoppingCart />, permission: 'view purchase requests', matchPrefix: '/purchasing/requests', badgeKey: 'requests' },
             { label: 'RFQ', href: '/purchasing/rfq', icon: <FileSearch />, permission: 'view rfq', matchPrefix: '/purchasing/rfq', badgeKey: 'rfqs' },
             { label: 'Suppliers', href: '/purchasing/suppliers', icon: <Factory />, permission: 'view suppliers', matchPrefix: '/purchasing/suppliers' },
             { label: 'Orders', href: '/purchasing/orders', icon: <ClipboardList />, permission: 'view purchase orders', matchPrefix: '/purchasing/orders' },

@@ -1,17 +1,83 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import Modal from '@/Components/UI/Modal';
+import Drawer from '@/Components/UI/Drawer';
+import DataTable from '@/Components/UI/DataTable';
 import Select from '@/Components/UI/Select';
-import { Truck, Plus, Package, Box, AlertTriangle, Info, CheckCircle2 } from 'lucide-react';
+import { Truck, Plus, Package, Box, AlertTriangle, Info, CheckCircle2, User, Calendar } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 
 export default function ProjectMaterialRequests() {
-    const { project, materialRequests: initialMRs, boqItems, flash } = usePage().props;
+    const { project, materialRequests: initialMRs, boqItems, inventoryItems, flash } = usePage().props;
     const requests = initialMRs || [];
 
     const [showModal, setShowModal] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+
+    // New additions for Drawer and DataTable
+    const [selectedMr, setSelectedMr] = useState(null);
+    const [showDrawer, setShowDrawer] = useState(false);
+
+    const columns = useMemo(() => [
+        {
+            accessorKey: 'id',
+            header: 'MR Number',
+            cell: info => <span className="font-mono font-bold text-blue-600 dark:text-blue-400">MR-{(info.getValue() || '').toString().padStart(5, '0')}</span>,
+        },
+        {
+            accessorKey: 'requester.name',
+            header: 'Requested By',
+            cell: info => <div className="flex items-center gap-2"><User size={14} className="text-slate-400" /><span className="text-slate-600 dark:text-slate-300">{info.getValue() || 'N/A'}</span></div>,
+        },
+        {
+            accessorKey: 'status',
+            header: 'Status',
+            cell: info => {
+                const status = info.getValue() || 'PENDING';
+                const styles = {
+                    PENDING: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+                    APPROVED: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+                    DECLINED: 'bg-red-500/10 text-red-600 border-red-500/20',
+                    CANCELLED: 'bg-slate-500/10 text-slate-500 border-slate-500/20',
+                    REJECTED: 'bg-red-500/10 text-red-600 border-red-500/20',
+                };
+                return <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider ${styles[status] || styles.PENDING}`}>{status}</span>;
+            }
+        },
+        {
+            accessorKey: 'request_date',
+            header: 'Date',
+            cell: info => <div className="flex items-center gap-1.5 text-slate-500 text-xs"><Calendar size={12} />{new Date(info.getValue()).toLocaleDateString()}</div>,
+        },
+        {
+            id: 'items_count',
+            header: 'Items',
+            cell: ({ row }) => <span className="text-slate-600 dark:text-slate-300 font-medium">{row.original.items?.length || 0}</span>,
+        },
+        {
+            id: 'total_cost',
+            header: 'Est. Total',
+            cell: ({ row }) => {
+                const total = (row.original.items || []).reduce((sum, item) => sum + ((Number(item.material_unit_price) || 0) + (Number(item.labor_unit_price) || 0)) * Number(item.quantity), 0);
+                return <div className="text-right font-mono font-bold text-slate-900 dark:text-white"><span className="text-[10px] text-slate-400 mr-1">₱</span>{total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>;
+            }
+        },
+        {
+            id: 'actions',
+            header: 'Details',
+            cell: ({ row }) => (
+                <div className="text-center">
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setSelectedMr(row.original); setShowDrawer(true); }}
+                        className="p-1.5 text-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors inline-flex"
+                    >
+                        <Info size={16} />
+                    </button>
+                </div>
+            ),
+        }
+    ], []);
 
     // Cart state
     const [selectedBoqItemId, setSelectedBoqItemId] = useState('');
@@ -62,6 +128,22 @@ export default function ProjectMaterialRequests() {
 
     const remainingQty = Math.max(0, totalBudgetQty - usage.qty);
     const remainingCost = Math.max(0, totalBudgetCost - usage.cost);
+
+    const warehouseQuantity = React.useMemo(() => {
+        if (!selectedComponent) return 0;
+
+        // Debugging
+        console.log("Selected Component Name:", selectedComponent.name);
+        console.log("Inventory Items:", inventoryItems);
+
+        const items = inventoryItems?.filter(i => {
+            // Trim strings to avoid hidden whitespace mismatches
+            const isMatch = String(i.material_name).trim().toLowerCase() === String(selectedComponent.name).trim().toLowerCase();
+            return isMatch;
+        }) || [];
+
+        return items.reduce((acc, current) => acc + Number(current.quantity), 0);
+    }, [selectedComponent, inventoryItems]);
 
     // Current Request Calculations
     const currentRequestCost = (Number(requestQty) || 0) * ((Number(materialUnitPrice) || 0) + (Number(laborUnitPrice) || 0));
@@ -141,14 +223,6 @@ export default function ProjectMaterialRequests() {
 
             <div className="space-y-6 max-w-7xl mx-auto">
 
-                {/* Breadcrumb + Header */}
-                <div className="flex items-center gap-2 text-slate-500 text-sm">
-                    <Link href="/projects" className="hover:text-cyan-600 transition-colors">Projects</Link>
-                    <span>/</span>
-                    <Link href={`/projects/${project.id}`} className="hover:text-cyan-600 transition-colors">{project.name}</Link>
-                    <span>/</span>
-                    <span className="text-slate-900 dark:text-white font-medium">Material Requests</span>
-                </div>
 
                 <header className="flex justify-between items-center pb-6 border-b border-slate-200 dark:border-slate-700">
                     <div>
@@ -163,71 +237,14 @@ export default function ProjectMaterialRequests() {
                 </header>
 
                 {/* MR Table */}
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
-                    <table className="w-full text-left border-collapse">
-                        <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 uppercase text-[10px] font-bold tracking-wider sticky top-0 z-10">
-                            <tr>
-                                <th className="p-4 border-b border-slate-200 dark:border-slate-700 min-w-[250px]">Item Description</th>
-                                <th className="p-4 border-b border-slate-200 dark:border-slate-700 text-center">Unit</th>
-                                <th className="p-4 border-b border-slate-200 dark:border-slate-700 text-center">Qty</th>
-                                <th className="p-4 border-b border-slate-200 dark:border-slate-700 text-right">Mat. Unit</th>
-                                <th className="p-4 border-b border-slate-200 dark:border-slate-700 text-right">Mat. Total</th>
-                                <th className="p-4 border-b border-slate-200 dark:border-slate-700 text-right">Lab. Unit</th>
-                                <th className="p-4 border-b border-slate-200 dark:border-slate-700 text-right">Lab. Total</th>
-                                <th className="p-4 border-b border-slate-200 dark:border-slate-700 text-right">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody className="text-xs">
-                            {requests.map(mr => (
-                                <React.Fragment key={mr.id}>
-                                    <tr className="bg-blue-600/5 border-b border-slate-200/50 dark:border-slate-700/50">
-                                        <td colSpan={8} className="p-4">
-                                            <div className="flex justify-between items-center">
-                                                <div className="flex items-center gap-4">
-                                                    <span className="text-blue-600 font-black text-sm uppercase tracking-widest">MR #{mr.id}</span>
-                                                    <span className="text-slate-500 text-[10px] font-medium">| {new Date(mr.request_date).toLocaleDateString()}</span>
-                                                    <span className="text-slate-500 text-[10px] font-medium">| By: {mr.requester?.name}</span>
-                                                    {mr.remarks && <span className="text-slate-400 text-[10px] italic truncate max-w-sm">"{mr.remarks}"</span>}
-                                                </div>
-                                                <span className={`text-[10px] px-2 py-0.5 rounded font-bold border ${mr.status === 'PENDING' ? 'border-yellow-500/50 text-yellow-600 bg-yellow-500/5' : mr.status === 'APPROVED' ? 'border-emerald-500/50 text-emerald-600 bg-emerald-500/5' : 'border-slate-300 text-slate-500 bg-slate-100 dark:border-slate-600 dark:bg-slate-700'}`}>
-                                                    {mr.status}
-                                                </span>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {mr.items?.map(item => {
-                                        const matTotal = (Number(item.material_unit_price) || 0) * Number(item.quantity);
-                                        const labTotal = (Number(item.labor_unit_price) || 0) * Number(item.quantity);
-                                        const rowTotal = matTotal + labTotal;
-                                        return (
-                                            <tr key={item.id} className="border-b border-slate-100 dark:border-slate-700/30 hover:bg-slate-50 dark:hover:bg-slate-700/20 transition-colors">
-                                                <td className="p-4 pl-8 text-slate-900 dark:text-white relative">
-                                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 w-2 h-2 border-l border-b border-slate-300 dark:border-slate-600 rounded-bl-sm"></div>
-                                                    <div className="flex flex-col">
-                                                        <span>{item.item_description}</span>
-                                                        {item.boq_item_component && <span className="text-[9px] text-slate-400 uppercase tracking-tighter">Ref: {item.boq_item?.item_description}</span>}
-                                                    </div>
-                                                </td>
-                                                <td className="p-4 text-center text-slate-500 uppercase">{item.unit}</td>
-                                                <td className="p-4 text-center font-mono text-cyan-600">{item.quantity}</td>
-                                                <td className="p-4 text-right font-mono text-[11px] italic text-slate-500">{Number(item.material_unit_price).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                                <td className="p-4 text-right font-mono text-slate-700 dark:text-slate-300">{matTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                                <td className="p-4 text-right font-mono text-[11px] italic text-slate-500">{Number(item.labor_unit_price).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                                <td className="p-4 text-right font-mono text-slate-500">{labTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                                <td className="p-4 text-right font-mono text-emerald-600 font-bold">{rowTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                            </tr>
-                                        );
-                                    })}
-                                </React.Fragment>
-                            ))}
-                        </tbody>
-                    </table>
-                    {requests.length === 0 && (
-                        <div className="p-20 text-center">
-                            <Truck size={48} className="mx-auto text-slate-300 dark:text-slate-600 mb-4" />
-                            <p className="text-slate-400 uppercase tracking-widest font-bold">No Material Requests Found</p>
-                        </div>
-                    )}
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm relative z-0">
+                    <DataTable
+                        columns={columns}
+                        data={requests}
+                        showSearch={true}
+                        showPagination={true}
+                        onRowClick={(row) => { setSelectedMr(row); setShowDrawer(true); }}
+                    />
                 </div>
 
                 {/* Create MR Modal */}
@@ -270,7 +287,14 @@ export default function ProjectMaterialRequests() {
 
                             <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
                                 <div className="md:col-span-2">
-                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block tracking-wider">Item Description</label>
+                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 flex justify-between items-center tracking-wider">
+                                        <span>Item Description</span>
+                                        {selectedComponent && (
+                                            <span className="text-[9px] text-blue-600 bg-blue-50 dark:bg-blue-500/10 px-1.5 py-0.5 rounded shadow-sm">
+                                                Warehouse Qty: {warehouseQuantity}
+                                            </span>
+                                        )}
+                                    </label>
                                     <input className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white text-xs focus:border-blue-500 outline-none h-9" value={itemDescription} onChange={e => setItemDescription(e.target.value)} placeholder="Item description" />
                                 </div>
                                 <div>
@@ -347,7 +371,15 @@ export default function ProjectMaterialRequests() {
                                             <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-700/30">
                                                 <td className="p-3 pl-4">
                                                     <div className="font-medium text-slate-900 dark:text-white">{item.item_description}</div>
-                                                    {item.boq_item_id && <div className="text-[9px] text-slate-400">BOQ Linked</div>}
+                                                    {item.boq_item_id && (
+                                                        <div className="text-[9px] text-slate-400 flex items-center gap-1">
+                                                            <span>BOQ Linked</span>
+                                                            <span>&bull;</span>
+                                                            <span className="text-blue-500 font-bold">
+                                                                WH Qty: {(inventoryItems?.filter(i => String(i.material_name).trim().toLowerCase() === String(item.item_description).trim().toLowerCase()) || []).reduce((acc, current) => acc + Number(current.quantity), 0)}
+                                                            </span>
+                                                        </div>
+                                                    )}
                                                 </td>
                                                 <td className="p-3 text-center text-slate-500">{item.unit}</td>
                                                 <td className="p-3 text-center text-cyan-600 font-mono">{item.quantity}</td>
@@ -372,6 +404,94 @@ export default function ProjectMaterialRequests() {
                         </div>
                     </div>
                 </Modal>
+
+                {/* Drawer for MR Details */}
+                <Drawer
+                    isOpen={showDrawer}
+                    onClose={() => setShowDrawer(false)}
+                    title={selectedMr ? `MR-${selectedMr.id.toString().padStart(5, '0')} Details` : 'MR Details'}
+                >
+                    {selectedMr && (
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-[10px] uppercase font-bold text-slate-400">Requested By</label>
+                                    <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">{selectedMr.requester?.name || 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] uppercase font-bold text-slate-400">Date</label>
+                                    <p className="text-sm font-semibold text-slate-900 dark:text-white mt-1">{new Date(selectedMr.request_date).toLocaleDateString()}</p>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] uppercase font-bold text-slate-400">Status</label>
+                                    <div className="mt-1">
+                                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider ${selectedMr.status === 'PENDING' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : selectedMr.status === 'APPROVED' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-slate-500/10 text-slate-500 border-slate-500/20'}`}>{selectedMr.status}</span>
+                                    </div>
+                                </div>
+                                {selectedMr.remarks && (
+                                    <div className="col-span-2">
+                                        <label className="text-[10px] uppercase font-bold text-slate-400">Remarks</label>
+                                        <p className="text-sm text-slate-700 dark:text-slate-300 mt-1">{selectedMr.remarks}</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Items List */}
+                            <div>
+                                <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2 mb-3">
+                                    <Package size={14} className="text-blue-500" /> Requested Items
+                                </h3>
+
+                                {selectedMr.items?.length > 0 ? (
+                                    <div className="border border-slate-200 dark:border-slate-700/60 rounded-xl overflow-x-auto shadow-sm">
+                                        <table className="w-full text-left border-collapse">
+                                            <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-500 uppercase text-[9px] font-bold tracking-wider">
+                                                <tr>
+                                                    <th className="p-3">Item Description</th>
+                                                    <th className="p-3 text-center">Unit</th>
+                                                    <th className="p-3 text-center">Qty</th>
+                                                    <th className="p-3 text-right">Mat. Val</th>
+                                                    <th className="p-3 text-right">Lab. Val</th>
+                                                    <th className="p-3 text-right">Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+                                                {selectedMr.items.map(item => {
+                                                    const matTotal = (Number(item.material_unit_price) || 0) * Number(item.quantity);
+                                                    const labTotal = (Number(item.labor_unit_price) || 0) * Number(item.quantity);
+                                                    const rowTotal = matTotal + labTotal;
+                                                    return (
+                                                        <tr key={item.id} className="text-[11px] bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/30">
+                                                            <td className="p-3 font-medium text-slate-800 dark:text-slate-200">
+                                                                <div>{item.item_description}</div>
+                                                                {item.boq_item_component && <div className="text-[9px] text-slate-400 mt-1 uppercase">Ref: {item.boq_item?.item_description}</div>}
+                                                            </td>
+                                                            <td className="p-3 text-center text-slate-500 uppercase">{item.unit}</td>
+                                                            <td className="p-3 text-center font-mono text-cyan-600">{Number(item.quantity).toFixed(2)}</td>
+                                                            <td className="p-3 text-right font-mono text-slate-500">₱{matTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                                            <td className="p-3 text-right font-mono text-slate-500">₱{labTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                                            <td className="p-3 text-right font-mono font-bold text-emerald-600">₱{rowTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                                        </tr>
+                                                    )
+                                                })}
+                                            </tbody>
+                                        </table>
+                                        <div className="bg-slate-50 dark:bg-slate-800/80 px-3 py-2.5 border-t border-slate-200 dark:border-slate-700 text-right">
+                                            <span className="text-[10px] font-bold text-slate-500 uppercase mr-3">Total</span>
+                                            <span className="text-sm font-mono font-bold text-emerald-600">
+                                                ₱{selectedMr.items.reduce((sum, item) => sum + ((Number(item.material_unit_price) || 0) + (Number(item.labor_unit_price) || 0)) * Number(item.quantity), 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="p-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                                        <p className="text-slate-400 text-xs italic">No items listed.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </Drawer>
             </div>
         </AuthenticatedLayout>
     );

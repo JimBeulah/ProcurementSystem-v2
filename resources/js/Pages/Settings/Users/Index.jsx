@@ -167,6 +167,7 @@ export default function UsersIndex() {
         {
             accessorKey: 'name',
             header: 'User',
+            enableSorting: false,
             cell: ({ row }) => {
                 const u = row.original;
                 return (
@@ -185,6 +186,7 @@ export default function UsersIndex() {
         {
             accessorKey: 'username',
             header: 'Username',
+            enableSorting: false,
             cell: ({ getValue }) => (
                 <span className="font-mono text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded">
                     {getValue() || '—'}
@@ -194,6 +196,7 @@ export default function UsersIndex() {
         {
             accessorKey: 'role',
             header: 'Role',
+            enableSorting: false,
             cell: ({ getValue }) => {
                 const role = getValue();
                 return (
@@ -206,6 +209,7 @@ export default function UsersIndex() {
         {
             accessorKey: 'is_active',
             header: 'Status',
+            enableSorting: false,
             cell: ({ row }) => {
                 const u = row.original;
                 return (
@@ -231,6 +235,7 @@ export default function UsersIndex() {
         {
             id: 'actions',
             header: () => <div className="flex justify-center items-center w-full">Actions</div>,
+            enableSorting: false,
             cell: ({ row }) => {
                 const u = row.original;
                 return (
@@ -289,7 +294,7 @@ export default function UsersIndex() {
                 />
             )}
 
-            <div className="p-6 max-w-6xl mx-auto space-y-6">
+            <div className="max-w-7xl mx-auto space-y-6">
                 {/* Header */}
                 <header className="flex justify-between items-center">
                     <div>

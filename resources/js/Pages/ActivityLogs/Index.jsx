@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
-import { ScrollText, User, Clock, Tag, ChevronLeft, ChevronRight, ArrowLeftRight } from 'lucide-react';
+import { Head, Link, router } from '@inertiajs/react';
+import { ScrollText, User, Clock, Tag, ChevronLeft, ChevronRight, ArrowLeftRight, Filter, X } from 'lucide-react';
+import { DataTable } from '@/Components/UI/DataTable';
+import TextInput from '@/Components/TextInput';
+
+// ... (EVENT_BADGE, EventBadge, PropertyChanges, getModelName remain the same) ...
 
 const EVENT_BADGE = {
     created: { label: 'Created', classes: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' },
@@ -62,6 +66,162 @@ function getModelName(subjectType) {
 export default function ActivityLogsIndex({ logs }) {
     const { data, current_page, last_page, prev_page_url, next_page_url, total } = logs;
 
+    // Retrieve current query params from URL
+    const queryParams = new URLSearchParams(window.location.search);
+
+    const [filters, setFilters] = useState({
+        event: queryParams.get('event') || '',
+        date_from: queryParams.get('date_from') || '',
+        date_to: queryParams.get('date_to') || '',
+    });
+
+    const applyFilters = (newFilters) => {
+        setFilters(newFilters);
+        router.get(
+            '/activity-logs',
+            // Omit empty strings to clean up the URL
+            Object.fromEntries(Object.entries(newFilters).filter(([_, v]) => v !== '')),
+            { preserveState: true, preserveScroll: true, replace: true }
+        );
+    };
+
+    const handleFilterChange = (key, value) => {
+        applyFilters({ ...filters, [key]: value });
+    };
+
+    const resetFilters = () => {
+        applyFilters({ event: '', date_from: '', date_to: '' });
+    };
+
+    const hasActiveFilters = filters.event || filters.date_from || filters.date_to;
+
+    const columns = React.useMemo(() => [
+        {
+            accessorKey: 'created_at',
+            header: 'Date / Time',
+            enableSorting: true,
+            cell: ({ row }) => {
+                const log = row.original;
+                return (
+                    <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs whitespace-nowrap border-b-0 py-1">
+                        <Clock size={12} />
+                        {new Date(log.created_at).toLocaleString('en-PH', {
+                            dateStyle: 'medium', timeStyle: 'short',
+                        })}
+                    </div>
+                );
+            },
+        },
+        {
+            id: 'causer',
+            header: 'User',
+            enableSorting: false,
+            cell: ({ row }) => {
+                const log = row.original;
+                return (
+                    <div className="py-1">
+                        <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-200 font-medium text-xs">
+                            <User size={12} className="text-slate-400 shrink-0" />
+                            {log.causer?.name ?? <span className="italic text-slate-400">System</span>}
+                        </div>
+                        {log.causer?.email && (
+                            <div className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 pl-4">{log.causer.email}</div>
+                        )}
+                    </div>
+                );
+            }
+        },
+        {
+            accessorKey: 'event',
+            header: 'Action',
+            enableSorting: true,
+            cell: ({ row }) => {
+                const log = row.original;
+                return <EventBadge event={log.event} />;
+            }
+        },
+        {
+            id: 'subject',
+            header: 'Record',
+            enableSorting: false,
+            cell: ({ row }) => {
+                const log = row.original;
+                return (
+                    <div className="flex items-center gap-1.5 py-1">
+                        <Tag size={12} className="text-slate-400 shrink-0" />
+                        <span className="text-slate-700 dark:text-slate-200 font-medium text-xs truncate max-w-[150px]" title={getModelName(log.subject_type)}>
+                            {getModelName(log.subject_type)}
+                        </span>
+                        {log.subject_id && (
+                            <span className="text-slate-400 text-xs">#{log.subject_id}</span>
+                        )}
+                    </div>
+                );
+            }
+        },
+        {
+            id: 'properties',
+            header: 'Changes',
+            enableSorting: false,
+            cell: ({ row }) => {
+                const log = row.original;
+                return (
+                    <div className="py-1">
+                        <PropertyChanges properties={log.properties} />
+                    </div>
+                );
+            }
+        }
+    ], []);
+
+    const filterToolbar = (
+        <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+                <Filter size={16} className="text-slate-400" />
+                <select
+                    value={filters.event}
+                    onChange={(e) => handleFilterChange('event', e.target.value)}
+                    className="h-9 rounded-lg border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium text-slate-700 dark:text-slate-300 shadow-sm"
+                >
+                    <option value="">All Actions</option>
+                    <option value="created">Created</option>
+                    <option value="updated">Updated</option>
+                    <option value="deleted">Deleted</option>
+                    <option value="restored">Restored</option>
+                </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-slate-500 dark:text-slate-400">From</span>
+                <input
+                    type="date"
+                    value={filters.date_from}
+                    onChange={(e) => handleFilterChange('date_from', e.target.value)}
+                    className="h-9 rounded-lg border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium text-slate-700 dark:text-slate-300 shadow-sm"
+                />
+            </div>
+
+            <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-slate-500 dark:text-slate-400">To</span>
+                <input
+                    type="date"
+                    value={filters.date_to}
+                    onChange={(e) => handleFilterChange('date_to', e.target.value)}
+                    className="h-9 rounded-lg border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium text-slate-700 dark:text-slate-300 shadow-sm"
+                />
+            </div>
+
+            {hasActiveFilters && (
+                <button
+                    onClick={resetFilters}
+                    className="flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 px-2 py-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                    <X size={14} /> Clear Filters
+                </button>
+            )}
+        </div>
+    );
+
     return (
         <AuthenticatedLayout>
             <Head title="Activity Logs" />
@@ -78,74 +238,14 @@ export default function ActivityLogsIndex({ logs }) {
                 </header>
 
                 {/* Table */}
-                <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead>
-                                <tr className="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60">
-                                    <th className="text-left px-5 py-3 font-semibold text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wide">Date / Time</th>
-                                    <th className="text-left px-5 py-3 font-semibold text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wide">User</th>
-                                    <th className="text-left px-5 py-3 font-semibold text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wide">Action</th>
-                                    <th className="text-left px-5 py-3 font-semibold text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wide">Record</th>
-                                    <th className="text-left px-5 py-3 font-semibold text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wide">Changes</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                                {data.length === 0 && (
-                                    <tr>
-                                        <td colSpan={5} className="px-5 py-12 text-center text-slate-400 dark:text-slate-500">
-                                            No activity logged yet.
-                                        </td>
-                                    </tr>
-                                )}
-                                {data.map((log) => (
-                                    <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                                        {/* Date */}
-                                        <td className="px-5 py-4 align-top whitespace-nowrap">
-                                            <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs">
-                                                <Clock size={12} />
-                                                {new Date(log.created_at).toLocaleString('en-PH', {
-                                                    dateStyle: 'medium', timeStyle: 'short',
-                                                })}
-                                            </div>
-                                        </td>
-
-                                        {/* User */}
-                                        <td className="px-5 py-4 align-top">
-                                            <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-200 font-medium text-xs">
-                                                <User size={12} className="text-slate-400 shrink-0" />
-                                                {log.causer?.name ?? <span className="italic text-slate-400">System</span>}
-                                            </div>
-                                            {log.causer?.email && (
-                                                <div className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 pl-4">{log.causer.email}</div>
-                                            )}
-                                        </td>
-
-                                        {/* Action */}
-                                        <td className="px-5 py-4 align-top">
-                                            <EventBadge event={log.event} />
-                                        </td>
-
-                                        {/* Record */}
-                                        <td className="px-5 py-4 align-top">
-                                            <div className="flex items-center gap-1.5">
-                                                <Tag size={12} className="text-slate-400 shrink-0" />
-                                                <span className="text-slate-700 dark:text-slate-200 font-medium text-xs">{getModelName(log.subject_type)}</span>
-                                                {log.subject_id && (
-                                                    <span className="text-slate-400 text-xs">#{log.subject_id}</span>
-                                                )}
-                                            </div>
-                                        </td>
-
-                                        {/* Changes */}
-                                        <td className="px-5 py-4 align-top max-w-xs">
-                                            <PropertyChanges properties={log.properties} />
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm">
+                    <DataTable
+                        columns={columns}
+                        data={data}
+                        showSearch={true}
+                        showPagination={false}
+                        customToolbar={filterToolbar}
+                    />
                 </div>
 
                 {/* Pagination */}

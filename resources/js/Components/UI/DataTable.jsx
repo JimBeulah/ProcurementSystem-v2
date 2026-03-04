@@ -26,7 +26,9 @@ export function DataTable({
     showSearch = true,
     enableSelection = false,
     onRowSelectionChange,
+    onRowClick,
     customToolbar,
+    leftToolbar,
 }) {
     const [sorting, setSorting] = useState([]);
     const [globalFilter, setGlobalFilter] = useState('');
@@ -96,30 +98,33 @@ export function DataTable({
 
             {/* Toolbar: Search and Table Actions */}
             <div className="flex flex-wrap items-center justify-between gap-4">
-                {/* Left side: Custom content (Filters, etc) */}
-                <div className="flex items-center gap-3 flex-1">
+                {/* Left side: Search and leftToolbar */}
+                <div className="flex items-center gap-3 flex-1 flex-wrap">
+                    {showSearch && (
+                        <div className="w-full max-w-sm relative group">
+                            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                                <Search size={16} />
+                            </div>
+                            <TextInput
+                                placeholder="Search all columns..."
+                                value={globalFilter ?? ''}
+                                onChange={(e) => setGlobalFilter(e.target.value)}
+                                className="pl-10 h-9"
+                            />
+                        </div>
+                    )}
+                    {leftToolbar}
+                </div>
+
+                {/* Right side: Custom content (Filters, etc) */}
+                <div className="flex items-center justify-end gap-3 flex-wrap">
                     {customToolbar}
                     {enableSelection && Object.keys(rowSelection).length > 0 && (
-                        <span className="text-sm text-slate-500 dark:text-slate-400">
+                        <span className="text-sm text-slate-500 dark:text-slate-400 ml-2 whitespace-nowrap">
                             {Object.keys(rowSelection).length} row(s) selected
                         </span>
                     )}
                 </div>
-
-                {/* Right side: Search */}
-                {showSearch && (
-                    <div className="w-full max-w-sm relative group">
-                        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                            <Search size={16} />
-                        </div>
-                        <TextInput
-                            placeholder="Search all columns..."
-                            value={globalFilter ?? ''}
-                            onChange={(e) => setGlobalFilter(e.target.value)}
-                            className="pl-10"
-                        />
-                    </div>
-                )}
             </div>
 
             {/* The Table */}
@@ -165,6 +170,8 @@ export function DataTable({
                             <TableRow
                                 key={row.id}
                                 data-state={row.getIsSelected() && "selected"}
+                                onClick={() => onRowClick && onRowClick(row.original)}
+                                className={onRowClick ? "cursor-pointer" : ""}
                             >
                                 {row.getVisibleCells().map((cell) => (
                                     <TableCell key={cell.id}>

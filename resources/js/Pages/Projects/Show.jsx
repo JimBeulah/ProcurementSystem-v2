@@ -66,14 +66,6 @@ export default function ProjectShow() {
                 <header className="relative">
                     <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                         <div className="space-y-1">
-                            {/* Breadcrumbs */}
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground/60 mb-3 font-medium">
-                                <Link href="/dashboard" className="hover:text-foreground transition-colors">Dashboard</Link>
-                                <span className="text-muted-foreground/30">/</span>
-                                <Link href="/projects" className="hover:text-foreground transition-colors">Projects</Link>
-                                <span className="text-muted-foreground/30">/</span>
-                                <span className="text-foreground">{project.code || 'Details'}</span>
-                            </div>
 
                             <motion.h1
                                 initial={{ opacity: 0, y: 10 }}
