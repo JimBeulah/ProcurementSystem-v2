@@ -94,7 +94,7 @@ export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleColl
                         ? "hidden"
                         : (isCollapsed ? "collapsed" : "expanded")
                 }
-                initial="hidden"
+                initial={false}
             >
                 {/* Logo */}
                 <div className={`flex items-center h-16 px-4 border-b border-black/5 dark:border-white/5 relative ${isCollapsed ? 'justify-center' : 'justify-between'} shrink-0`}>
@@ -103,7 +103,7 @@ export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleColl
                             <motion.div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20">
                                 <Hexagon className="text-white fill-white/20" size={18} />
                             </motion.div>
-                            <AnimatePresence>
+                            <AnimatePresence initial={false}>
                                 {!isCollapsed && (
                                     <motion.div
                                         initial={{ opacity: 0, width: 0 }}
@@ -216,7 +216,7 @@ export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleColl
                                     <LogOut size={22} strokeWidth={2} />
                                 </span>
                             </div>
-                            <AnimatePresence>
+                            <AnimatePresence initial={false}>
                                 {!isCollapsed && (
                                     <motion.span
                                         initial={{ opacity: 0, x: -5 }}
@@ -271,7 +271,7 @@ function NavItem({ href, icon, label, isActive, isCollapsed, onClick, onHover, b
                     </span>
                 </div>
 
-                <AnimatePresence>
+                <AnimatePresence initial={false}>
                     {!isCollapsed && (
                         <motion.span
                             initial={{ opacity: 0, x: -5 }}
@@ -285,7 +285,7 @@ function NavItem({ href, icon, label, isActive, isCollapsed, onClick, onHover, b
                 </AnimatePresence>
                 {!isCollapsed && badge > 0 && (
                     <motion.div
-                        initial={{ scale: 0 }}
+                        initial={false}
                         animate={{ scale: 1 }}
                         className="ml-auto bg-red-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full min-w-[24px] flex items-center justify-center leading-none shadow-sm"
                     >

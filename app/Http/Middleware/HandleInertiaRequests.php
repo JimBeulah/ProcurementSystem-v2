@@ -38,6 +38,12 @@ class HandleInertiaRequests extends Middleware
                 'notifications_count' => $request->user() ? $request->user()->unreadNotifications()->count() : 0,
                 'notifications' => $request->user() ? $request->user()->notifications()->take(5)->get() : [],
             ],
+            'search_projects' => ($request->user() && $request->user()->can('view projects'))
+                ? \App\Models\Project::forUser($request->user())
+                    ->select('id', 'name')
+                    ->orderBy('created_at', 'desc')
+                    ->get()
+                : [],
             'sidebar_badges' => [
                 'requests' => $request->user() && $request->user()->can('view purchase requests') ? \App\Models\PurchaseRequest::where('status', 'PENDING')->count() : 0,
                 'rfqs' => $request->user() && $request->user()->can('view rfq') ? \App\Models\Rfq::where('status', 'OPEN')->count() : 0,

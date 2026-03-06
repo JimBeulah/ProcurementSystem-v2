@@ -3,9 +3,10 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
     Briefcase, ClipboardList, Truck, ShoppingCart, ArrowRight,
-    MapPin, Building, PhilippinePeso, Calendar, Activity
+    MapPin, Building, PhilippinePeso, Calendar, Activity, Command
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Card } from '@/Components/UI/Card';
 
 export default function ProjectShow() {
     const { project, auth } = usePage().props;
@@ -57,135 +58,167 @@ export default function ProjectShow() {
         },
     ].filter(mod => !(isSiteEngineer && mod.hideForSiteEngineer));
 
+    const stats = [
+        { label: 'Budget', value: Number(project.budget || 0).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' }), icon: PhilippinePeso, color: 'text-emerald-500', hideForSiteEngineer: true },
+        { label: 'Total Profit', value: Number(project.total_profit || 0).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' }), icon: Activity, color: 'text-purple-500', hideForSiteEngineer: true },
+        { label: 'BOQ Items', value: project.boq_items?.length || 0, icon: ClipboardList, color: 'text-orange-500', hideForSiteEngineer: true },
+        { label: 'Material Req', value: project.material_requests?.length || 0, icon: Truck, color: 'text-blue-500' },
+        { label: 'Purchases', value: project.purchase_orders?.length || 0, icon: ShoppingCart, color: 'text-teal-500', hideForSiteEngineer: true },
+    ].filter(stat => !(isSiteEngineer && stat.hideForSiteEngineer));
+
     return (
         <AuthenticatedLayout>
             <Head title={project.name} />
 
-            <div className="max-w-7xl mx-auto space-y-8">
-                {/* Header Section */}
-                <header className="relative">
-                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                        <div className="space-y-1">
-
-                            <motion.h1
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="text-4xl font-bold text-foreground tracking-tight"
-                            >
-                                {project.name}
-                            </motion.h1>
-
-                            <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.1 }}
-                                className="flex flex-wrap items-center gap-4 pt-2 text-sm text-muted-foreground"
-                            >
-                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/5 dark:bg-white/5 backdrop-blur-md border border-black/5 dark:border-white/5">
-                                    <Building size={14} className="opacity-70" />
-                                    <span>{project.client?.name || 'Internal Project'}</span>
-                                </div>
-                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/5 dark:bg-white/5 backdrop-blur-md border border-black/5 dark:border-white/5">
-                                    <MapPin size={14} className="opacity-70" />
-                                    <span>{project.location || 'No Location'}</span>
-                                </div>
-                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/5 dark:bg-white/5 backdrop-blur-md border border-black/5 dark:border-white/5">
-                                    <ClipboardList size={14} className="opacity-70" />
-                                    <span>{project.contract_type || 'No Contract Type'}</span>
-                                </div>
-                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/5 dark:bg-white/5 backdrop-blur-md border border-black/5 dark:border-white/5">
-                                    <Calendar size={14} className="opacity-70" />
-                                    <span>
-                                        {project.target_start_date ? new Date(project.target_start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'}
-                                        {' - '}
-                                        {project.target_end_date ? new Date(project.target_end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'}
-                                    </span>
-                                </div>
-                            </motion.div>
-                        </div>
-
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className={`px-4 py-1.5 rounded-full text-sm font-semibold border backdrop-blur-md shadow-sm self-start
-                                ${project.status === 'ACTIVE'
-                                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'}`}
+            <div className="max-w-7xl mx-auto space-y-6">
+                {/* 1. Page Header */}
+                <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                        <motion.h1
+                            initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                            className="text-3xl font-bold text-foreground tracking-tight flex items-center gap-3"
                         >
-                            <span className="flex items-center gap-1.5">
-                                <span className={`w-2 h-2 rounded-full ${project.status === 'ACTIVE' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
-                                {project.status}
-                            </span>
-                        </motion.div>
+                            <div className="p-2 bg-black/5 dark:bg-white/5 rounded-lg border border-black/5 dark:border-white/5">
+                                <Briefcase size={22} className="opacity-70" />
+                            </div>
+                            {project.name}
+                        </motion.h1>
                     </div>
+                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+                        <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold border backdrop-blur-md shadow-sm ${project.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'}`}>
+                            <span className={`w-2 h-2 rounded-full ${project.status === 'ACTIVE' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                            {project.status}
+                        </span>
+                    </motion.div>
                 </header>
 
-                {/* Stats Grid - Glass Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {[
-                        { label: 'Budget', value: Number(project.budget).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' }), icon: PhilippinePeso, color: 'text-emerald-500', hideForSiteEngineer: true },
-                        { label: 'Total Profit', value: Number(project.total_profit || 0).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' }), icon: Activity, color: 'text-purple-500', hideForSiteEngineer: true },
-                        { label: 'BOQ Items', value: project.boq_items?.length || 0, icon: ClipboardList, color: 'text-orange-500', hideForSiteEngineer: true },
-                        { label: 'Material Requests', value: project.material_requests?.length || 0, icon: Truck, color: 'text-blue-500' },
-                        { label: 'Purchase Orders', value: project.purchase_orders?.length || 0, icon: ShoppingCart, color: 'text-purple-500', hideForSiteEngineer: true },
-                    ].filter(stat => !(isSiteEngineer && stat.hideForSiteEngineer))
-                        .map((stat, i) => (
-                            <motion.div
-                                key={stat.label}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.1 + (i * 0.05) }}
-                                className="relative overflow-hidden p-5 rounded-2xl bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-black/5 dark:border-white/5 shadow-sm group hover:shadow-md transition-all"
-                            >
-                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-110 duration-500">
-                                    <stat.icon size={64} />
-                                </div>
-                                <div className="flex flex-col relative z-10">
-                                    <span className="text-sm font-medium text-muted-foreground/80">{stat.label}</span>
-                                    <span className="text-2xl font-bold text-foreground mt-1 tracking-tight">{stat.value}</span>
-                                </div>
-                            </motion.div>
-                        ))}
-                </div>
+                {/* 2. SaaS Grid Layout */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
-                {/* Modules Navigation */}
-                <div className="pt-2">
-                    <h2 className="text-lg font-bold text-foreground mb-4 px-1">Project Modules</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {modules.map((mod, i) => {
-                            const Icon = mod.icon;
-                            return (
-                                <Link key={mod.title} href={mod.href}>
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.2 + (i * 0.05) }}
-                                        whileHover={{ y: -4, scale: 1.01 }}
-                                        className="h-full bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:shadow-black/5 dark:hover:shadow-white/5 transition-all duration-300 group relative overflow-hidden"
-                                    >
-                                        <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${mod.color} opacity-5 rounded-bl-[100px] transition-all group-hover:scale-110 duration-700`} />
-
-                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${mod.bg} group-hover:scale-110 transition-transform duration-300`}>
-                                            <Icon size={24} className={mod.iconColor} />
+                    {/* LEFT COLUMN: Main Workspace Area */}
+                    <div className="lg:col-span-2 space-y-6">
+                        {/* Stats Row */}
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {stats.map((stat, i) => (
+                                <motion.div key={stat.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + (i * 0.05) }}>
+                                    <Card className="flex flex-col gap-2 p-4 h-full relative overflow-hidden group">
+                                        <div className="flex items-center justify-between text-muted-foreground/80 relative z-10">
+                                            <span className="text-xs font-semibold uppercase tracking-wider">{stat.label}</span>
+                                            <stat.icon size={16} className={`${stat.color} opacity-80`} />
                                         </div>
-
-                                        <h3 className="text-xl font-bold text-foreground mb-2 tracking-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                                            {mod.title}
-                                        </h3>
-
-                                        <p className="text-sm text-muted-foreground leading-relaxed mb-6">
-                                            {mod.description}
-                                        </p>
-
-                                        <div className="flex items-center text-sm font-semibold text-foreground/80 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors mt-auto">
-                                            Access Module
-                                            <ArrowRight size={16} className="ml-2 transform group-hover:translate-x-1 transition-transform" />
+                                        <div className="text-2xl font-bold text-foreground tracking-tight relative z-10 truncate">
+                                            {stat.value}
                                         </div>
-                                    </motion.div>
-                                </Link>
-                            );
-                        })}
+                                        <div className="absolute -bottom-4 -right-4 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity duration-500">
+                                            <stat.icon size={64} />
+                                        </div>
+                                    </Card>
+                                </motion.div>
+                            ))}
+                        </div>
+
+                        {/* Modules / Workspaces */}
+                        <div className="space-y-4 pt-2">
+                            <h2 className="text-lg font-bold text-foreground px-1 flex items-center gap-2">
+                                <Command size={18} className="opacity-50 text-blue-500" />
+                                Project Workspaces
+                            </h2>
+                            <div className="grid grid-cols-1 gap-3">
+                                {modules.map((mod, i) => {
+                                    const Icon = mod.icon;
+                                    return (
+                                        <Link key={mod.title} href={mod.href} className="block group">
+                                            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 + (i * 0.05) }}>
+                                                <Card hoverEffect className="flex flex-col sm:flex-row sm:items-center justify-between p-4 group-hover:border-blue-500/30 transition-all gap-4">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className={`w-12 h-12 shrink-0 rounded-xl flex items-center justify-center ${mod.bg} transition-transform duration-300 group-hover:scale-105`}>
+                                                            <Icon size={24} className={mod.iconColor} />
+                                                        </div>
+                                                        <div>
+                                                            <h3 className="text-base font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                                                {mod.title}
+                                                            </h3>
+                                                            <p className="text-sm text-muted-foreground mt-0.5">
+                                                                {mod.description}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="hidden sm:flex items-center gap-2 text-sm font-semibold text-muted-foreground/60 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors bg-black/5 dark:bg-white/5 px-3 py-1.5 rounded-lg border border-black/5 dark:border-white/5 shrink-0 whitespace-nowrap">
+                                                        Access Workspace
+                                                        <ArrowRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
+                                                    </div>
+                                                </Card>
+                                            </motion.div>
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        </div>
                     </div>
+
+                    {/* RIGHT COLUMN: Sidebar Details */}
+                    <div className="lg:col-span-1 space-y-6 relative">
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="sticky top-6">
+                            <Card className="p-5">
+                                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4 border-b border-black/5 dark:border-white/5 pb-3 flex items-center gap-2">
+                                    <Activity size={14} />
+                                    About Project
+                                </h3>
+
+                                <dl className="space-y-4">
+                                    <div className="group">
+                                        <dt className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-1">
+                                            <Building size={14} className="opacity-70 group-hover:text-blue-500 transition-colors" />
+                                            Client / Owner
+                                        </dt>
+                                        <dd className="text-sm font-semibold text-foreground pl-6">
+                                            {project.client?.name || 'Internal Project'}
+                                        </dd>
+                                    </div>
+
+                                    <div className="group">
+                                        <dt className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-1">
+                                            <MapPin size={14} className="opacity-70 group-hover:text-amber-500 transition-colors" />
+                                            Location
+                                        </dt>
+                                        <dd className="text-sm font-semibold text-foreground pl-6">
+                                            {project.location || 'No Location specified'}
+                                        </dd>
+                                    </div>
+
+                                    <div className="group">
+                                        <dt className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-1">
+                                            <ClipboardList size={14} className="opacity-70 group-hover:text-emerald-500 transition-colors" />
+                                            Contract Type
+                                        </dt>
+                                        <dd className="text-sm font-semibold text-foreground pl-6">
+                                            {project.contract_type || 'N/A'}
+                                        </dd>
+                                    </div>
+
+                                    <div className="group">
+                                        <dt className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-1">
+                                            <Calendar size={14} className="opacity-70 group-hover:text-purple-500 transition-colors" />
+                                            Timeline
+                                        </dt>
+                                        <dd className="text-sm font-semibold text-foreground pl-6">
+                                            <div className="flex flex-col gap-1">
+                                                <div className="flex items-center justify-between bg-black/5 dark:bg-white/5 px-2 py-1 rounded">
+                                                    <span className="text-xs text-muted-foreground">Start</span>
+                                                    <span>{project.target_start_date ? new Date(project.target_start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between bg-black/5 dark:bg-white/5 px-2 py-1 rounded">
+                                                    <span className="text-xs text-muted-foreground">End</span>
+                                                    <span>{project.target_end_date ? new Date(project.target_end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'}</span>
+                                                </div>
+                                            </div>
+                                        </dd>
+                                    </div>
+                                </dl>
+                            </Card>
+                        </motion.div>
+                    </div>
+
                 </div>
             </div>
         </AuthenticatedLayout>

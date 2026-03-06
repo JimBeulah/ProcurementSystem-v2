@@ -91,14 +91,24 @@ export default function ProjectBoq() {
         setLoading(true);
         const { mode, parentItem, data } = resourceModal;
 
+        let quantityFactor = data.quantity_factor !== undefined && data.quantity_factor !== '' ? Number(data.quantity_factor) : 0;
+
+        // If not MATERIAL, calculate factor: (Persons * Hours) / ItemQuantity
+        if (data.resource_type !== 'MATERIAL') {
+            const persons = data.no_of_persons !== undefined && data.no_of_persons !== '' ? Number(data.no_of_persons) : 0;
+            const hours = data.hours !== undefined && data.hours !== '' ? Number(data.hours) : 0;
+            const itemQty = Number(parentItem.quantity) || 1;
+            quantityFactor = (persons * hours) / itemQty;
+        }
+
         const payload = {
             resourceType: data.resource_type,
             name: data.name,
-            quantityFactor: data.quantity_factor,
-            clientUnitRate: data.client_unit_rate || data.unit_rate, // Support both for now, but UI will set client_unit_rate
-            altapilUnitRate: data.altapil_unit_rate,
-            noOfPersons: data.no_of_persons,
-            hours: data.hours,
+            quantityFactor: quantityFactor,
+            clientUnitRate: data.client_unit_rate !== undefined && data.client_unit_rate !== '' ? Number(data.client_unit_rate) : (data.unit_rate !== undefined && data.unit_rate !== '' ? Number(data.unit_rate) : 0),
+            altapilUnitRate: data.altapil_unit_rate !== undefined && data.altapil_unit_rate !== '' ? Number(data.altapil_unit_rate) : 0,
+            noOfPersons: data.no_of_persons !== undefined && data.no_of_persons !== '' ? Number(data.no_of_persons) : 0,
+            hours: data.hours !== undefined && data.hours !== '' ? Number(data.hours) : 0,
         };
 
         if (mode === 'add') {
@@ -108,7 +118,11 @@ export default function ProjectBoq() {
                     setResourceModal({ ...resourceModal, open: false });
                     setLoading(false);
                 },
-                onError: () => setLoading(false)
+                onError: (errors) => {
+                    toast.error('Failed to add resource. Please check the inputs.');
+                    console.error('Add Resource Error:', errors);
+                    setLoading(false);
+                }
             });
         } else {
             router.put(`/projects/${project.id}/boq/components/${data.id}`, payload, {
@@ -117,7 +131,11 @@ export default function ProjectBoq() {
                     setResourceModal({ ...resourceModal, open: false });
                     setLoading(false);
                 },
-                onError: () => setLoading(false)
+                onError: (errors) => {
+                    toast.error('Failed to update resource. Please check the inputs.');
+                    console.error('Update Resource Error:', errors);
+                    setLoading(false);
+                }
             });
         }
     };
@@ -555,9 +573,16 @@ export default function ProjectBoq() {
                     title={
                         <div className="flex flex-col">
                             <span className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">{drawerItem?.item_description}</span>
-                            <span className="text-[10px] text-slate-500 font-medium font-mono border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded-md w-fit mt-1 bg-white dark:bg-slate-800">
-                                DUPA / RESOURCES
-                            </span>
+                            <div className="flex items-center gap-2 mt-1">
+                                <span className="text-[10px] text-slate-500 font-medium font-mono border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded-md w-fit bg-white dark:bg-slate-800">
+                                    DUPA / RESOURCES
+                                </span>
+                                {drawerItem?.quantity && drawerItem?.unit && (
+                                    <span className="text-[10px] text-cyan-700 dark:text-cyan-400 font-bold font-mono border border-cyan-200 dark:border-cyan-800 bg-cyan-50 dark:bg-cyan-900/30 px-1.5 py-0.5 rounded-md w-fit">
+                                        QTY: {drawerItem.quantity} {drawerItem.unit}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     }
                 >
@@ -625,8 +650,13 @@ export default function ProjectBoq() {
 
                                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 text-[11px]">
                                                 <div className="bg-white dark:bg-slate-900/40 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
-                                                    <span className="block text-slate-400 uppercase tracking-wider font-bold text-[9px] mb-1">Factor</span>
-                                                    <span className="font-mono text-slate-700 dark:text-slate-300 font-medium">{Number(comp.quantity_factor).toFixed(4)}</span>
+                                                    <span className="block text-slate-400 uppercase tracking-wider font-bold text-[9px] mb-1">Qty Factor</span>
+                                                    <span className="font-mono text-slate-700 dark:text-slate-300 font-medium">
+                                                        {comp.resource_type === 'MATERIAL'
+                                                            ? new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(Number(comp.quantity_factor))
+                                                            : new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(((Number(comp.no_of_persons) || 0) * (Number(comp.hours) || 0)) / (Number(drawerItem?.quantity) || 1))
+                                                        }
+                                                    </span>
                                                 </div>
                                                 <div className="bg-white dark:bg-slate-900/40 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
                                                     <span className="block text-slate-400 uppercase tracking-wider font-bold text-[9px] mb-1">Client Rate</span>
@@ -832,40 +862,57 @@ export default function ProjectBoq() {
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">
-                                    {resourceModal.data?.resource_type === 'MATERIAL' ? 'Quantity Factor' : 'No. of Persons'}
-                                </label>
-                                <input
-                                    type="number"
-                                    step="0.0001"
-                                    required
-                                    value={resourceModal.data?.resource_type === 'MATERIAL' ? (resourceModal.data?.quantity_factor || '') : (resourceModal.data?.no_of_persons || '')}
-                                    onChange={e => {
-                                        const val = e.target.value;
-                                        if (resourceModal.data?.resource_type === 'MATERIAL') {
-                                            setResourceModal({ ...resourceModal, data: { ...resourceModal.data, quantity_factor: val } });
-                                        } else {
-                                            setResourceModal({ ...resourceModal, data: { ...resourceModal.data, no_of_persons: val } });
-                                        }
-                                    }}
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all font-mono"
-                                />
-                            </div>
-                            {resourceModal.data?.resource_type !== 'MATERIAL' && (
+                            {resourceModal.data?.resource_type === 'MATERIAL' ? (
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Hours</label>
+                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">
+                                        Quantity Factor
+                                    </label>
                                     <input
                                         type="number"
-                                        step="0.01"
+                                        step="0.0001"
                                         required
-                                        value={resourceModal.data?.hours || ''}
-                                        onChange={e => setResourceModal({ ...resourceModal, data: { ...resourceModal.data, hours: e.target.value } })}
+                                        value={resourceModal.data?.quantity_factor || ''}
+                                        onChange={e => setResourceModal({ ...resourceModal, data: { ...resourceModal.data, quantity_factor: e.target.value } })}
                                         className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all font-mono"
                                     />
                                 </div>
+                            ) : (
+                                <>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">No. of Persons</label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            required
+                                            value={resourceModal.data?.no_of_persons !== undefined ? resourceModal.data.no_of_persons : ''}
+                                            onChange={e => setResourceModal({ ...resourceModal, data: { ...resourceModal.data, no_of_persons: e.target.value } })}
+                                            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all font-mono"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Hours</label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            required
+                                            value={resourceModal.data?.hours !== undefined ? resourceModal.data.hours : ''}
+                                            onChange={e => setResourceModal({ ...resourceModal, data: { ...resourceModal.data, hours: e.target.value } })}
+                                            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all font-mono"
+                                        />
+                                    </div>
+                                </>
                             )}
                         </div>
+
+                        {resourceModal.data?.resource_type !== 'MATERIAL' && (
+                            <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                                <span className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Calculated Quantity Factor</span>
+                                <div className="font-mono text-sm text-slate-700 dark:text-slate-300 font-bold">
+                                    {(((Number(resourceModal.data?.no_of_persons) || 0) * (Number(resourceModal.data?.hours) || 0)) / (Number(drawerItem?.quantity) || 1)).toFixed(4)}
+                                    <span className="text-[10px] text-slate-400 font-medium ml-2">((Persons × Hours) / Base Qty)</span>
+                                </div>
+                            </div>
+                        )}
 
                         <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-700/50">
                             <button type="button" onClick={() => setResourceModal({ ...resourceModal, open: false })} className="px-5 py-2.5 text-xs font-bold uppercase text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">Cancel</button>

@@ -1,14 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
 import { Bell, Search, Menu, LogOut, ChevronDown, Settings, ChevronRight, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from '@/Components/UI/ThemeToggle';
+import GlobalSearch from '@/Components/ui/GlobalSearch';
 
 export default function Header({ user, onMenuClick }) {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
     const { url } = usePage();
     const { auth } = usePage().props;
+
+    // Listen for Ctrl+K OR Cmd+K to toggle global search
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                setIsSearchOpen((prev) => !prev);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     // Generate breadcrumbs from URL
     const { project } = usePage().props;
@@ -71,17 +86,16 @@ export default function Header({ user, onMenuClick }) {
                     {/* Search - Spotlight Style */}
                     <motion.div
                         initial={false}
-                        className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/[0.03] dark:bg-white/[0.05] border border-black/[0.05] dark:border-white/[0.05] focus-within:bg-white/80 dark:focus-within:bg-white/[0.1] focus-within:shadow-sm focus-within:ring-2 focus-within:ring-black/[0.05] dark:focus-within:ring-white/[0.05] transition-all duration-300 w-64 group backdrop-blur-sm"
+                        onClick={() => setIsSearchOpen(true)}
+                        className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/[0.03] dark:bg-white/[0.05] border border-black/[0.05] dark:border-white/[0.05] focus-within:bg-white/80 dark:focus-within:bg-white/[0.1] focus-within:shadow-sm focus-within:ring-2 focus-within:ring-black/[0.05] dark:focus-within:ring-white/[0.05] transition-all duration-300 w-64 group backdrop-blur-sm cursor-pointer"
                     >
                         <Search size={14} className="text-muted-foreground/60 group-focus-within:text-foreground/80 transition-colors" />
                         <input
                             type="text"
+                            readOnly
                             placeholder="Search..."
-                            className="bg-transparent border-none outline-none text-[13px] text-foreground placeholder:text-muted-foreground/50 w-full focus:ring-0 p-0 h-auto font-medium"
+                            className="bg-transparent border-none outline-none text-[13px] text-foreground placeholder:text-muted-foreground/50 w-full focus:ring-0 p-0 h-auto font-medium cursor-pointer"
                         />
-                        <div className="pointer-events-none hidden h-5 select-none items-center gap-0.5 rounded bg-white/50 dark:bg-black/20 border border-black/[0.08] dark:border-white/[0.08] border-b-[2px] px-1.5 font-mono text-[10px] font-bold text-muted-foreground/70 opacity-70 group-hover:opacity-100 transition-opacity sm:flex shadow-sm">
-                            <span className="text-xs">⌘</span>K
-                        </div>
                     </motion.div>
 
                     <div className="h-6 w-px bg-border/40 mx-1" />
@@ -192,6 +206,8 @@ export default function Header({ user, onMenuClick }) {
                     </div>
                 </div>
             </div>
+
+            <GlobalSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
         </header>
     );
 }
