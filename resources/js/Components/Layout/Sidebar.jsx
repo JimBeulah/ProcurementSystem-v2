@@ -97,43 +97,45 @@ export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleColl
                 initial={false}
             >
                 {/* Logo */}
-                <div className={`flex items-center h-16 px-4 border-b border-black/5 dark:border-white/5 relative ${isCollapsed ? 'justify-center' : 'justify-between'} shrink-0`}>
-                    <div className="flex items-center gap-3 overflow-hidden">
-                        <Link href="/dashboard" className="flex items-center gap-3">
-                            <motion.div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20">
-                                <Hexagon className="text-white fill-white/20" size={18} />
-                            </motion.div>
-                            <AnimatePresence initial={false}>
-                                {!isCollapsed && (
-                                    <motion.div
-                                        initial={{ opacity: 0, width: 0 }}
-                                        animate={{ opacity: 1, width: "auto" }}
-                                        exit={{ opacity: 0, width: 0 }}
-                                        className="overflow-hidden"
-                                    >
-                                        <h1 className="text-lg font-bold text-foreground tracking-tight whitespace-nowrap">
-                                            ProcureFlow
-                                        </h1>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </Link>
+                <div className="border-b border-black/5 dark:border-white/5 shrink-0">
+                    <div className={`flex items-center h-14 px-4 relative ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+                        <div className="flex items-center gap-3 overflow-hidden">
+                            <Link href="/dashboard" className="flex items-center gap-3">
+                                <motion.div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20">
+                                    <Hexagon className="text-white fill-white/20" size={18} />
+                                </motion.div>
+                                <AnimatePresence initial={false}>
+                                    {!isCollapsed && (
+                                        <motion.div
+                                            initial={{ opacity: 0, width: 0 }}
+                                            animate={{ opacity: 1, width: "auto" }}
+                                            exit={{ opacity: 0, width: 0 }}
+                                            className="overflow-hidden"
+                                        >
+                                            <h1 className="text-lg font-bold text-foreground tracking-tight whitespace-nowrap">
+                                                ProcureFlow
+                                            </h1>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </Link>
+                        </div>
+
+                        {/* Collapse toggle */}
+                        <motion.button
+                            onClick={toggleCollapse}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="hidden md:flex p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/10 transition-colors absolute -right-3 top-20 bg-card border border-border shadow-sm z-50"
+                        >
+                            {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={16} />}
+                        </motion.button>
+
+                        {/* Mobile close */}
+                        <button onClick={onClose} className="md:hidden p-1 text-muted-foreground hover:text-foreground absolute right-4">
+                            <X size={20} />
+                        </button>
                     </div>
-
-                    {/* Collapse toggle */}
-                    <motion.button
-                        onClick={toggleCollapse}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="hidden md:flex p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/10 transition-colors absolute -right-3 top-20 bg-card border border-border shadow-sm z-50"
-                    >
-                        {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={16} />}
-                    </motion.button>
-
-                    {/* Mobile close */}
-                    <button onClick={onClose} className="md:hidden p-1 text-muted-foreground hover:text-foreground absolute right-4">
-                        <X size={20} />
-                    </button>
                 </div>
 
                 {/* Navigation (Parent Links Only) */}

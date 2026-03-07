@@ -5,7 +5,17 @@ import FlashNotifications from '@/Components/FlashNotifications';
 import { ThemeToggle } from '@/Components/UI/ThemeToggle';
 import ParticleCanvas from '@/Components/UI/ParticleCanvas';
 
-export default function GuestLayout({ children, bgImage }) {
+export default function GuestLayout({ children, bgImage, splitScreen = false }) {
+    if (splitScreen) {
+        return (
+            <div className="flex min-h-screen relative overflow-hidden bg-white">
+                {children}
+                <Toaster position="top-right" richColors closeButton />
+                <FlashNotifications />
+            </div>
+        );
+    }
+
     return (
         <div className="flex min-h-screen relative overflow-hidden items-center justify-center p-4 sm:p-6 lg:p-8">
             {/* Background Layer */}
