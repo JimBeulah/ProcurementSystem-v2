@@ -87,6 +87,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
             is_carport: item.isCarport,
             components: item.components.map(c => ({
                 ...c,
+                unit: c.unit || '',
                 quantityFactor: Number(c.quantityFactor) || 0,
                 clientUnitRate: Number(c.unitRate) || 0,
                 altapilUnitRate: Number(c.altapilUnitRate) || 0,
@@ -116,7 +117,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
     const addComponent = () => {
         setItem(prev => ({
             ...prev,
-            components: [...prev.components, { resourceType: 'MATERIAL', name: '', quantityFactor: 0, unitRate: 0, altapilUnitRate: 0, noOfPersons: 0, hours: 0 }]
+            components: [...prev.components, { resourceType: 'MATERIAL', name: '', unit: '', quantityFactor: 0, unitRate: 0, altapilUnitRate: 0, noOfPersons: 0, hours: 0 }]
         }));
         // Auto-scroll to bottom after React re-renders the new row
         setTimeout(() => {
@@ -292,7 +293,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                     <div ref={resourceListRef} className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
                         {item.components.map((comp, idx) => (
                             <div key={idx} className="bg-white/60 dark:bg-slate-800/40 backdrop-blur-xl shadow-sm rounded-lg p-3 border border-slate-200/80 dark:border-slate-700/80 relative group/row hover:bg-white/80 dark:hover:bg-slate-800/60 transition-colors">
-                                <div className="grid gap-2 items-center" style={{ gridTemplateColumns: comp.resourceType === 'MATERIAL' ? "100px 1fr 80px 96px 96px 28px" : "100px 1fr 48px 48px 80px 96px 96px 28px" }}>
+                                <div className="grid gap-2 items-center" style={{ gridTemplateColumns: comp.resourceType === 'MATERIAL' ? "100px 1fr 60px 80px 96px 96px 28px" : "100px 1fr 60px 48px 48px 80px 96px 96px 28px" }}>
                                     <div>
                                         <label className="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-1 block ml-1">Type</label>
                                         <select
@@ -314,6 +315,19 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                                             value={comp.name}
                                             onChange={e => updateComponent(idx, 'name', e.target.value)}
                                         />
+                                    </div>
+                                    <div>
+                                        <label className="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-1 block ml-1">Unit</label>
+                                        <input
+                                            list={`wiz-comp-unit-${idx}`}
+                                            placeholder="Unit"
+                                            className="w-full bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700/80 rounded shadow-sm p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+                                            value={comp.unit || ''}
+                                            onChange={e => updateComponent(idx, 'unit', e.target.value)}
+                                        />
+                                        <datalist id={`wiz-comp-unit-${idx}`}>
+                                            {units.map(u => <option key={u.id} value={u.abbreviation || u.name}>{u.name}</option>)}
+                                        </datalist>
                                     </div>
                                     {comp.resourceType !== 'MATERIAL' && (
                                         <>

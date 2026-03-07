@@ -21,9 +21,7 @@ class MaterialRequestController extends Controller
 
     public function index(Project $project): Response
     {
-        if (auth()->user()->hasRole('site_engineer') && $project->site_engineer_id !== auth()->id()) {
-            abort(403, 'Unauthorized access to this project.');
-        }
+        $this->authorize('viewAny', [MaterialRequest::class, $project]);
 
         $project->load('client');
 
@@ -50,9 +48,7 @@ class MaterialRequestController extends Controller
 
     public function store(StoreMaterialRequestRequest $request, Project $project): RedirectResponse
     {
-        if (auth()->user()->hasRole('site_engineer') && $project->site_engineer_id !== auth()->id()) {
-            abort(403, 'Unauthorized access to this project.');
-        }
+        $this->authorize('create', [MaterialRequest::class, $project]);
 
         $validated = $request->validated();
         $violations = $this->service->checkBudgetViolations($validated['items']);
@@ -69,9 +65,7 @@ class MaterialRequestController extends Controller
 
     public function approve(MaterialRequest $materialRequest): RedirectResponse
     {
-        if (!in_array(auth()->user()->role, ['admin', 'project_manager'])) {
-            abort(403, 'Unauthorized. Only Admins and Project Managers can approve requests.');
-        }
+        $this->authorize('approve', $materialRequest);
 
         if ($materialRequest->status !== 'PENDING') {
             return redirect()->back()->with('error', 'This request has already been processed.');
@@ -87,9 +81,7 @@ class MaterialRequestController extends Controller
 
     public function reject(Request $request, MaterialRequest $materialRequest): RedirectResponse
     {
-        if (!in_array(auth()->user()->role, ['admin', 'project_manager'])) {
-            abort(403, 'Unauthorized. Only Admins and Project Managers can reject requests.');
-        }
+        $this->authorize('reject', $materialRequest);
 
         if ($materialRequest->status !== 'PENDING') {
             return redirect()->back()->with('error', 'This request has already been processed.');

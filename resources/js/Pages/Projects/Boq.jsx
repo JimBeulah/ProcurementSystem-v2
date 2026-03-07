@@ -9,6 +9,7 @@ import {
     ChevronDown, ChevronRight, Calculator, Trash2, Settings, AlertTriangle, Pencil, MoreHorizontal,
     Box, Layers, Hammer, Truck, Info
 } from 'lucide-react';
+import { Toaster, toast } from 'sonner';
 
 export default function ProjectBoq() {
     const { project, boqItems: initialItems, materials, units, isApproved, auth } = usePage().props;
@@ -104,6 +105,7 @@ export default function ProjectBoq() {
         const payload = {
             resourceType: data.resource_type,
             name: data.name,
+            unit: data.unit || '',
             quantityFactor: quantityFactor,
             clientUnitRate: data.client_unit_rate !== undefined && data.client_unit_rate !== '' ? Number(data.client_unit_rate) : (data.unit_rate !== undefined && data.unit_rate !== '' ? Number(data.unit_rate) : 0),
             altapilUnitRate: data.altapil_unit_rate !== undefined && data.altapil_unit_rate !== '' ? Number(data.altapil_unit_rate) : 0,
@@ -277,6 +279,7 @@ export default function ProjectBoq() {
     return (
         <AuthenticatedLayout>
             <Head title={`BOQ - ${project.name}`} />
+            <Toaster position="top-right" richColors />
 
             <div className="p-6 space-y-6 max-w-[1920px] mx-auto h-[calc(100vh-65px)] overflow-hidden flex flex-col">
 
@@ -636,6 +639,11 @@ export default function ProjectBoq() {
                                                         {comp.resource_type === 'LABOR' && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400"><Hammer size={8} /> Lab</span>}
                                                         {comp.resource_type === 'EQUIPMENT' && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400"><Truck size={8} /> Eqp</span>}
                                                         <span className="font-bold text-sm text-slate-900 dark:text-white leading-none">{comp.name}</span>
+                                                        {comp.unit && (
+                                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400 border border-slate-200 dark:border-slate-600">
+                                                                {comp.unit}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                     {comp.resource_type !== 'MATERIAL' && <div className="text-[10px] text-slate-400 font-mono mt-1">{comp.no_of_persons} Persons × {comp.hours} Hours</div>}
                                                 </div>
@@ -831,6 +839,19 @@ export default function ProjectBoq() {
                                 onChange={e => setResourceModal({ ...resourceModal, data: { ...resourceModal.data, name: e.target.value } })}
                                 className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all"
                             />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Unit</label>
+                            <input
+                                list="res-modal-unit-suggestions"
+                                placeholder="e.g. bags, hrs, pcs"
+                                value={resourceModal.data?.unit || ''}
+                                onChange={e => setResourceModal({ ...resourceModal, data: { ...resourceModal.data, unit: e.target.value } })}
+                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all"
+                            />
+                            <datalist id="res-modal-unit-suggestions">
+                                {units.map(u => <option key={u.id} value={u.abbreviation || u.name}>{u.name}</option>)}
+                            </datalist>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>

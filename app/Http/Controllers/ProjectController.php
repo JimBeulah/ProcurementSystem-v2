@@ -32,14 +32,7 @@ class ProjectController extends Controller
 
     public function show(Project $project)
     {
-        if (auth()->user()->hasRole('site_engineer') && $project->site_engineer_id !== auth()->id()) {
-            abort(403, 'Unauthorized access to this project.');
-        }
-
-        // Add the total_profit attribute via a raw query to avoid loading all BOQ components
-        $project->total_profit = \App\Models\BoqItemComponent::join('boq_items', 'boq_items.id', '=', 'boq_item_components.boq_item_id')
-            ->where('boq_items.project_id', $project->id)
-            ->sum(\Illuminate\Support\Facades\DB::raw('client_total_cost - altapil_total_cost'));
+        $this->authorize('view', $project);
 
         $project->load(['client', 'siteEngineer', 'boqItems', 'materialRequests', 'purchaseOrders']);
 

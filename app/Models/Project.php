@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -107,5 +108,16 @@ class Project extends Model
     public function inventoryItems()
     {
         return $this->hasMany(InventoryItem::class);
+    }
+
+    /**
+     * Calculate the total profit for the project's BOQ.
+     * Encapsulated as an accessor so controllers stay thin.
+     */
+    public function getTotalProfitAttribute(): float
+    {
+        return (float) BoqItemComponent::join('boq_items', 'boq_items.id', '=', 'boq_item_components.boq_item_id')
+            ->where('boq_items.project_id', $this->id)
+            ->sum(DB::raw('client_total_cost - altapil_total_cost'));
     }
 }

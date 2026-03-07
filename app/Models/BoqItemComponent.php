@@ -10,6 +10,7 @@ class BoqItemComponent extends Model
         'boq_item_id',
         'resource_type',
         'name',
+        'unit',
         'quantity_factor',
         'client_unit_rate',
         'client_total_cost',

@@ -16,6 +16,7 @@ class StoreBoqComponentRequest extends FormRequest
         return [
             'resourceType' => 'required|string|in:MATERIAL,LABOR,EQUIPMENT',
             'name' => 'required|string|max:255',
+            'unit' => 'nullable|string|max:50',
             'quantityFactor' => 'required|numeric|min:0',
             'clientUnitRate' => 'required|numeric|min:0',
             'altapilUnitRate' => 'nullable|numeric|min:0',

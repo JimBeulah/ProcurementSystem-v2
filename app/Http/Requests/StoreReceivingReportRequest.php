@@ -8,7 +8,8 @@ class StoreReceivingReportRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user()->can('create receiving')
+            || $this->user()->hasRole('site_engineer');
     }
 
     public function rules(): array

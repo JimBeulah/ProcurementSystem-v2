@@ -27,6 +27,7 @@ class BoqService
                     return [
                         'resource_type' => $comp['resourceType'],
                         'name' => $comp['name'],
+                        'unit' => $comp['unit'] ?? null,
                         'quantity_factor' => $comp['quantityFactor'],
                         'client_unit_rate' => $comp['clientUnitRate'] ?? $comp['unitRate'] ?? 0,
                         'client_total_cost' => ($comp['clientUnitRate'] ?? $comp['unitRate'] ?? 0) * $comp['quantityFactor'],
@@ -63,6 +64,7 @@ class BoqService
                         return [
                             'resource_type' => $comp['resourceType'],
                             'name' => $comp['name'],
+                            'unit' => $comp['unit'] ?? null,
                             'quantity_factor' => $comp['quantityFactor'],
                             'client_unit_rate' => $comp['clientUnitRate'] ?? $comp['unitRate'] ?? 0,
                             'client_total_cost' => ($comp['clientUnitRate'] ?? $comp['unitRate'] ?? 0) * $comp['quantityFactor'],
@@ -85,6 +87,7 @@ class BoqService
             return $boqItem->components()->create([
                 'resource_type' => $validated['resourceType'],
                 'name' => $validated['name'],
+                'unit' => $validated['unit'] ?? null,
                 'quantity_factor' => $validated['quantityFactor'],
                 'client_unit_rate' => $validated['clientUnitRate'],
                 'client_total_cost' => $validated['clientUnitRate'] * $validated['quantityFactor'],
@@ -102,6 +105,7 @@ class BoqService
             $boqComponent->update([
                 'resource_type' => $validated['resourceType'],
                 'name' => $validated['name'],
+                'unit' => $validated['unit'] ?? null,
                 'quantity_factor' => $validated['quantityFactor'],
                 'client_unit_rate' => $validated['clientUnitRate'],
                 'client_total_cost' => $validated['clientUnitRate'] * $validated['quantityFactor'],
