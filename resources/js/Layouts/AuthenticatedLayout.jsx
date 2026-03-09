@@ -64,12 +64,20 @@ export default function AuthenticatedLayout({ children }) {
                     {activeGroup && <SubNavigationTabs items={activeGroup.items} />}
 
                     {/* Page Content */}
-                    <div className="pt-2 pb-8 px-2 md:pt-4 md:pb-8 md:px-4 flex-1 w-full">
+                    <div className="pt-2 pb-8 px-2 md:pt-4 md:pb-8 md:px-4 flex-1 w-full relative">
                         {/* Ambient glows */}
                         <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
                         <div className="fixed bottom-0 right-[20%] w-[400px] h-[400px] bg-purple-500/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
 
-                        {children}
+                        <motion.div
+                            key={url}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, ease: "easeOut" }}
+                            className="h-full w-full"
+                        >
+                            {children}
+                        </motion.div>
                     </div>
                 </main>
                 <Toaster position="top-right" richColors closeButton />

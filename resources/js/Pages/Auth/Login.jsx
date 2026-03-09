@@ -82,7 +82,7 @@ export default function Login({ status }) {
                             {/* Username/Email */}
                             <div className="space-y-1.5 flex flex-col items-start">
                                 <label htmlFor="username" className="text-[14px] font-medium text-slate-700">
-                                    Username or Email
+                                    Username
                                 </label>
                                 <div className="relative w-full">
                                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">

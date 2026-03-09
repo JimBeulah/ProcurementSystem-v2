@@ -208,7 +208,7 @@ export default function ProjectMaterialRequests() {
 
         if (component) {
             setItemDescription(component.name);
-            setRequestUnit(boqItem.unit);
+            setRequestUnit(component.unit || boqItem.unit);
             // Default to Client Rate for display/editing? Or Altapil? 
             // Usually MR reflects actual purchase price. Let's pre-fill with Altapil Rate as a "Target"
             setMaterialUnitPrice(Number(component.altapil_unit_rate || 0).toString());
@@ -248,159 +248,180 @@ export default function ProjectMaterialRequests() {
                 </div>
 
                 {/* Create MR Modal */}
-                <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="New Material Request">
-                    <div className="space-y-4">
-                        {/* Item Entry */}
-                        <div className="bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                                <div>
-                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block tracking-wider">Select BOQ Item</label>
-                                    <Select
-                                        value={selectedBoqItemId}
-                                        onChange={handleBoqItemChange}
-                                        options={(boqItems || []).map(item => ({
-                                            value: item.id.toString(),
-                                            label: item.item_description
-                                        }))}
-                                        placeholder="Select BOQ Item"
-                                        icon={Package}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block tracking-wider">Select Resource (Component)</label>
-                                    <Select
-                                        value={selectedComponentId}
-                                        onChange={handleComponentChange}
-                                        options={(selectedBoqItem?.components || []).map(comp => ({
-                                            value: comp.id.toString(),
-                                            label: `${comp.name} (${comp.resource_type})`
-                                        }))}
-                                        placeholder="Select Resource"
-                                        icon={Box}
-                                        disabled={!selectedBoqItemId}
-                                    />
-                                </div>
-                            </div>
+                <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="New Material Request" maxWidth="max-w-6xl">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        {/* Left Column: Form (5 cols) */}
+                        <div className="lg:col-span-5 flex flex-col gap-4">
+                            <div className="bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+                                <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2 mb-4">
+                                    <Plus size={14} className="text-blue-500" /> Add Item
+                                </h3>
 
-                            {/* Budget Status Info - HIDDEN FOR BLIND BUDGETING */}
-                            {/* Logic remains for validation, but UI is removed */}
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block tracking-wider">Select BOQ Item</label>
+                                        <Select
+                                            value={selectedBoqItemId}
+                                            onChange={handleBoqItemChange}
+                                            options={(boqItems || []).map(item => ({
+                                                value: item.id.toString(),
+                                                label: item.item_description
+                                            }))}
+                                            placeholder="Select BOQ Item"
+                                            icon={Package}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block tracking-wider">Select Resource (Component)</label>
+                                        <Select
+                                            value={selectedComponentId}
+                                            onChange={handleComponentChange}
+                                            options={(selectedBoqItem?.components || []).map(comp => ({
+                                                value: comp.id.toString(),
+                                                label: `${comp.name} (${comp.resource_type})`
+                                            }))}
+                                            placeholder="Select Resource"
+                                            icon={Box}
+                                            disabled={!selectedBoqItemId}
+                                        />
+                                    </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
-                                <div className="md:col-span-2">
-                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 flex justify-between items-center tracking-wider">
-                                        <span>Item Description</span>
-                                        {selectedComponent && (
-                                            <span className="text-[9px] text-blue-600 bg-blue-50 dark:bg-blue-500/10 px-1.5 py-0.5 rounded shadow-sm">
-                                                Warehouse Qty: {warehouseQuantity}
-                                            </span>
+                                    <div>
+                                        <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 flex justify-between items-center tracking-wider">
+                                            <span>Item Description</span>
+                                            {selectedComponent && (
+                                                <span className="text-[9px] text-blue-600 bg-blue-50 dark:bg-blue-500/10 px-1.5 py-0.5 rounded shadow-sm">
+                                                    Warehouse Qty: {warehouseQuantity}
+                                                </span>
+                                            )}
+                                        </label>
+                                        <input readOnly={true} className="w-full bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-500 dark:text-slate-400 text-xs outline-none h-9 cursor-not-allowed" value={itemDescription} placeholder="Item description" />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Unit</label>
+                                            <input readOnly={true} className="w-full bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-500 dark:text-slate-400 text-xs outline-none h-9 cursor-not-allowed" value={requestUnit} />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">
+                                                Qty Request
+                                            </label>
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                className={`w-full bg-white dark:bg-slate-900 border rounded p-2 text-slate-900 dark:text-white text-xs h-9 ${isQtyExceeded || isCostExceeded ? 'border-red-500 text-red-600 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-cyan-500'}`}
+                                                value={requestQty}
+                                                onChange={e => setRequestQty(e.target.value)}
+                                                placeholder="0.00"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <button
+                                            type="button"
+                                            onClick={addToCart}
+                                            disabled={isQtyExceeded || isCostExceeded}
+                                            className={`w-full px-4 py-2 rounded font-black text-[10px] uppercase transition-all shadow-lg h-9 flex items-center justify-center gap-1 mt-2
+                                                ${isQtyExceeded || isCostExceeded
+                                                    ? 'bg-red-500/10 text-red-500 cursor-not-allowed border border-red-500/20'
+                                                    : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/20 active:scale-95'}`}
+                                        >
+                                            {isQtyExceeded || isCostExceeded ? 'Limit Exceeded' : 'Add Item'}
+                                        </button>
+                                    </div>
+
+                                    {/* Detailed Validation Warnings - GENERIC FOR BLIND BUDGETING */}
+                                    <div className="space-y-1 mt-2">
+                                        {(isQtyExceeded || isCostExceeded) && (
+                                            <p className="text-red-500 text-[10px] font-bold flex items-center gap-1">
+                                                <AlertTriangle size={12} /> Request exceeds allocated limits.
+                                            </p>
                                         )}
-                                    </label>
-                                    <input className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white text-xs focus:border-blue-500 outline-none h-9" value={itemDescription} onChange={e => setItemDescription(e.target.value)} placeholder="Item description" />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Unit</label>
-                                    <input className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white text-xs h-9" value={requestUnit} onChange={e => setRequestUnit(e.target.value)} />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">
-                                        Qty
-                                    </label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        className={`w-full bg-white dark:bg-slate-900 border rounded p-2 text-slate-900 dark:text-white text-xs h-9 ${isQtyExceeded || isCostExceeded ? 'border-red-500 text-red-600 focus:border-red-500' : 'border-slate-200 dark:border-slate-700 focus:border-cyan-500'}`}
-                                        value={requestQty}
-                                        onChange={e => setRequestQty(e.target.value)}
-                                        placeholder="0.00"
-                                    />
-                                </div>
-                                <div>
-                                    <button
-                                        type="button"
-                                        onClick={addToCart}
-                                        disabled={isQtyExceeded || isCostExceeded}
-                                        className={`w-full px-4 py-2 rounded font-black text-[10px] uppercase transition-all shadow-lg h-9 flex items-center justify-center gap-1
-                                            ${isQtyExceeded || isCostExceeded
-                                                ? 'bg-red-500/10 text-red-500 cursor-not-allowed border border-red-500/20'
-                                                : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/20 active:scale-95'}`}
-                                    >
-                                        {isQtyExceeded || isCostExceeded ? 'Limit Exceeded' : 'Add Item'}
-                                    </button>
+                                    </div>
+
+                                    {/* Price Inputs - HIDDEN, Auto-Calculated via Altapil Rate */}
+                                    <div className="hidden mt-2 grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Mat. Price</label>
+                                            <input type="number" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-2 text-xs text-slate-400" value={materialUnitPrice} readOnly placeholder="0.00" />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Lab. Price</label>
+                                            <input type="number" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-2 text-xs text-slate-400" value={laborUnitPrice} readOnly placeholder="0.00" />
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
 
-                            {/* Detailed Validation Warnings - GENERIC FOR BLIND BUDGETING */}
-                            <div className="space-y-1 mt-2">
-                                {(isQtyExceeded || isCostExceeded) && (
-                                    <p className="text-red-500 text-[10px] font-bold flex items-center gap-1">
-                                        <AlertTriangle size={12} /> Request exceeds allocated limits. Please reduce quantity or contact Admin.
-                                    </p>
-                                )}
+                            <div>
+                                <label className="text-xs text-slate-500 uppercase font-bold mb-1 block">Remarks</label>
+                                <textarea className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white h-24 text-xs resize-none" placeholder="Any special instructions or notes?" value={remarks} onChange={e => setRemarks(e.target.value)}></textarea>
                             </div>
-
-                            {/* Price Inputs - HIDDEN, Auto-Calculated via Altapil Rate */}
-                            <div className="hidden mt-2 grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Mat. Price</label>
-                                    <input type="number" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-2 text-xs text-slate-400" value={materialUnitPrice} readOnly placeholder="0.00" />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Lab. Price</label>
-                                    <input type="number" className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-2 text-xs text-slate-400" value={laborUnitPrice} readOnly placeholder="0.00" />
-                                </div>
-                            </div>
-
                         </div>
 
-                        {/* Cart */}
-                        <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-x-auto">
-                            <table className="w-full text-[10px] text-left">
-                                <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-500 uppercase font-black tracking-widest text-[9px]">
-                                    <tr>
-                                        <th className="p-3 pl-4">Item</th>
-                                        <th className="p-3 text-center">Unit</th>
-                                        <th className="p-3 text-center">Qty</th>
-                                        <th className="p-3 text-right">Est. Cost</th>
-                                        <th className="p-3 text-center w-8"></th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                                    {cart.map((item, idx) => {
-                                        const total = ((item.material_unit_price || 0) + (item.labor_unit_price || 0)) * item.quantity;
-                                        return (
-                                            <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-700/30">
-                                                <td className="p-3 pl-4">
-                                                    <div className="font-medium text-slate-900 dark:text-white">{item.item_description}</div>
-                                                    {item.boq_item_id && (
-                                                        <div className="text-[9px] text-slate-400 flex items-center gap-1">
-                                                            <span>BOQ Linked</span>
-                                                            <span>&bull;</span>
-                                                            <span className="text-blue-500 font-bold">
-                                                                WH Qty: {(inventoryItems?.filter(i => String(i.material_name).trim().toLowerCase() === String(item.item_description).trim().toLowerCase()) || []).reduce((acc, current) => acc + Number(current.quantity), 0)}
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                </td>
-                                                <td className="p-3 text-center text-slate-500">{item.unit}</td>
-                                                <td className="p-3 text-center text-cyan-600 font-mono">{item.quantity}</td>
-                                                <td className="p-3 text-right text-slate-500 font-mono">{total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                                <td className="p-3 text-center"><button onClick={() => setCart(cart.filter((_, i) => i !== idx))} className="text-slate-400 hover:text-red-500 transition-colors font-bold text-base">&times;</button></td>
+                        {/* Right Column: Cart (7 cols) */}
+                        <div className="lg:col-span-7 flex flex-col">
+                            <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-2 mb-3">
+                                <Package size={14} className="text-blue-500" /> Requested Items
+                            </h3>
+                            <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden flex-1 flex flex-col bg-white dark:bg-slate-800/80 max-h-[500px]">
+                                <div className="overflow-y-auto flex-1">
+                                    <table className="w-full text-[10px] text-left">
+                                        <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 uppercase font-black tracking-widest text-[9px] sticky top-0 z-10">
+                                            <tr>
+                                                <th className="p-3 pl-4">Item</th>
+                                                <th className="p-3 text-center">Unit</th>
+                                                <th className="p-3 text-center">Qty</th>
+                                                <th className="p-3 text-right">Est. Cost</th>
+                                                <th className="p-3 text-center w-8"></th>
                                             </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                            {cart.length === 0 && <div className="text-center text-slate-400 text-[10px] py-10 uppercase font-black tracking-[0.2em] opacity-30">Draft is Empty</div>}
-                        </div>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                                            {cart.map((item, idx) => {
+                                                const total = ((item.material_unit_price || 0) + (item.labor_unit_price || 0)) * item.quantity;
+                                                return (
+                                                    <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                                        <td className="p-3 pl-4">
+                                                            <div className="font-medium text-slate-900 dark:text-white">{item.item_description}</div>
+                                                            {item.boq_item_id && (
+                                                                <div className="text-[9px] text-slate-400 flex items-center gap-1 mt-0.5">
+                                                                    <span>BOQ Item</span>
+                                                                    <span>&bull;</span>
+                                                                    <span className="text-blue-500 font-bold">
+                                                                        WH Qty: {(inventoryItems?.filter(i => String(i.material_name).trim().toLowerCase() === String(item.item_description).trim().toLowerCase()) || []).reduce((acc, current) => acc + Number(current.quantity), 0)}
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                        <td className="p-3 text-center text-slate-500">{item.unit}</td>
+                                                        <td className="p-3 text-center text-cyan-600 font-mono font-bold">{item.quantity}</td>
+                                                        <td className="p-3 text-right text-slate-500 font-mono">₱{total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                                        <td className="p-3 text-center">
+                                                            <button onClick={() => setCart(cart.filter((_, i) => i !== idx))} className="text-slate-400 hover:text-red-500 transition-colors font-bold text-base w-6 h-6 rounded-md hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center justify-center">&times;</button>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                    {cart.length === 0 && (
+                                        <div className="h-full flex flex-col items-center justify-center py-16 text-slate-400">
+                                            <Package size={32} className="opacity-20 mb-3" />
+                                            <div className="text-[10px] uppercase font-black tracking-[0.2em] opacity-50">Draft is Empty</div>
+                                            <p className="text-xs text-slate-500 mt-2">Add items from the form on the left</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
 
-                        <div>
-                            <label className="text-xs text-slate-500 uppercase font-bold mb-1 block">Remarks</label>
-                            <textarea className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white h-20 text-xs" value={remarks} onChange={e => setRemarks(e.target.value)}></textarea>
-                        </div>
-
-                        <div className="flex justify-end gap-3 pt-4">
-                            <button onClick={() => setShowModal(false)} className="px-4 py-2 text-slate-500 hover:text-slate-900 dark:hover:text-white text-xs font-bold uppercase">Cancel</button>
-                            <button onClick={handleSubmit} disabled={cart.length === 0 || submitting} className="bg-blue-600 px-4 py-2 rounded text-white font-medium hover:bg-blue-500 disabled:opacity-50 text-xs font-bold uppercase">Submit Request</button>
+                            {/* Submit controls */}
+                            <div className="flex justify-end gap-3 mt-4 mt-auto pt-4 border-t border-slate-200 dark:border-slate-700">
+                                <button onClick={() => setShowModal(false)} className="px-5 py-2.5 text-slate-500 hover:text-slate-900 dark:hover:text-white text-xs font-bold uppercase transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">Cancel</button>
+                                <button onClick={handleSubmit} disabled={cart.length === 0 || submitting} className="bg-blue-600 px-6 py-2.5 rounded-lg text-white font-medium hover:bg-blue-500 disabled:opacity-50 text-xs font-bold uppercase transition-colors shadow-lg shadow-blue-600/20">Submit Request</button>
+                            </div>
                         </div>
                     </div>
                 </Modal>

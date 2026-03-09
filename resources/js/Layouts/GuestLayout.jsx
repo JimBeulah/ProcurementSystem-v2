@@ -1,4 +1,5 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
+import { motion } from 'framer-motion';
 import { Hexagon } from 'lucide-react';
 import { Toaster } from 'sonner';
 import FlashNotifications from '@/Components/FlashNotifications';
@@ -6,10 +7,20 @@ import { ThemeToggle } from '@/Components/UI/ThemeToggle';
 import ParticleCanvas from '@/Components/UI/ParticleCanvas';
 
 export default function GuestLayout({ children, bgImage, splitScreen = false }) {
+    const { url } = usePage();
+
     if (splitScreen) {
         return (
             <div className="flex min-h-screen relative overflow-hidden bg-white">
-                {children}
+                <motion.div
+                    key={url}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className="w-full flex"
+                >
+                    {children}
+                </motion.div>
                 <Toaster position="top-right" richColors closeButton />
                 <FlashNotifications />
             </div>
@@ -49,7 +60,15 @@ export default function GuestLayout({ children, bgImage, splitScreen = false }) 
                     </span>
                 </Link>
 
-                {children}
+                <motion.div
+                    key={url}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className="w-full flex flex-col"
+                >
+                    {children}
+                </motion.div>
             </div>
 
             <Toaster position="top-right" richColors closeButton />
