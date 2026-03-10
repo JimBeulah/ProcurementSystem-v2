@@ -61,20 +61,31 @@ class ReceivingService
     /**
      * Automatically receive the full requested quantity for a Purchase Order (Direct-to-site).
      */
-    public function autoReceiveFullOrder(PurchaseOrder $po): ReceivingReport
+    public function autoReceiveFullOrder(PurchaseOrder $po, array $quantities = [], ?string $notes = null): ReceivingReport
     {
+        if (empty($notes)) {
+            $notes = empty($quantities)
+                ? 'Auto-received full quantity by Site Engineer.'
+                : 'Received with actual quantities by Site Engineer.';
+        }
+
         $report = ReceivingReport::create([
             'purchase_order_id' => $po->id,
             'received_by_id' => Auth::id(),
             'received_date' => now(),
-            'notes' => 'Auto-received full quantity by Site Engineer.',
+            'notes' => $notes,
         ]);
 
         foreach ($po->items as $poItem) {
+            // Use engineer-entered qty if provided, otherwise fall back to ordered qty
+            $receivedQty = isset($quantities[$poItem->id]) && is_numeric($quantities[$poItem->id])
+                ? (float) $quantities[$poItem->id]
+                : (float) $poItem->quantity;
+
             ReceivingItem::create([
                 'receiving_report_id' => $report->id,
                 'material_name' => $poItem->material_name,
-                'quantity_received' => $poItem->quantity,
+                'quantity_received' => $receivedQty,
                 'status' => 'GOOD',
             ]);
 
@@ -90,7 +101,7 @@ class ReceivingService
                 ]
             );
 
-            $inventoryItem->increment('quantity', $poItem->quantity);
+            $inventoryItem->increment('quantity', $receivedQty);
         }
 
         $po->update(['status' => 'COMPLETED']);

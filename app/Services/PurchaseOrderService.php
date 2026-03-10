@@ -12,7 +12,7 @@ class PurchaseOrderService
     /**
      * Create a new purchase order with its line items.
      */
-    public function create(array $validated): PurchaseOrder
+    public function create(array $validated): ?PurchaseOrder
     {
         return \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
             // Segregate items meant for the supplier vs items sourced from the warehouse

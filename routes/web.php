@@ -13,11 +13,11 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\PurchaseRequestController;
 use App\Http\Controllers\ReceivingController;
-use App\Http\Controllers\ReceivingFormController;
 use App\Http\Controllers\RfqController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SiteReleaseController;
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\OperationsController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\ForcePasswordChangeController;
 use Illuminate\Foundation\Application;
@@ -145,6 +145,9 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
     Route::post('/finance/invoices', [FinanceFormController::class, 'storeInvoice'])->name('finance.invoices.store');
     Route::get('/finance/disbursements/create', [FinanceFormController::class, 'createDisbursement'])->name('finance.disbursements.create');
     Route::post('/finance/disbursements', [FinanceFormController::class, 'storeDisbursement'])->name('finance.disbursements.store');
+
+    // Operations
+    Route::get('/operations/deliveries', [OperationsController::class, 'deliveries'])->name('operations.deliveries')->middleware('role_or_permission:site_engineer|view receiving');
 
     // Site Release
     Route::get('/site-release', [SiteReleaseController::class, 'index'])->name('site-release.index')->middleware('can:view site release');

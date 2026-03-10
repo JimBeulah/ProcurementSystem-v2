@@ -61,14 +61,18 @@ class ReceivingController extends Controller
             ->with('success', 'Goods received and inventory updated successfully.');
     }
 
-    public function autoReceive(PurchaseOrder $purchaseOrder): RedirectResponse
+    public function autoReceive(Request $request, PurchaseOrder $purchaseOrder): RedirectResponse
     {
         if ($purchaseOrder->status !== 'APPROVED' && $purchaseOrder->status !== 'PARTIALLY DELIVERED') {
             return redirect()->back()->with('error', 'Only approved or partially delivered POs can be received.');
         }
 
-        $this->service->autoReceiveFullOrder($purchaseOrder);
+        // quantities is an optional map of { item_id: received_qty }
+        $quantities = $request->input('quantities', []);
+        $notes = $request->input('receipt_remarks');
 
-        return redirect()->back()->with('success', 'Purchase Order ' . str_pad($purchaseOrder->id, 4, '0', STR_PAD_LEFT) . ' fully received.');
+        $this->service->autoReceiveFullOrder($purchaseOrder, $quantities, $notes);
+
+        return redirect()->back()->with('success', 'Delivery for PO-' . str_pad($purchaseOrder->id, 4, '0', STR_PAD_LEFT) . ' has been recorded.');
     }
 }

@@ -1,34 +1,9 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { Card } from '@/Components/UI/Card';
-import { Briefcase, FileText, Truck, TrendingUp, CheckCircle, Package } from 'lucide-react';
-import { useState } from 'react';
-import Modal from '@/Components/UI/Modal';
+import { Briefcase, FileText, Truck, TrendingUp, Package, ChevronRight } from 'lucide-react';
 
-export default function SiteEngineerDashboard({ stats, pendingReleases = [] }) {
-    const [confirming, setConfirming] = useState(null);
-    const [selectedDelivery, setSelectedDelivery] = useState(null);
-
-    const handleAction = (item) => {
-        if (confirming) return;
-        setSelectedDelivery(item);
-    };
-
-    const submitReceipt = () => {
-        if (!selectedDelivery || confirming) return;
-        setConfirming(selectedDelivery.id);
-
-        const endpoint = selectedDelivery.type === 'site_release'
-            ? route('site-release.confirm', selectedDelivery.id)
-            : route('receiving.auto', selectedDelivery.id);
-
-        router.post(endpoint, {}, {
-            onFinish: () => {
-                setConfirming(null);
-                setSelectedDelivery(null);
-            }
-        });
-    };
+export default function SiteEngineerDashboard({ stats }) {
 
     return (
         <AuthenticatedLayout>
@@ -68,50 +43,25 @@ export default function SiteEngineerDashboard({ stats, pendingReleases = [] }) {
                     />
                 </div>
 
-                {/* Pending Deliveries */}
-                <Card className="bg-white/40 dark:bg-zinc-900/40 backdrop-blur-2xl border-white/20 dark:border-white/5 shadow-sm p-6 rounded-3xl">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-teal-500/10 rounded-xl">
-                            <Truck size={18} className="text-teal-500" />
+                {/* Pending Deliveries Link */}
+                <Link href="/operations/deliveries" className="block">
+                    <Card className="bg-white/40 dark:bg-zinc-900/40 backdrop-blur-2xl border-white/20 dark:border-white/5 shadow-sm p-5 rounded-3xl hover:shadow-md transition-all group cursor-pointer">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2.5 bg-indigo-500/10 rounded-xl group-hover:bg-indigo-500/20 transition-colors">
+                                <Truck size={18} className="text-indigo-500" />
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Pending Deliveries</h3>
+                                <p className="text-xs text-slate-500 mt-0.5">
+                                    {stats?.pendingSiteReleases > 0
+                                        ? <><span className="font-bold text-indigo-600">{stats.pendingSiteReleases}</span> awaiting confirmation</>
+                                        : 'No pending deliveries'}
+                                </p>
+                            </div>
+                            <ChevronRight size={16} className="text-slate-400 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all" />
                         </div>
-                        <h3 className="text-base font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Pending Deliveries</h3>
-                        {pendingReleases.length > 0 && (
-                            <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                {pendingReleases.length}
-                            </span>
-                        )}
-                    </div>
-
-                    {pendingReleases.length === 0 ? (
-                        <div className="text-center py-10 text-slate-400">
-                            <Package size={36} className="mx-auto mb-3 opacity-30" />
-                            <p className="text-xs font-bold uppercase tracking-widest opacity-50">No pending deliveries</p>
-                            <p className="text-xs opacity-40 mt-1">Materials released to your site will appear here.</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-3">
-                            {pendingReleases.map((release) => (
-                                <div key={`${release.type}-${release.id}`} className="flex items-center justify-between p-4 bg-white/60 dark:bg-zinc-800/60 border border-teal-200/30 dark:border-teal-500/10 rounded-2xl gap-4">
-                                    <div>
-                                        <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                                            {release.type === 'purchase_order' ? <Package size={14} className="text-blue-500" /> : <Truck size={14} className="text-teal-500" />}
-                                            {release.title}
-                                        </div>
-                                        <div className="text-xs text-slate-500 mt-0.5">{release.project_name} &bull; {release.created_at}</div>
-                                    </div>
-                                    <button
-                                        onClick={() => handleAction(release)}
-                                        disabled={confirming === release.id}
-                                        className={`shrink-0 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-60 shadow-md ${release.type === 'purchase_order' ? 'bg-blue-600 hover:bg-blue-500 shadow-blue-500/20' : 'bg-teal-500 hover:bg-teal-400 shadow-teal-500/20'}`}
-                                    >
-                                        <CheckCircle size={14} />
-                                        {confirming === release.id ? 'Loading...' : (release.type === 'purchase_order' ? 'Receive Delivery' : 'Confirm Receipt')}
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </Card>
+                    </Card>
+                </Link>
 
                 {/* Quick Actions */}
                 <Card className="bg-white/40 dark:bg-zinc-900/40 backdrop-blur-2xl border-white/20 dark:border-white/5 shadow-sm p-6 rounded-3xl">
@@ -131,50 +81,6 @@ export default function SiteEngineerDashboard({ stats, pendingReleases = [] }) {
                 </Card>
             </div>
 
-            <Modal
-                isOpen={!!selectedDelivery}
-                onClose={() => !confirming && setSelectedDelivery(null)}
-                title={selectedDelivery?.type === 'purchase_order' ? "Confirm PO Delivery" : "Confirm Warehouse Release"}
-                maxWidth="max-w-md"
-            >
-                <div className="space-y-4">
-                    {selectedDelivery?.type === 'purchase_order' ? (
-                        <div className="bg-blue-50 dark:bg-blue-500/10 text-blue-800 dark:text-blue-300 p-4 rounded-xl text-sm border border-blue-200 dark:border-blue-500/20">
-                            <p className="font-semibold mb-1">Confirming receipt for {selectedDelivery?.title}.</p>
-                            <p className="opacity-80">This action will automatically log the <strong>exact requested quantities</strong> into your project site's inventory. Ensure the physical delivery matches the order completely.</p>
-                        </div>
-                    ) : (
-                        <div className="bg-teal-50 dark:bg-teal-500/10 text-teal-800 dark:text-teal-300 p-4 rounded-xl text-sm border border-teal-200 dark:border-teal-500/20">
-                            <p className="font-semibold mb-1">Confirming {selectedDelivery?.title}.</p>
-                            <p className="opacity-80">This acknowledges that these materials dispatched from the warehouse have physically arrived at your site.</p>
-                        </div>
-                    )}
-
-                    <div className="flex justify-end gap-3 mt-6">
-                        <button
-                            onClick={() => setSelectedDelivery(null)}
-                            disabled={confirming === selectedDelivery?.id}
-                            className="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-xl transition-colors disabled:opacity-50"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={submitReceipt}
-                            disabled={confirming === selectedDelivery?.id}
-                            className={`${selectedDelivery?.type === 'purchase_order' ? 'bg-blue-600 hover:bg-blue-500 shadow-blue-500/20' : 'bg-teal-600 hover:bg-teal-500 shadow-teal-500/20'} text-white px-5 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all active:scale-95 disabled:opacity-60 shadow-md`}
-                        >
-                            {confirming === selectedDelivery?.id ? (
-                                <>Processing...</>
-                            ) : (
-                                <>
-                                    <CheckCircle size={16} />
-                                    {selectedDelivery?.type === 'purchase_order' ? 'Confirm Exact Quantity' : 'Confirm Receipt'}
-                                </>
-                            )}
-                        </button>
-                    </div>
-                </div>
-            </Modal>
         </AuthenticatedLayout>
     );
 }
