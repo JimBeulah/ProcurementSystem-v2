@@ -105,6 +105,18 @@ class PurchaseOrderController extends Controller
         return redirect()->back()->with('success', 'Purchase order declined.');
     }
 
+    public function cancel(Request $request, PurchaseOrder $order): RedirectResponse
+    {
+        $request->validate([
+            'remarks' => 'required|string|max:500'
+        ]);
+
+        $this->service->cancel($order, $request->input('remarks'));
+
+        return redirect()->back()->with('success', 'Purchase order cancelled successfully.');
+    }
+
+
 
     public function print(PurchaseOrder $order)
     {

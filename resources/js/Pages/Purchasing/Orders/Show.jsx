@@ -44,6 +44,16 @@ export default function PurchaseOrderShow() {
                                 <CheckCircle size={18} /> Approve PO
                             </button>
                         )}
+                        {po.status !== 'CANCELLED' && po.status !== 'COMPLETED' && can('create purchase orders') && (
+                            <button onClick={() => {
+                                const remarks = prompt("Please enter the reason for cancellation:");
+                                if (remarks) {
+                                    router.post(`/purchasing/orders/${po.id}/cancel`, { remarks });
+                                }
+                            }} className="bg-rose-100 dark:bg-rose-900/30 hover:bg-rose-200 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold transition-colors outline-none">
+                                Cancel Order
+                            </button>
+                        )}
                     </div>
                 </header>
 

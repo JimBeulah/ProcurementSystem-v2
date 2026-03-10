@@ -75,7 +75,16 @@ class PurchaseOrderService
             ]);
 
             $itemsData = collect($supplierItems)->map(function ($item) {
+                // If this is sourced from a PR, update the ordered_quantity
+                if (!empty($item['purchase_request_item_id'])) {
+                    $prItem = \App\Models\PurchaseRequestItem::find($item['purchase_request_item_id']);
+                    if ($prItem) {
+                        $prItem->increment('ordered_quantity', $item['quantity']);
+                    }
+                }
+
                 return [
+                    'purchase_request_item_id' => $item['purchase_request_item_id'] ?? null,
                     'material_name' => $item['material_name'],
                     'description' => $item['description'] ?? null,
                     'quantity' => $item['quantity'],
@@ -85,6 +94,11 @@ class PurchaseOrderService
                 ];
             })->toArray();
             $po->items()->createMany($itemsData);
+
+            // Update parent PR status if applicable
+            if ($validated['purchase_request_id']) {
+                $this->updatePurchaseRequestStatus(PurchaseRequest::find($validated['purchase_request_id']));
+            }
 
             return $po;
         });
@@ -111,6 +125,66 @@ class PurchaseOrderService
             'remarks' => $remarks ?? $order->remarks,
         ]);
     }
+
+    /**
+     * Cancel a purchase order and return its items to the PR queue.
+     */
+    public function cancel(PurchaseOrder $order, string $remarks): void
+    {
+        \Illuminate\Support\Facades\DB::transaction(function () use ($order, $remarks) {
+            $order->update([
+                'status' => 'CANCELLED',
+                'remarks' => $remarks,
+            ]);
+
+            // Return the quantities to their respective PR items
+            $prToUpdate = null;
+            foreach ($order->items as $poItem) {
+                if ($poItem->purchase_request_item_id) {
+                    $prItem = $poItem->purchaseRequestItem;
+                    if ($prItem) {
+                        // Make sure we don't go below 0 just in case
+                        $newQty = max(0, $prItem->ordered_quantity - $poItem->quantity);
+                        $prItem->update(['ordered_quantity' => $newQty]);
+                        $prToUpdate = $prItem->purchase_request_id;
+                    }
+                }
+            }
+
+            if ($prToUpdate) {
+                $this->updatePurchaseRequestStatus(PurchaseRequest::find($prToUpdate));
+            }
+        });
+    }
+
+    /**
+     * Re-evaluate and update the parent PurchaseRequest status based on fulfillment.
+     */
+    private function updatePurchaseRequestStatus(PurchaseRequest $pr): void
+    {
+        $pr->load('items');
+        $allFulfilled = true;
+        $someFulfilled = false;
+
+        foreach ($pr->items as $item) {
+            if ($item->ordered_quantity < $item->quantity) {
+                $allFulfilled = false;
+            }
+            if ($item->ordered_quantity > 0) {
+                $someFulfilled = true;
+            }
+        }
+
+        if ($allFulfilled) {
+            $pr->update(['status' => 'COMPLETED']);
+        } elseif ($someFulfilled) {
+            $pr->update(['status' => 'PARTIAL']);
+        } else {
+            // Revert to APPROVED if everything was cancelled
+            $pr->update(['status' => 'APPROVED']);
+        }
+    }
+
 
 
     /**

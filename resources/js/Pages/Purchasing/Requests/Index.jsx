@@ -18,6 +18,8 @@ function StatusBadge({ status }) {
     const styles = {
         PENDING: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
         APPROVED: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+        PARTIAL: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+        COMPLETED: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
         DECLINED: 'bg-red-500/10 text-red-600 border-red-500/20',
         CANCELLED: 'bg-slate-500/10 text-slate-500 border-slate-500/20',
     };
@@ -144,7 +146,7 @@ export default function PurchaseRequestsIndex() {
 
                     {/* Quick Filters */}
                     <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
-                        {['ALL', 'PENDING', 'APPROVED', 'DECLINED', 'CANCELLED'].map((status) => (
+                        {['ALL', 'PENDING', 'APPROVED', 'PARTIAL', 'COMPLETED', 'DECLINED', 'CANCELLED'].map((status) => (
                             <button
                                 key={status}
                                 onClick={() => setStatusFilter(status)}
@@ -419,7 +421,7 @@ export default function PurchaseRequestsIndex() {
                                     <Printer size={14} /> Print PR
                                 </a>
 
-                                {selectedPr.status === 'APPROVED' && can('create purchase orders') && (
+                                {(selectedPr.status === 'APPROVED' || selectedPr.status === 'PARTIAL') && can('create purchase orders') && (
                                     <Link href={`/purchasing/orders/create?prId=${selectedPr.id}`} className="px-4 py-2 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 rounded-xl transition-colors flex items-center gap-2 shadow-sm shadow-violet-600/20 cursor-pointer">
                                         <ShoppingCart size={14} /> Create PO
                                     </Link>
@@ -491,15 +493,25 @@ export default function PurchaseRequestsIndex() {
                                             <div className="text-right">Total</div>
                                         </div>
                                         <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
-                                            {selectedPr.items.map(item => (
-                                                <div key={item.id} className="grid grid-cols-[1fr_60px_60px_90px_90px] gap-2 px-3 py-2.5 items-center text-[11px] hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors bg-white dark:bg-slate-900">
-                                                    <div className="font-medium text-slate-800 dark:text-slate-200">{item.item_description}</div>
-                                                    <div className="text-center font-mono text-blue-600 dark:text-blue-400">{Number(item.quantity).toFixed(2)}</div>
-                                                    <div className="text-center text-slate-500 uppercase">{item.unit}</div>
-                                                    <div className="text-right font-mono text-slate-500">₱{Number(item.estimated_unit_cost).toLocaleString()}</div>
-                                                    <div className="text-right font-mono font-bold text-slate-800 dark:text-slate-200">₱{Number(item.estimated_total_cost).toLocaleString()}</div>
-                                                </div>
-                                            ))}
+                                            {selectedPr.items.map(item => {
+                                                const rem = item.quantity - (item.ordered_quantity || 0);
+                                                return (
+                                                    <div key={item.id} className="grid grid-cols-[1fr_60px_60px_90px_90px] gap-2 px-3 py-2.5 items-center text-[11px] hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors bg-white dark:bg-slate-900">
+                                                        <div>
+                                                            <div className="font-medium text-slate-800 dark:text-slate-200">{item.item_description}</div>
+                                                            {item.ordered_quantity > 0 && (
+                                                                <div className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold tracking-wider mt-0.5 uppercase">
+                                                                    {item.ordered_quantity} Ordered • {rem > 0 ? `${rem} Remaining` : 'Fully Ordered'}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="text-center font-mono text-blue-600 dark:text-blue-400">{Number(item.quantity).toFixed(2)}</div>
+                                                        <div className="text-center text-slate-500 uppercase">{item.unit}</div>
+                                                        <div className="text-right font-mono text-slate-500">₱{Number(item.estimated_unit_cost).toLocaleString()}</div>
+                                                        <div className="text-right font-mono font-bold text-slate-800 dark:text-slate-200">₱{Number(item.estimated_total_cost).toLocaleString()}</div>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                         <div className="bg-slate-50 dark:bg-slate-800/80 px-3 py-2.5 border-t border-slate-200 dark:border-slate-700 text-right flex items-center justify-end gap-3">
                                             <span className="text-[10px] font-bold text-slate-500 uppercase">Total Est. Cost</span>

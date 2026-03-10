@@ -91,6 +91,7 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
         Route::get('/purchasing/orders/{order}/print', [PurchaseOrderController::class, 'print'])->name('purchasing.orders.print');
         Route::post('/purchasing/orders/{order}/approve', [PurchaseOrderController::class, 'approve'])->name('purchasing.orders.approve')->middleware('can:approve purchase orders');
         Route::post('/purchasing/orders/{order}/decline', [PurchaseOrderController::class, 'decline'])->name('purchasing.orders.decline')->middleware('can:approve purchase orders');
+        Route::post('/purchasing/orders/{order}/cancel', [PurchaseOrderController::class, 'cancel'])->name('purchasing.orders.cancel')->middleware('can:create purchase orders');
     });
 
     // Suppliers

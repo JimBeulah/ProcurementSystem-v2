@@ -19,13 +19,16 @@ export default function CreatePurchaseOrder() {
     // Auto-fill items if PR exists
     const [items, setItems] = useState(() => {
         if (purchaseRequest?.items) {
-            return purchaseRequest.items.map(item => ({
-                material_name: item.item_description,
-                description: 'From PR',
-                quantity: item.quantity,
-                unit: item.unit,
-                unit_price: item.estimated_unit_cost || 0
-            }));
+            return purchaseRequest.items
+                .filter(item => (item.quantity - (item.ordered_quantity || 0)) > 0)
+                .map(item => ({
+                    purchase_request_item_id: item.id,
+                    material_name: item.item_description,
+                    description: 'From PR',
+                    quantity: item.quantity - (item.ordered_quantity || 0),
+                    unit: item.unit,
+                    unit_price: item.estimated_unit_cost || 0
+                }));
         }
         return [];
     });

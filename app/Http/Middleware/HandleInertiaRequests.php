@@ -45,7 +45,20 @@ class HandleInertiaRequests extends Middleware
                     ->get()
                 : [],
             'sidebar_badges' => [
-                'requests' => $request->user() && $request->user()->can('view purchase requests') ? \App\Models\PurchaseRequest::where('status', 'PENDING')->count() : 0,
+                'requests' => $request->user() ? \App\Models\PurchaseRequest::where(function ($query) use ($request) {
+                    $hasAny = false;
+                    if ($request->user()->can('manage purchase requests')) {
+                        $query->orWhere('status', 'PENDING');
+                        $hasAny = true;
+                    }
+                    if ($request->user()->can('create purchase orders')) {
+                        $query->orWhereIn('status', ['APPROVED', 'PARTIAL']);
+                        $hasAny = true;
+                    }
+                    if (!$hasAny) {
+                        $query->whereRaw('1 = 0');
+                    }
+                })->count() : 0,
                 'rfqs' => $request->user() && $request->user()->can('view rfq') ? \App\Models\Rfq::where('status', 'OPEN')->count() : 0,
                 'approvals' => $request->user() ? (
                     \App\Models\PurchaseRequest::where('status', 'PENDING')->count() +

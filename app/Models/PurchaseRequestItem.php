@@ -12,11 +12,18 @@ class PurchaseRequestItem extends Model
         'purchase_request_id',
         'item_description',
         'quantity',
+        'ordered_quantity',
         'unit',
         'estimated_unit_cost',
         'estimated_total_cost',
         'remarks',
     ];
+
+    public function getRemainingQuantityAttribute()
+    {
+        return $this->quantity - $this->ordered_quantity;
+    }
+
 
     protected function casts(): array
     {

@@ -19,6 +19,7 @@ class StorePurchaseOrderRequest extends FormRequest
             'purchase_request_id' => 'nullable|exists:purchase_requests,id',
             'remarks' => 'nullable|string|max:500',
             'items' => 'required|array|min:1',
+            'items.*.purchase_request_item_id' => 'nullable|exists:purchase_request_items,id',
             'items.*.material_name' => 'required|string|max:255',
             'items.*.description' => 'nullable|string|max:500',
             'items.*.quantity' => 'required|numeric|min:0.01',
