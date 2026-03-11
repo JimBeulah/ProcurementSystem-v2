@@ -45,7 +45,12 @@ class FinanceFormController extends Controller
             ->where('status', 'APPROVED')
             ->get();
 
-        return Inertia::render('Finance/Disbursements/Create', ['orders' => $orders]);
+        $users = \App\Models\User::where('is_active', true)->orderBy('name')->get();
+
+        return Inertia::render('Finance/Disbursements/Create', [
+            'orders' => $orders,
+            'users' => $users,
+        ]);
     }
 
     public function storeDisbursement(StoreDisbursementRequest $request): RedirectResponse

@@ -141,9 +141,7 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
 
 
     // Finance Forms
-    Route::get('/finance/invoices/create', [FinanceFormController::class, 'createInvoice'])->name('finance.invoices.create');
     Route::post('/finance/invoices', [FinanceFormController::class, 'storeInvoice'])->name('finance.invoices.store');
-    Route::get('/finance/disbursements/create', [FinanceFormController::class, 'createDisbursement'])->name('finance.disbursements.create');
     Route::post('/finance/disbursements', [FinanceFormController::class, 'storeDisbursement'])->name('finance.disbursements.store');
 
     // Operations

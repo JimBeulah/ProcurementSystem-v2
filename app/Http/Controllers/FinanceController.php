@@ -16,16 +16,35 @@ class FinanceController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return Inertia::render('Finance/Invoices/Index', ['invoices' => $invoices]);
+        $suppliers = \App\Models\Supplier::orderBy('name')->get();
+        $orders = \App\Models\PurchaseOrder::with('supplier')->get();
+        $grns = \App\Models\ReceivingReport::with('purchaseOrder')->get();
+
+        return Inertia::render('Finance/Invoices/Index', [
+            'invoices' => $invoices,
+            'suppliers' => $suppliers,
+            'orders' => $orders,
+            'grns' => $grns,
+        ]);
     }
 
     public function disbursements(): Response
     {
-        $payments = Disbursement::with(['purchaseOrder.supplier'])
+        $payments = Disbursement::with(['purchaseOrder.supplier', 'receivedBy'])
             ->orderBy('payment_date', 'desc')
             ->get();
 
-        return Inertia::render('Finance/Disbursements/Index', ['payments' => $payments]);
+        $orders = \App\Models\PurchaseOrder::with('supplier')
+            ->where('status', 'APPROVED')
+            ->get();
+
+        $users = \App\Models\User::where('is_active', true)->orderBy('name')->get();
+
+        return Inertia::render('Finance/Disbursements/Index', [
+            'payments' => $payments,
+            'orders' => $orders,
+            'users' => $users,
+        ]);
     }
 
     public function reports(): Response

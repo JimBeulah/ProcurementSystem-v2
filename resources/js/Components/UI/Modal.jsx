@@ -76,7 +76,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
                         </div>
 
                         {/* Content */}
-                        <div className="p-6 max-h-[70vh] overflow-y-auto overscroll-contain scrollbar-thin">
+                        <div className="p-6 max-h-[85vh] overflow-y-auto overscroll-contain scrollbar-thin">
                             {children}
                         </div>
                     </motion.div>

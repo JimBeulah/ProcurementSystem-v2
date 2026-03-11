@@ -79,6 +79,11 @@ class User extends Authenticatable
         return $this->hasMany(Disbursement::class, 'processed_by_id');
     }
 
+    public function disbursementsReceived()
+    {
+        return $this->hasMany(Disbursement::class, 'received_by_id');
+    }
+
     public function projectMembers()
     {
         return $this->hasMany(ProjectMember::class);

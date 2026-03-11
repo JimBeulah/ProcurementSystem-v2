@@ -15,6 +15,7 @@ class StoreDisbursementRequest extends FormRequest
     {
         return [
             'purchase_order_id' => 'nullable|integer|exists:purchase_orders,id',
+            'received_by_id' => 'nullable|integer|exists:users,id',
             'amount' => 'required|numeric|min:0',
             'method' => 'required|string|max:100',
             'reference_number' => 'required|string|max:255',
