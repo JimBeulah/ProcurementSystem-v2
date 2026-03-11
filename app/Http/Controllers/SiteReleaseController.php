@@ -71,6 +71,8 @@ class SiteReleaseController extends Controller
             return redirect()->back()->with('error', 'This release has already been confirmed.');
         }
 
+        $siteRelease->load('inventoryItem');
+
         $this->service->confirmReceipt($siteRelease, $request->validated());
 
         return redirect()->back()->with(

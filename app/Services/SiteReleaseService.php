@@ -31,16 +31,39 @@ class SiteReleaseService
     }
 
     /**
-     * Confirm receipt of a released batch.
+     * Confirm receipt of a released batch and merge received quantity into the
+     * project site's inventory so the material is available for issuance to workers.
      */
     public function confirmReceipt(SiteRelease $siteRelease, array $validated): void
     {
+        $qtyReceived = (float) $validated['quantity_received'];
+
         $siteRelease->update([
             'status' => 'RECEIVED',
             'received_by_id' => Auth::id(),
             'received_date' => now(),
-            'quantity_received' => $validated['quantity_received'],
+            'quantity_received' => $qtyReceived,
             'receipt_remarks' => $validated['receipt_remarks'] ?? null,
         ]);
+
+        // Add received quantity to the project's site inventory so it is
+        // available for further issuance on the Site Release page.
+        $sourceItem = $siteRelease->inventoryItem;
+
+        if ($siteRelease->project_id && $sourceItem) {
+            $siteInventory = InventoryItem::firstOrCreate(
+                [
+                    'material_name' => $sourceItem->material_name,
+                    'project_id'    => $siteRelease->project_id,
+                    'warehouse_id'  => null,
+                ],
+                [
+                    'quantity' => 0,
+                    'unit'     => $sourceItem->unit,
+                ]
+            );
+
+            $siteInventory->increment('quantity', $qtyReceived);
+        }
     }
 }
