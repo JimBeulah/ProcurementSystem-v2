@@ -141,9 +141,15 @@ export default function ProjectsIndex() {
                                 <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Site Engineer (Optional)</label>
                                 <Select value={formData.site_engineer_id} onChange={val => setFormData({ ...formData, site_engineer_id: val })} options={(siteEngineers || []).map(u => ({ value: u.id.toString(), label: u.name }))} placeholder="Unassigned" icon={UserCog} />
                             </div>
-                            <div className="md:col-span-2">
-                                <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Project Type</label>
-                                <Select value={formData.project_type} onChange={val => setFormData({ ...formData, project_type: val })} options={[{ value: "BUILDING", label: "BUILDING" }, { value: "INFRASTRUCTURE", label: "INFRASTRUCTURE" }, { value: "MAINTENANCE", label: "MAINTENANCE" }]} icon={Layers} />
+                            <div className="md:col-span-2 grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Project Type</label>
+                                    <Select value={formData.project_type} onChange={val => setFormData({ ...formData, project_type: val })} options={[{ value: "BUILDING", label: "BUILDING" }, { value: "INFRASTRUCTURE", label: "INFRASTRUCTURE" }, { value: "MAINTENANCE", label: "MAINTENANCE" }]} icon={Layers} />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Status</label>
+                                    <Select value={formData.status} onChange={val => setFormData({ ...formData, status: val })} options={[{ value: "ACTIVE", label: "ACTIVE" }, { value: "ON_HOLD", label: "ON HOLD" }, { value: "WARRANTY_PERIOD", label: "WARRANTY PERIOD" }, { value: "COMPLETED", label: "COMPLETED" }]} />
+                                </div>
                             </div>
                             <div>
                                 <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Budget (PhP)</label>

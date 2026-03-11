@@ -26,6 +26,7 @@ export default function ProjectTable({ projects, onEdit, onDelete, onCreate, aut
             >
                 <option value="ALL">All Status</option>
                 <option value="ACTIVE">Active</option>
+                <option value="WARRANTY_PERIOD">Warranty Period</option>
                 <option value="COMPLETED">Completed</option>
                 <option value="ON-HOLD">On-Hold</option>
             </select>
@@ -153,8 +154,8 @@ export default function ProjectTable({ projects, onEdit, onDelete, onCreate, aut
                 const project = row.original;
                 return (
                     <div className="text-center w-full block">
-                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${project.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'}`}>
-                            {project.status}
+                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${project.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-600' : project.status === 'WARRANTY_PERIOD' ? 'bg-amber-500/10 text-amber-600' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'}`}>
+                            {project.status === 'WARRANTY_PERIOD' ? 'WARRANTY PERIOD' : project.status}
                         </span>
                     </div>
                 );

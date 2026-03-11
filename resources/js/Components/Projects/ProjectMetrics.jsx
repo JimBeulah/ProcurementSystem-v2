@@ -5,7 +5,8 @@ export default function ProjectMetrics({ projects, auth }) {
     const isSiteEngineer = auth?.user?.role === 'site_engineer';
     const totalProjects = projects.length;
     const activeProjects = projects.filter(p => p.status === 'ACTIVE').length;
-    const completedProjects = totalProjects - activeProjects;
+    const warrantyProjects = projects.filter(p => p.status === 'WARRANTY_PERIOD').length;
+    const completedProjects = totalProjects - activeProjects - warrantyProjects;
     const totalBudget = projects.reduce((sum, p) => sum + Number(p.budget), 0);
     const totalAppropriation = projects.reduce((sum, p) => sum + (Number(p.appropriation) || 0), 0);
     const totalFloorArea = projects
@@ -21,6 +22,7 @@ export default function ProjectMetrics({ projects, auth }) {
                     <p className="text-2xl font-black text-slate-900 dark:text-white font-mono">{totalProjects}</p>
                     <div className="flex gap-2 text-[9px] font-bold mt-1">
                         <span className="text-emerald-600">{activeProjects} Active</span>
+                        <span className="text-amber-600">{warrantyProjects} Warranty</span>
                         <span className="text-slate-400">|</span>
                         <span className="text-slate-500">{completedProjects} Completed</span>
                     </div>

@@ -85,9 +85,9 @@ export default function ProjectShow() {
                         </motion.h1>
                     </div>
                     <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-                        <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold border backdrop-blur-md shadow-sm ${project.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'}`}>
-                            <span className={`w-2 h-2 rounded-full ${project.status === 'ACTIVE' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
-                            {project.status}
+                        <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold border backdrop-blur-md shadow-sm ${project.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' : project.status === 'WARRANTY_PERIOD' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'}`}>
+                            <span className={`w-2 h-2 rounded-full ${project.status === 'ACTIVE' ? 'bg-emerald-500 animate-pulse' : project.status === 'WARRANTY_PERIOD' ? 'bg-amber-500 animate-pulse' : 'bg-slate-400'}`} />
+                            {project.status === 'WARRANTY_PERIOD' ? 'WARRANTY PERIOD' : project.status}
                         </span>
                     </motion.div>
                 </header>
