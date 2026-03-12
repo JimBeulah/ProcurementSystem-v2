@@ -3,7 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
     Briefcase, ClipboardList, Truck, ShoppingCart, ArrowRight,
-    MapPin, Building, PhilippinePeso, Calendar, Activity, Command
+    MapPin, Building, PhilippinePeso, Calendar, Activity, Command, RotateCcw
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Card } from '@/Components/UI/Card';
@@ -45,6 +45,15 @@ export default function ProjectShow() {
             iconColor: 'text-blue-600 dark:text-blue-400',
             bg: 'bg-blue-500/10',
             href: `/projects/${project.id}/material-requests`,
+        },
+        {
+            title: 'Material Returns',
+            description: 'Return leftover site materials back to warehouse inventory.',
+            icon: RotateCcw,
+            color: 'from-teal-500 to-cyan-500',
+            iconColor: 'text-teal-600 dark:text-teal-400',
+            bg: 'bg-teal-500/10',
+            href: `/projects/${project.id}/material-returns`,
         },
         {
             title: 'Procurement Status',

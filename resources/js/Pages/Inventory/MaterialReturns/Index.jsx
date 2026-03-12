@@ -12,7 +12,6 @@ const STATUS_BADGE = {
 export default function MaterialReturnsIndex({ returns }) {
     const { can } = usePermissions();
     const { flash } = usePage().props;
-    const [showForm, setShowForm] = useState(false);
     const [processing, setProcessing] = useState(null);
 
     const handleReceive = (id) => {
@@ -37,39 +36,14 @@ export default function MaterialReturnsIndex({ returns }) {
                             </div>
                             Material Returns
                         </h1>
-                        <p className="text-sm text-slate-500 mt-1">Return leftover site materials back to warehouse inventory.</p>
+                        <p className="text-sm text-slate-500 mt-1">Review and receive material returns from various project sites.</p>
                     </div>
-                    {can('view site release') && (
-                        <button
-                            onClick={() => setShowForm(true)}
-                            className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 text-xs font-bold transition-all shadow-lg shadow-teal-600/20 active:scale-95"
-                        >
-                            <Plus size={16} /> Return Materials
-                        </button>
-                    )}
                 </header>
 
                 {/* Flash Message */}
                 {flash?.success && (
                     <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 rounded-xl px-4 py-3 text-sm font-medium">
                         <CheckCircle size={16} /> {flash.success}
-                    </div>
-                )}
-
-                {/* Return Submission Modal */}
-                {showForm && (
-                    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-                        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
-                            <div className="flex items-center justify-between mb-5">
-                                <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-lg">
-                                    <RotateCcw size={18} className="text-teal-500" /> Return Materials
-                                </h2>
-                                <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600">
-                                    <X size={20} />
-                                </button>
-                            </div>
-                            <ReturnForm onClose={() => setShowForm(false)} />
-                        </div>
                     </div>
                 )}
 
@@ -135,77 +109,5 @@ export default function MaterialReturnsIndex({ returns }) {
                 </div>
             </div>
         </AuthenticatedLayout>
-    );
-}
-
-function ReturnForm({ onClose }) {
-    const { props } = usePage();
-    const projects = props.projects || [];
-    const [form, setForm] = useState({ project_id: '', material_name: '', quantity: '', unit: 'pcs', remarks: '' });
-    const [submitting, setSubmitting] = useState(false);
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        setSubmitting(true);
-        router.post(route('material-returns.store'), form, {
-            onSuccess: () => { onClose(); },
-            onFinish: () => setSubmitting(false),
-        });
-    };
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">Material Name</label>
-                <input
-                    type="text"
-                    required
-                    placeholder="e.g. Portland Cement"
-                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-teal-500 outline-none"
-                    value={form.material_name}
-                    onChange={e => setForm({ ...form, material_name: e.target.value })}
-                />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-                <div>
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">Quantity</label>
-                    <input
-                        type="number"
-                        required
-                        min="0.01"
-                        step="any"
-                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white font-mono focus:border-teal-500 outline-none"
-                        value={form.quantity}
-                        onChange={e => setForm({ ...form, quantity: e.target.value })}
-                    />
-                </div>
-                <div>
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">Unit</label>
-                    <input
-                        type="text"
-                        required
-                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-teal-500 outline-none"
-                        value={form.unit}
-                        onChange={e => setForm({ ...form, unit: e.target.value })}
-                    />
-                </div>
-            </div>
-            <div>
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">Remarks (optional)</label>
-                <textarea
-                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white h-20 focus:border-teal-500 outline-none"
-                    value={form.remarks}
-                    onChange={e => setForm({ ...form, remarks: e.target.value })}
-                />
-            </div>
-            <div className="flex gap-3 pt-2">
-                <button type="button" onClick={onClose} className="flex-1 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                    Cancel
-                </button>
-                <button type="submit" disabled={submitting} className="flex-1 bg-teal-600 hover:bg-teal-500 text-white py-2.5 rounded-xl text-sm font-bold transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
-                    <RotateCcw size={15} /> {submitting ? 'Submitting...' : 'Submit Return'}
-                </button>
-            </div>
-        </form>
     );
 }

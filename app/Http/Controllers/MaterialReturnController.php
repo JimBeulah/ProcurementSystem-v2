@@ -33,18 +33,32 @@ class MaterialReturnController extends Controller
     {
         $validated = $request->validate([
             'project_id' => 'required|exists:projects,id',
-            'material_name' => 'required|string|max:255',
+            'inventory_item_id' => 'required|exists:inventory_items,id',
             'quantity' => 'required|numeric|min:0.01',
-            'unit' => 'required|string|max:50',
             'remarks' => 'nullable|string',
         ]);
 
-        DB::transaction(function () use ($validated) {
+        $item = InventoryItem::where('id', $validated['inventory_item_id'])
+            ->where('project_id', $validated['project_id'])
+            ->firstOrFail();
+
+        if ($validated['quantity'] > $item->quantity) {
+            return redirect()->back()->with('error', "Cannot return {$validated['quantity']} {$item->unit}. You only have {$item->quantity} {$item->unit} available on site.");
+        }
+
+        DB::transaction(function () use ($validated, $item) {
             $return = MaterialReturn::create([
-                ...$validated,
+                'project_id' => $validated['project_id'],
+                'material_name' => $item->material_name,
+                'quantity' => $validated['quantity'],
+                'unit' => $item->unit,
+                'remarks' => $validated['remarks'] ?? null,
                 'returned_by_id' => Auth::id(),
                 'status' => 'PENDING',
             ]);
+
+            // Deduct from the site inventory so they can't double-return or issue it
+            $item->decrement('quantity', $validated['quantity']);
 
             return $return;
         });

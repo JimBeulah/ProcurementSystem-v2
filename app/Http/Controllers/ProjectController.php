@@ -41,6 +41,27 @@ class ProjectController extends Controller
         ]);
     }
 
+    public function materialReturns(Project $project)
+    {
+        $this->authorize('view', $project);
+
+        $returns = \App\Models\MaterialReturn::with(['returnedBy', 'receivedBy'])
+            ->where('project_id', $project->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $inventory = \App\Models\InventoryItem::where('project_id', $project->id)
+            ->where('quantity', '>', 0)
+            ->orderBy('material_name', 'asc')
+            ->get();
+
+        return Inertia::render('Projects/MaterialReturns', [
+            'project' => $project,
+            'returns' => $returns,
+            'inventory' => $inventory,
+        ]);
+    }
+
     public function store(StoreProjectRequest $request)
     {
         $this->service->create($request->validated());

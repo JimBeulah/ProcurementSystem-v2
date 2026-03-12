@@ -74,12 +74,15 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
     });
 
 
-    // Material Requests
+    // Material Requests & Returns
     Route::middleware(['can:view material requests'])->group(function () {
         Route::get('/projects/{project}/material-requests', [MaterialRequestController::class, 'index'])->name('projects.material-requests');
         Route::post('/projects/{project}/material-requests', [MaterialRequestController::class, 'store'])->name('projects.material-requests.store')->middleware('can:create material requests');
         Route::post('/material-requests/{materialRequest}/approve', [MaterialRequestController::class, 'approve'])->name('material-requests.approve')->middleware('can:approve material requests');
         Route::post('/material-requests/{materialRequest}/reject', [MaterialRequestController::class, 'reject'])->name('material-requests.reject')->middleware('can:reject material requests');
+        
+        // Site Engineer project-specific material returns view
+        Route::get('/projects/{project}/material-returns', [ProjectController::class, 'materialReturns'])->name('projects.material-returns');
     });
 
     // Purchase Orders
