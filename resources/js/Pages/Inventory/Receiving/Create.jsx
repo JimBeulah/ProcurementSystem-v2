@@ -29,11 +29,18 @@ export default function CreateReceiving() {
                 ordered_quantity: item.quantity,
                 unit_price: item.unit_price,
                 unit: item.unit,
-                quantity_received: item.quantity // default to full receipt
+                quantity_received: item.quantity, // default to full receipt
+                status: 'ACCEPTED'
             })));
         } else {
             setItems([]);
         }
+    };
+
+    const toggleReject = (idx) => {
+        const newItems = [...items];
+        newItems[idx].status = newItems[idx].status === 'REJECTED' ? 'ACCEPTED' : 'REJECTED';
+        setItems(newItems);
     };
 
     const handleQuantityChange = (idx, value) => {
@@ -45,7 +52,9 @@ export default function CreateReceiving() {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        const validItems = items.filter(i => i.quantity_received > 0);
+        // Valid items are those with quantity > 0 OR those explicitly rejected 
+        // (if they reject it, they still need to record the qty received/rejected)
+        const validItems = items.filter(i => i.quantity_received > 0 || i.status === 'REJECTED');
         if (!selectedPo || validItems.length === 0) return;
 
         setSubmitting(true);
@@ -134,36 +143,46 @@ export default function CreateReceiving() {
                                     <tr>
                                         <th className="p-3">Material</th>
                                         <th className="p-3 text-center">Ordered Qty</th>
-                                        <th className="p-3">Actual Received Qty</th>
+                                        <th className="p-3">Received Qty</th>
+                                        <th className="p-3 text-center">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
                                     {items.map((item, idx) => (
-                                        <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                                        <tr key={item.id} className={`transition-colors ${item.status === 'REJECTED' ? 'bg-rose-50/50 dark:bg-rose-950/10' : 'hover:bg-slate-50 dark:hover:bg-slate-700/30'}`}>
                                             <td className="p-3">
-                                                <div className="text-slate-900 dark:text-white font-medium">{item.material_name}</div>
+                                                <div className={`font-medium transition-all ${item.status === 'REJECTED' ? 'text-rose-500 line-through opacity-60' : 'text-slate-900 dark:text-white'}`}>{item.material_name}</div>
                                                 <div className="text-xs text-slate-400">{item.description}</div>
                                             </td>
-                                            <td className="p-3 text-center font-mono">
-                                                {item.ordered_quantity} <span className="text-xs text-slate-400">{item.unit}</span>
+                                            <td className="p-3 text-center font-mono text-xs">
+                                                {item.ordered_quantity} <span className="text-[10px] text-slate-400 uppercase">{item.unit}</span>
                                             </td>
                                             <td className="p-3">
-                                                <div className="flex items-center gap-2 max-w-[200px]">
+                                                <div className="flex items-center gap-2 max-w-[180px]">
                                                     <input
                                                         type="number"
                                                         step="0.01"
                                                         max={item.ordered_quantity}
-                                                        className={`w-full bg-white dark:bg-slate-900 border ${item.quantity_received < item.ordered_quantity ? 'border-amber-500 focus:border-amber-500 shadow-sm shadow-amber-500/20' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'} rounded-lg p-2.5 text-slate-900 dark:text-white font-mono font-bold text-lg text-center shadow-inner`}
+                                                        disabled={item.status === 'REJECTED'}
+                                                        className={`w-full bg-white dark:bg-slate-900 border ${item.status === 'REJECTED' ? 'border-transparent' : item.quantity_received < item.ordered_quantity ? 'border-amber-500 focus:border-amber-500 shadow-sm shadow-amber-500/20' : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'} rounded-lg p-2 text-slate-900 dark:text-white font-mono font-bold text-center disabled:opacity-30`}
                                                         value={item.quantity_received}
                                                         onChange={e => handleQuantityChange(idx, e.target.value)}
                                                     />
-                                                    <span className="text-slate-400 uppercase text-xs font-bold w-12">{item.unit}</span>
+                                                    <span className="text-slate-400 uppercase text-[10px] font-bold w-10">{item.unit}</span>
                                                 </div>
-                                                {item.quantity_received < item.ordered_quantity && (
-                                                    <div className="text-[10px] text-amber-600 mt-1 font-bold">
-                                                        Warning: Partial Delivery
-                                                    </div>
-                                                )}
+                                            </td>
+                                            <td className="p-3 text-center">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => toggleReject(idx)}
+                                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all
+                                                        ${item.status === 'REJECTED'
+                                                            ? 'bg-rose-600 border-rose-600 text-white'
+                                                            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-500 hover:border-rose-200'
+                                                        }`}
+                                                >
+                                                    {item.status === 'REJECTED' ? 'REJECTED' : 'REJECT'}
+                                                </button>
                                             </td>
                                         </tr>
                                     ))}

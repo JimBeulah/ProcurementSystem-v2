@@ -4,7 +4,7 @@ import {
     Users, Hexagon, X, Briefcase, Shield, ArrowDownCircle,
     ChevronDown, Truck, PieChart, ChevronLeft, ChevronRight,
     LayoutDashboard, ClipboardList, FileSearch, Factory, Receipt, UserCog, Inbox, ShieldCheck, ScrollText, RotateCcw,
-    Layers, Settings, CircleDashed
+    Layers, Settings, CircleDashed, ArrowLeftRight
 } from 'lucide-react';
 
 /**
@@ -25,6 +25,7 @@ export const NAVIGATION_CONFIG = [
             { label: 'RFQ', href: '/purchasing/rfq', icon: <FileSearch />, permission: 'view rfq', matchPrefix: '/purchasing/rfq', badgeKey: 'rfqs' },
             { label: 'Suppliers', href: '/purchasing/suppliers', icon: <Factory />, permission: 'view suppliers', matchPrefix: '/purchasing/suppliers' },
             { label: 'Orders', href: '/purchasing/orders', icon: <ClipboardList />, permission: 'view purchase orders', matchPrefix: '/purchasing/orders' },
+            { label: 'Supplier Returns', href: '/purchasing/supplier-returns', icon: <ArrowLeftRight />, permission: 'view purchase orders', matchPrefix: '/purchasing/supplier-returns' },
             {
                 label: 'Approvals',
                 href: '/purchasing/approvals',

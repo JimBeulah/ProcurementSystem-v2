@@ -21,6 +21,7 @@ export default function Deliveries() {
     const [confirming, setConfirming] = useState(null);
     const [selectedDelivery, setSelectedDelivery] = useState(null);
     const [itemQuantities, setItemQuantities] = useState({});
+    const [itemRejections, setItemRejections] = useState({});
     const [receiptRemarks, setReceiptRemarks] = useState('');
 
     useEffect(() => {
@@ -32,8 +33,13 @@ export default function Deliveries() {
         if (confirming) return;
         if (item.type === 'purchase_order' && item.items?.length) {
             const init = {};
-            item.items.forEach(i => { init[i.id] = String(i.quantity); });
+            const initRej = {};
+            item.items.forEach(i => { 
+                init[i.id] = String(i.quantity); 
+                initRej[i.id] = false;
+            });
             setItemQuantities(init);
+            setItemRejections(initRej);
         } else if (item.type === 'site_release') {
             setItemQuantities({ [item.id]: String(item.quantity) });
             setReceiptRemarks('');
@@ -45,6 +51,7 @@ export default function Deliveries() {
         if (confirming) return;
         setSelectedDelivery(null);
         setItemQuantities({});
+        setItemRejections({});
         setReceiptRemarks('');
     };
 
@@ -59,6 +66,7 @@ export default function Deliveries() {
         const payload = selectedDelivery.type === 'purchase_order'
             ? {
                 quantities: itemQuantities,
+                rejections: itemRejections,
                 receipt_remarks: receiptRemarks
             }
             : {
@@ -71,6 +79,7 @@ export default function Deliveries() {
                 setConfirming(null);
                 setSelectedDelivery(null);
                 setItemQuantities({});
+                setItemRejections({});
             },
         });
     };
@@ -142,14 +151,14 @@ export default function Deliveries() {
                 isOpen={!!selectedDelivery}
                 onClose={closeModal}
                 title={selectedDelivery?.type === 'purchase_order' ? 'Confirm PO Delivery' : 'Confirm Warehouse Release'}
-                maxWidth="max-w-lg"
+                maxWidth="max-w-2xl"
             >
                 <div className="space-y-4">
                     {selectedDelivery?.type === 'purchase_order' ? (
                         <div className="space-y-4">
                             <div className="bg-blue-50 dark:bg-blue-500/10 text-blue-800 dark:text-blue-300 p-3 rounded-xl text-xs border border-blue-200 dark:border-blue-500/20">
                                 <p className="font-semibold">Enter the actual quantity received for each item.</p>
-                                <p className="opacity-70 mt-0.5">Pre-filled with the ordered quantity. Adjust if delivery was partial or short.</p>
+                                <p className="opacity-70 mt-0.5">Mark items as <strong>Rejected</strong> if they are incorrect or damaged. Rejected items will not be added to stock.</p>
                             </div>
 
                             {selectedDelivery.items?.length > 0 ? (
@@ -158,9 +167,10 @@ export default function Deliveries() {
                                         <thead className="bg-slate-50 dark:bg-slate-800 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                                             <tr>
                                                 <th className="px-3 py-2 text-left">Material</th>
-                                                <th className="px-3 py-2 text-center w-20">Unit</th>
-                                                <th className="px-3 py-2 text-right w-24">Ordered</th>
-                                                <th className="px-3 py-2 text-right w-28">Qty Received</th>
+                                                <th className="px-3 py-2 text-center w-16">Unit</th>
+                                                <th className="px-3 py-2 text-right w-20">Ordered</th>
+                                                <th className="px-3 py-2 text-right w-24">Received</th>
+                                                <th className="px-3 py-2 text-center w-20">Status</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
@@ -168,11 +178,15 @@ export default function Deliveries() {
                                                 const entered = parseFloat(itemQuantities[item.id] || 0);
                                                 const ordered = parseFloat(item.quantity);
                                                 const isShort = entered < ordered && entered > 0;
+                                                const isRejected = itemRejections[item.id];
+                                                
                                                 return (
-                                                    <tr key={item.id} className="bg-white dark:bg-slate-900/50">
-                                                        <td className="px-3 py-2.5 font-medium text-slate-800 dark:text-slate-200">{item.material_name}</td>
-                                                        <td className="px-3 py-2.5 text-center text-xs text-slate-500 uppercase">{item.unit}</td>
-                                                        <td className="px-3 py-2.5 text-right font-mono text-slate-500 text-xs">{Number(item.quantity).toLocaleString()}</td>
+                                                    <tr key={item.id} className={`transition-colors ${isRejected ? 'bg-rose-50/50 dark:bg-rose-950/10' : 'bg-white dark:bg-slate-900/50'}`}>
+                                                        <td className={`px-3 py-2.5 font-medium transition-all ${isRejected ? 'text-rose-500 line-through opacity-60' : 'text-slate-800 dark:text-slate-200'}`}>
+                                                            {item.material_name}
+                                                        </td>
+                                                        <td className="px-3 py-2.5 text-center text-[10px] text-slate-500 uppercase">{item.unit}</td>
+                                                        <td className="px-3 py-2.5 text-right font-mono text-slate-500 text-[10px]">{Number(item.quantity).toLocaleString()}</td>
                                                         <td className="px-3 py-1.5 text-right">
                                                             <input
                                                                 type="number"
@@ -181,12 +195,26 @@ export default function Deliveries() {
                                                                 max={item.quantity}
                                                                 value={itemQuantities[item.id] ?? item.quantity}
                                                                 onChange={e => setItemQuantities(prev => ({ ...prev, [item.id]: e.target.value }))}
-                                                                className={`w-24 text-right font-mono text-sm px-2 py-1 rounded-lg border focus:outline-none transition-colors
+                                                                disabled={isRejected}
+                                                                className={`w-20 text-right font-mono text-sm px-2 py-1 rounded-lg border focus:outline-none transition-colors disabled:opacity-30
                                                                     ${isShort
                                                                         ? 'border-amber-400 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 focus:border-amber-500'
                                                                         : 'border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:border-blue-500'
                                                                     }`}
                                                             />
+                                                        </td>
+                                                        <td className="px-3 py-1.5 text-center">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setItemRejections(prev => ({ ...prev, [item.id]: !isRejected }))}
+                                                                className={`px-2 py-1 rounded-md text-[10px] font-bold border transition-all
+                                                                    ${isRejected
+                                                                        ? 'bg-rose-600 border-rose-600 text-white'
+                                                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-500 hover:border-rose-200'
+                                                                    }`}
+                                                            >
+                                                                {isRejected ? 'REJECTED' : 'REJECT'}
+                                                            </button>
                                                         </td>
                                                     </tr>
                                                 );

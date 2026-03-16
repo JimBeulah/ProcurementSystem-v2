@@ -18,6 +18,7 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SiteReleaseController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\OperationsController;
+use App\Http\Controllers\SupplierReturnController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\ForcePasswordChangeController;
 use Illuminate\Foundation\Application;
@@ -80,7 +81,7 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
         Route::post('/projects/{project}/material-requests', [MaterialRequestController::class, 'store'])->name('projects.material-requests.store')->middleware('can:create material requests');
         Route::post('/material-requests/{materialRequest}/approve', [MaterialRequestController::class, 'approve'])->name('material-requests.approve')->middleware('can:approve material requests');
         Route::post('/material-requests/{materialRequest}/reject', [MaterialRequestController::class, 'reject'])->name('material-requests.reject')->middleware('can:reject material requests');
-        
+
         // Site Engineer project-specific material returns view
         Route::get('/projects/{project}/material-returns', [ProjectController::class, 'materialReturns'])->name('projects.material-returns');
     });
@@ -155,10 +156,19 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
     Route::post('/site-release', [SiteReleaseController::class, 'store'])->name('site-release.store')->middleware('can:create site release');
     Route::post('/site-release/{siteRelease}/confirm', [SiteReleaseController::class, 'confirmReceipt'])->name('site-release.confirm')->middleware('can:confirm site release');
 
-    // Material Returns
+    // Material Returns (Site → Warehouse)
     Route::get('/inventory/returns', [\App\Http\Controllers\MaterialReturnController::class, 'index'])->name('material-returns.index')->middleware('can:view inventory');
     Route::post('/inventory/returns', [\App\Http\Controllers\MaterialReturnController::class, 'store'])->name('material-returns.store')->middleware('can:view site release');
     Route::post('/inventory/returns/{materialReturn}/receive', [\App\Http\Controllers\MaterialReturnController::class, 'receive'])->name('material-returns.receive')->middleware('can:manage inventory');
+
+    // Supplier Returns (Wrong Purchase / Return-to-Vendor)
+    Route::get('/purchasing/supplier-returns', [SupplierReturnController::class, 'index'])->name('supplier-returns.index')->middleware('can:view purchase orders');
+    Route::get('/purchasing/supplier-returns/create', [SupplierReturnController::class, 'create'])->name('supplier-returns.create')->middleware('can:create purchase orders');
+    Route::post('/purchasing/supplier-returns', [SupplierReturnController::class, 'store'])->name('supplier-returns.store')->middleware('can:create purchase orders');
+    Route::get('/purchasing/supplier-returns/{supplierReturn}', [SupplierReturnController::class, 'show'])->name('supplier-returns.show');
+    Route::post('/purchasing/supplier-returns/{supplierReturn}/approve', [SupplierReturnController::class, 'approve'])->name('supplier-returns.approve')->middleware('can:approve purchase orders');
+    Route::post('/purchasing/supplier-returns/{supplierReturn}/mark-returned', [SupplierReturnController::class, 'markReturned'])->name('supplier-returns.mark-returned')->middleware('can:approve purchase orders');
+    Route::post('/purchasing/supplier-returns/{supplierReturn}/cancel', [SupplierReturnController::class, 'cancel'])->name('supplier-returns.cancel')->middleware('can:create purchase orders');
 
 
     // Settings

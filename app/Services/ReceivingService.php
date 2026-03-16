@@ -27,29 +27,59 @@ class ReceivingService
         ]);
 
 
+        $rejectedItems = [];
+
         foreach ($validated['items'] as $itemData) {
+            $isRejected = ($itemData['status'] ?? 'ACCEPTED') === 'REJECTED';
+
             ReceivingItem::create([
                 'receiving_report_id' => $report->id,
                 'material_name' => $itemData['material_name'],
                 'quantity_received' => $itemData['quantity_received'],
-                'status' => 'ACCEPTED',
+                'status' => $itemData['status'] ?? 'ACCEPTED',
             ]);
 
-            $poItem = collect($po->items)->firstWhere('id', $itemData['id']);
+            // Only increment inventory if NOT rejected
+            if (!$isRejected) {
+                $poItem = collect($po->items)->firstWhere('id', $itemData['id']);
 
-            $inventoryItem = InventoryItem::firstOrCreate(
-                [
+                $inventoryItem = InventoryItem::firstOrCreate(
+                    [
+                        'material_name' => $itemData['material_name'],
+                        'project_id' => $po->project_id,
+                        'warehouse_id' => null,
+                    ],
+                    [
+                        'quantity' => 0,
+                        'unit' => $poItem ? $poItem->unit : 'unit',
+                    ]
+                );
+
+                $inventoryItem->increment('quantity', $itemData['quantity_received']);
+            } else {
+                // Collect for automatic Supplier Return creation
+                $poItem = collect($po->items)->firstWhere('id', $itemData['id']);
+                $rejectedItems[] = [
+                    'po_item_id' => $itemData['id'],
                     'material_name' => $itemData['material_name'],
-                    'project_id' => $po->project_id,
-                    'warehouse_id' => null,
-                ],
-                [
-                    'quantity' => 0,
                     'unit' => $poItem ? $poItem->unit : 'unit',
-                ]
-            );
+                    'quantity' => $itemData['quantity_received'],
+                    'unit_price' => $poItem ? $poItem->unit_price : 0,
+                    'notes' => 'Rejected during manual GRN entry.'
+                ];
+            }
+        }
 
-            $inventoryItem->increment('quantity', $itemData['quantity_received']);
+        // Automatically create a Supplier Return request for rejected items
+        if (!empty($rejectedItems)) {
+            app(SupplierReturnService::class)->create([
+                'purchase_order_id' => $po->id,
+                'project_id' => $po->project_id,
+                'supplier_id' => $po->supplier_id,
+                'reason' => 'Items rejected during manual receiving.',
+                'remarks' => $validated['notes'] ?? null,
+                'items' => $rejectedItems
+            ], true); // skipInventory = true because they never entered stock
         }
 
         $po->update(['status' => 'COMPLETED']);
@@ -61,7 +91,7 @@ class ReceivingService
     /**
      * Automatically receive the full requested quantity for a Purchase Order (Direct-to-site).
      */
-    public function autoReceiveFullOrder(PurchaseOrder $po, array $quantities = [], ?string $notes = null): ReceivingReport
+    public function autoReceiveFullOrder(PurchaseOrder $po, array $quantities = [], ?string $notes = null, array $rejections = []): ReceivingReport
     {
         if (empty($notes)) {
             $notes = empty($quantities)
@@ -76,7 +106,11 @@ class ReceivingService
             'notes' => $notes,
         ]);
 
+        $rejectedItems = [];
+
         foreach ($po->items as $poItem) {
+            $isRejected = isset($rejections[$poItem->id]) && $rejections[$poItem->id] === true;
+
             // Use engineer-entered qty if provided, otherwise fall back to ordered qty
             $receivedQty = isset($quantities[$poItem->id]) && is_numeric($quantities[$poItem->id])
                 ? (float) $quantities[$poItem->id]
@@ -86,22 +120,47 @@ class ReceivingService
                 'receiving_report_id' => $report->id,
                 'material_name' => $poItem->material_name,
                 'quantity_received' => $receivedQty,
-                'status' => 'GOOD',
+                'status' => $isRejected ? 'REJECTED' : 'GOOD',
             ]);
 
-            $inventoryItem = InventoryItem::firstOrCreate(
-                [
-                    'material_name' => $poItem->material_name,
-                    'project_id' => $po->project_id,
-                    'warehouse_id' => null,
-                ],
-                [
-                    'quantity' => 0,
-                    'unit' => $poItem->unit,
-                ]
-            );
+            // Only increment inventory if NOT rejected
+            if (!$isRejected) {
+                $inventoryItem = InventoryItem::firstOrCreate(
+                    [
+                        'material_name' => $poItem->material_name,
+                        'project_id' => $po->project_id,
+                        'warehouse_id' => null,
+                    ],
+                    [
+                        'quantity' => 0,
+                        'unit' => $poItem->unit,
+                    ]
+                );
 
-            $inventoryItem->increment('quantity', $receivedQty);
+                $inventoryItem->increment('quantity', $receivedQty);
+            } else {
+                // Collect for automatic Supplier Return creation
+                $rejectedItems[] = [
+                    'po_item_id' => $poItem->id,
+                    'material_name' => $poItem->material_name,
+                    'unit' => $poItem->unit,
+                    'quantity' => $receivedQty,
+                    'unit_price' => $poItem->unit_price,
+                    'notes' => 'Rejected at gate during delivery receipt.'
+                ];
+            }
+        }
+
+        // Automatically create a Supplier Return request for rejected items
+        if (!empty($rejectedItems)) {
+            app(SupplierReturnService::class)->create([
+                'purchase_order_id' => $po->id,
+                'project_id' => $po->project_id,
+                'supplier_id' => $po->supplier_id,
+                'reason' => 'Items rejected during delivery confirmation.',
+                'remarks' => $notes,
+                'items' => $rejectedItems
+            ], true); // skipInventory = true because they never entered stock
         }
 
         $po->update(['status' => 'COMPLETED']);

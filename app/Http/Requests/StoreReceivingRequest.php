@@ -21,6 +21,7 @@ class StoreReceivingRequest extends FormRequest
             'items.*.id' => 'required|exists:purchase_order_items,id',
             'items.*.material_name' => 'required|string|max:255',
             'items.*.quantity_received' => 'required|numeric|min:0.01',
+            'items.*.status' => 'nullable|string|in:ACCEPTED,REJECTED',
         ];
     }
 }

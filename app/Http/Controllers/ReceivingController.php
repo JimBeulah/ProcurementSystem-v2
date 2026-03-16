@@ -68,10 +68,12 @@ class ReceivingController extends Controller
         }
 
         // quantities is an optional map of { item_id: received_qty }
+        // rejections is an optional map of { item_id: boolean }
         $quantities = $request->input('quantities', []);
+        $rejections = $request->input('rejections', []);
         $notes = $request->input('receipt_remarks');
 
-        $this->service->autoReceiveFullOrder($purchaseOrder, $quantities, $notes);
+        $this->service->autoReceiveFullOrder($purchaseOrder, $quantities, $notes, $rejections);
 
         return redirect()->back()->with('success', 'Delivery for PO-' . str_pad($purchaseOrder->id, 4, '0', STR_PAD_LEFT) . ' has been recorded.');
     }

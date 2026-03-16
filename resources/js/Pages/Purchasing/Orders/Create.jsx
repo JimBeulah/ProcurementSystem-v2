@@ -4,16 +4,19 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, Save, Search, Plus, X, Package, AlertTriangle, CheckCircle, Warehouse } from 'lucide-react';
 
 export default function CreatePurchaseOrder() {
-    const { projects, suppliers, materials, rfqId, quoteId, purchaseRequest, inventoryMatches = {} } = usePage().props;
+    const { projects, suppliers, materials, rfqId, quoteId, purchaseRequest, supplierReturn, inventoryMatches = {} } = usePage().props;
     const hasInventoryMatches = Object.keys(inventoryMatches).length > 0;
     const [dismissedMatches, setDismissedMatches] = useState({});
 
 
     const [formData, setFormData] = useState({
-        project_id: purchaseRequest?.project_id || '',
-        supplier_id: '',
-        remarks: purchaseRequest ? `PO for PR-${purchaseRequest.id.toString().padStart(5, '0')}` : '',
-        purchase_request_id: purchaseRequest?.id || null
+        project_id: purchaseRequest?.project_id || supplierReturn?.project_id || '',
+        supplier_id: supplierReturn?.supplier_id || '',
+        remarks: purchaseRequest
+            ? `PO for PR-${purchaseRequest.id.toString().padStart(5, '0')}`
+            : (supplierReturn ? `Replacement PO for Return SR-${supplierReturn.id.toString().padStart(4, '0')}` : ''),
+        purchase_request_id: purchaseRequest?.id || null,
+        supplier_return_id: supplierReturn?.id || null
     });
 
     // Auto-fill items if PR exists
@@ -29,6 +32,15 @@ export default function CreatePurchaseOrder() {
                     unit: item.unit,
                     unit_price: item.estimated_unit_cost || 0
                 }));
+        }
+        if (supplierReturn?.items) {
+            return supplierReturn.items.map(item => ({
+                material_name: item.material_name,
+                description: `Replacement for Return SR-${supplierReturn.id}`,
+                quantity: item.quantity,
+                unit: item.unit,
+                unit_price: item.unit_price || 0
+            }));
         }
         return [];
     });
@@ -91,8 +103,13 @@ export default function CreatePurchaseOrder() {
                                     From PR-{purchaseRequest.id.toString().padStart(5, '0')}
                                 </span>
                             )}
+                            {supplierReturn && (
+                                <span className="text-xs bg-orange-500/10 text-orange-600 px-2.5 py-1 rounded-full border border-orange-500/20 font-mono">
+                                    Re-order from Return SR-{supplierReturn.id.toString().padStart(4, '0')}
+                                </span>
+                            )}
                         </h1>
-                        <p className="text-slate-500">Issue a new order to supplier.</p>
+                        <p className="text-slate-500">{supplierReturn ? 'Procure replacements for rejected items.' : 'Issue a new order to supplier.'}</p>
                     </div>
                 </header>
 

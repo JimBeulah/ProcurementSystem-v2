@@ -47,6 +47,13 @@ class PurchaseOrderController extends Controller
         $materials = Material::orderBy('name')->get();
         $pr = $this->service->findPurchaseRequest($request->query('prId'));
 
+        // Handle pre-filling from a Supplier Return
+        $supplierReturn = null;
+        if ($request->query('returnId')) {
+            $supplierReturn = \App\Models\SupplierReturn::with(['project', 'items', 'supplier'])
+                ->find($request->query('returnId'));
+        }
+
         // Smart Inventory Match: for each PR item, check warehouse stock with matching name
         $inventoryMatches = [];
         if ($pr && $pr->items) {
@@ -74,6 +81,7 @@ class PurchaseOrderController extends Controller
             'rfqId' => $request->query('rfqId'),
             'quoteId' => $request->query('quoteId'),
             'purchaseRequest' => $pr,
+            'supplierReturn' => $supplierReturn,
             'inventoryMatches' => $inventoryMatches,
         ]);
     }
