@@ -5,11 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\Disbursement;
 use App\Models\Project;
 use App\Models\SupplierInvoice;
+use Illuminate\Http\Request;
+use App\Services\ReportService;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class FinanceController extends Controller
 {
+    protected $reportService;
+
+    public function __construct(ReportService $reportService)
+    {
+        $this->reportService = $reportService;
+    }
     public function invoices(): Response
     {
         $invoices = SupplierInvoice::with(['supplier', 'purchaseOrder'])
@@ -47,27 +55,16 @@ class FinanceController extends Controller
         ]);
     }
 
-    public function reports(): Response
+    public function reports(Request $request): Response
     {
-        $projects = Project::with(['purchaseOrders', 'boqItems'])->get();
+        $projectId = $request->input('project_id');
 
-        $data = $projects->map(function ($p) {
-            $budget = (float) $p->budget;
-            $committed = $p->purchaseOrders->sum('total_amount');
-            $paid = 0; // Compute from disbursements if needed
-            return [
-                'id' => $p->id,
-                'name' => $p->name,
-                'clientName' => $p->client?->name ?? 'N/A',
-                'budget' => $budget,
-                'committed' => $committed,
-                'invoiced' => 0,
-                'paid' => $paid,
-                'remaining' => $budget - $committed,
-                'progress' => $budget > 0 ? ($committed / $budget) * 100 : 0,
-            ];
-        });
-
-        return Inertia::render('Finance/Reports/Index', ['data' => $data]);
+        return Inertia::render('Finance/Reports/Index', [
+            'data' => $this->reportService->getFinancialReportsData($projectId),
+            'projects' => $this->reportService->getProjectsList(),
+            'filters' => [
+                'project_id' => $projectId,
+            ],
+        ]);
     }
 }
