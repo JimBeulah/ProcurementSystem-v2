@@ -8,6 +8,7 @@ use App\Models\PurchaseOrder;
 use App\Models\ReceivingReport;
 use App\Models\Supplier;
 use App\Services\FinanceService;
+use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -58,5 +59,18 @@ class FinanceFormController extends Controller
         $this->service->processDisbursement($request->validated());
 
         return redirect()->route('finance.disbursements')->with('success', 'Payment processed.');
+    }
+
+    public function liquidate(Request $request, \App\Models\Disbursement $disbursement): RedirectResponse
+    {
+        $validated = $request->validate([
+            'receipt_number' => 'required|string|max:255',
+            'receipt_date' => 'required|date',
+            'liquidation_remarks' => 'nullable|string|max:1000',
+        ]);
+
+        $this->service->liquidateDisbursement($disbursement, $validated);
+
+        return redirect()->back()->with('success', 'Disbursement liquidated successfully.');
     }
 }

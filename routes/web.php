@@ -147,6 +147,7 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
     // Finance Forms
     Route::post('/finance/invoices', [FinanceFormController::class, 'storeInvoice'])->name('finance.invoices.store');
     Route::post('/finance/disbursements', [FinanceFormController::class, 'storeDisbursement'])->name('finance.disbursements.store');
+    Route::post('/finance/disbursements/{disbursement}/liquidate', [FinanceFormController::class, 'liquidate'])->name('finance.disbursements.liquidate');
 
     // Operations
     Route::get('/operations/deliveries', [OperationsController::class, 'deliveries'])->name('operations.deliveries')->middleware('role_or_permission:site_engineer|view receiving');

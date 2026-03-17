@@ -17,6 +17,11 @@ class Disbursement extends Model
         'method',
         'reference_number',
         'status',
+        'is_liquidated',
+        'liquidated_at',
+        'receipt_number',
+        'receipt_date',
+        'liquidation_remarks',
     ];
 
     protected function casts(): array
@@ -24,6 +29,9 @@ class Disbursement extends Model
         return [
             'amount' => 'decimal:2',
             'payment_date' => 'datetime',
+            'liquidated_at' => 'datetime',
+            'receipt_date' => 'date',
+            'is_liquidated' => 'boolean',
         ];
     }
 

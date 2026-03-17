@@ -31,4 +31,15 @@ class FinanceService
             'processed_by_id' => Auth::id(),
         ]));
     }
+    /**
+     * Liquidate a disbursement with receipt details.
+     */
+    public function liquidateDisbursement(Disbursement $disbursement, array $data): void
+    {
+        $disbursement->update(array_merge($data, [
+            'is_liquidated' => true,
+            'liquidated_at' => now(),
+            'status' => 'LIQUIDATED',
+        ]));
+    }
 }
