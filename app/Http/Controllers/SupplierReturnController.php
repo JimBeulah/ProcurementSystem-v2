@@ -37,8 +37,15 @@ class SupplierReturnController extends Controller
 
         $returns = $query->paginate(20)->withQueryString();
 
+        $projects = Project::where('status', 'ACTIVE')->orderBy('name')->get();
+        $suppliers = Supplier::orderBy('name')->get();
+        $materials = \App\Models\Material::orderBy('name')->get();
+
         return Inertia::render('Purchasing/SupplierReturns/Index', [
             'returns' => $returns,
+            'projects' => $projects,
+            'suppliers' => $suppliers,
+            'materials' => $materials,
         ]);
     }
 

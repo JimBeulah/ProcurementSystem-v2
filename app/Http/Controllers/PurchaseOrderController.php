@@ -20,14 +20,54 @@ class PurchaseOrderController extends Controller
     ) {
     }
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $orders = PurchaseOrder::with(['project', 'supplier', 'requester'])
+        $orders = PurchaseOrder::with(['project', 'supplier', 'requester', 'approver', 'items'])
             ->orderBy('created_at', 'desc')
             ->get();
 
+        $projects = Project::where('status', 'ACTIVE')->orderBy('name')->get();
+        $suppliers = Supplier::orderBy('name')->get();
+        $materials = Material::orderBy('name')->get();
+        $pr = $this->service->findPurchaseRequest($request->query('prId'));
+
+        // Handle pre-filling from a Supplier Return
+        $supplierReturn = null;
+        if ($request->query('returnId')) {
+            $supplierReturn = \App\Models\SupplierReturn::with(['project', 'items', 'supplier'])
+                ->find($request->query('returnId'));
+        }
+
+        // Smart Inventory Match: for each PR item, check warehouse stock with matching name
+        $inventoryMatches = [];
+        if ($pr && $pr->items) {
+            foreach ($pr->items as $item) {
+                $matches = \App\Models\InventoryItem::where('quantity', '>', 0)
+                    ->whereNull('project_id')
+                    ->where('material_name', 'LIKE', '%' . $item->item_description . '%')
+                    ->get(['id', 'material_name', 'quantity', 'unit', 'project_id'])
+                    ->toArray();
+
+                if (count($matches) > 0) {
+                    $inventoryMatches[$item->item_description] = [
+                        'requested_qty' => (float) $item->quantity,
+                        'unit' => $item->unit,
+                        'stock' => $matches,
+                    ];
+                }
+            }
+        }
+
         return Inertia::render('Purchasing/Orders/Index', [
             'orders' => $orders,
+            'projects' => $projects,
+            'suppliers' => $suppliers,
+            'materials' => $materials,
+            'rfqId' => $request->query('rfqId'),
+            'quoteId' => $request->query('quoteId'),
+            'purchaseRequest' => $pr,
+            'supplierReturn' => $supplierReturn,
+            'inventoryMatches' => $inventoryMatches,
         ]);
     }
 

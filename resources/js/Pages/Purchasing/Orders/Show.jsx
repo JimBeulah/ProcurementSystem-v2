@@ -3,10 +3,12 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, CheckCircle, Printer } from 'lucide-react';
 import { usePermissions } from '@/Hooks/usePermissions';
+import PdfPreviewModal from '@/Components/UI/PdfPreviewModal';
 
 export default function PurchaseOrderShow() {
     const { order: po } = usePage().props;
     const { can } = usePermissions();
+    const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
 
     if (!po) return <div className="p-12 text-center text-red-500">PO Not Found</div>;
 
@@ -36,9 +38,12 @@ export default function PurchaseOrderShow() {
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <a href={`/purchasing/orders/${po.id}/print`} target="_blank" rel="noopener noreferrer" className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm transition-colors">
+                        <button
+                            onClick={() => setIsPreviewOpen(true)}
+                            className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm transition-colors"
+                        >
                             <Printer size={18} /> Print
-                        </a>
+                        </button>
                         {po.status === 'PENDING' && can('approve purchase orders') && (
                             <button onClick={handleApprove} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold transition-colors active:scale-95">
                                 <CheckCircle size={18} /> Approve PO
@@ -113,6 +118,13 @@ export default function PurchaseOrderShow() {
                     </div>
                 )}
             </div>
+
+            <PdfPreviewModal
+                isOpen={isPreviewOpen}
+                onClose={() => setIsPreviewOpen(false)}
+                url={`/purchasing/orders/${po.id}/print`}
+                title={`Purchase Order PO-${po.id.toString().padStart(4, '0')} Preview`}
+            />
         </AuthenticatedLayout>
     );
 }

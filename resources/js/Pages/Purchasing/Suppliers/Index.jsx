@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage, router } from '@inertiajs/react';
 import { usePermissions } from '@/Hooks/usePermissions';
-import { Briefcase, Plus, Star, Search, MapPin, Phone, Mail, X } from 'lucide-react';
+import { Briefcase, Plus, Star } from 'lucide-react';
 import Modal from '@/Components/UI/Modal';
 import { toast } from 'sonner';
+import { DataTable } from '@/Components/UI/DataTable';
 
 export default function SuppliersIndex() {
     const { suppliers } = usePage().props;
     const { can } = usePermissions();
-    const [search, setSearch] = useState('');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
@@ -23,10 +23,48 @@ export default function SuppliersIndex() {
         rating: 3,
     });
 
-    const filteredSuppliers = (suppliers || []).filter(s =>
-        s.name.toLowerCase().includes(search.toLowerCase()) ||
-        (s.contact_person && s.contact_person.toLowerCase().includes(search.toLowerCase()))
-    );
+    const columns = React.useMemo(() => [
+        {
+            accessorKey: 'name',
+            header: 'Supplier Name',
+            cell: info => <span className="font-bold text-slate-900 dark:text-white">{info.getValue()}</span>,
+        },
+        {
+            accessorKey: 'contact_person',
+            header: 'Contact Person',
+            cell: info => info.getValue() || <span className="text-slate-400 italic">None</span>,
+        },
+        {
+            accessorKey: 'email',
+            header: 'Email',
+            cell: info => info.getValue() || '-',
+        },
+        {
+            accessorKey: 'phone',
+            header: 'Phone',
+            cell: info => info.getValue() || '-',
+        },
+        {
+            accessorKey: 'rating',
+            header: 'Rating',
+            cell: info => (
+                <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                        <Star key={i} size={14} className={i < info.getValue() ? "text-amber-400 fill-amber-400" : "text-slate-300 dark:text-slate-600"} />
+                    ))}
+                </div>
+            )
+        },
+        {
+            accessorKey: 'address',
+            header: 'Address',
+            cell: info => (
+                <span className="line-clamp-1 max-w-xs block" title={info.getValue()}>
+                    {info.getValue() || '-'}
+                </span>
+            ),
+        }
+    ], []);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -66,68 +104,14 @@ export default function SuppliersIndex() {
                     )}
                 </header>
 
-                {/* Search Bar */}
-                <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-4">
-                    <div className="flex-1 relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                        <input
-                            type="text"
-                            placeholder="Search suppliers by name or contact..."
-                            className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
-                            value={search}
-                            onChange={e => setSearch(e.target.value)}
-                        />
-                    </div>
-                </div>
-
-                {/* Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredSuppliers.map(supplier => (
-                        <div key={supplier.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 hover:border-blue-500/50 transition-colors shadow-sm group">
-                            <div className="flex justify-between items-start mb-4">
-                                <div>
-                                    <h3 className="font-bold text-slate-900 dark:text-white text-lg group-hover:text-blue-500 transition-colors">{supplier.name}</h3>
-                                    <div className="flex items-center gap-1 mt-1">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Star key={i} size={14} className={i < supplier.rating ? "text-amber-400 fill-amber-400" : "text-slate-300 dark:text-slate-600"} />
-                                        ))}
-                                    </div>
-                                </div>
-                                <div className="h-10 w-10 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 flex items-center justify-center font-bold text-lg border border-blue-500/20">
-                                    {supplier.name.charAt(0)}
-                                </div>
-                            </div>
-
-                            <div className="space-y-2 text-sm text-slate-500">
-                                {supplier.contact_person && (
-                                    <div className="flex items-center gap-3">
-                                        <Briefcase size={14} className="text-slate-400" /> {supplier.contact_person}
-                                    </div>
-                                )}
-                                {supplier.phone && (
-                                    <div className="flex items-center gap-3">
-                                        <Phone size={14} className="text-slate-400" /> {supplier.phone}
-                                    </div>
-                                )}
-                                {supplier.email && (
-                                    <div className="flex items-center gap-3 truncate">
-                                        <Mail size={14} className="text-slate-400" /> {supplier.email}
-                                    </div>
-                                )}
-                                {supplier.address && (
-                                    <div className="flex items-start gap-3 mt-3 pt-3 border-t border-slate-100 dark:border-slate-700/50 text-xs">
-                                        <MapPin size={14} className="text-slate-400 shrink-0 mt-0.5" />
-                                        <span className="line-clamp-2">{supplier.address}</span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    ))}
-                    {filteredSuppliers.length === 0 && (
-                        <div className="col-span-full py-12 text-center text-slate-500 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
-                            No suppliers found. Click "Add Supplier" to create one.
-                        </div>
-                    )}
+                {/* Table */}
+                <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <DataTable
+                        columns={columns}
+                        data={suppliers || []}
+                        showSearch={true}
+                        showPagination={true}
+                    />
                 </div>
             </div>
 
