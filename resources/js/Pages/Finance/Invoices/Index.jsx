@@ -90,7 +90,14 @@ export default function InvoicesIndex() {
                                     </td>
                                     <td className="p-4 text-right">
                                         {inv.status === 'PENDING' && (
-                                            <button className="text-emerald-500 hover:text-emerald-400 flex items-center gap-1 ml-auto text-sm">
+                                            <button
+                                                onClick={() => {
+                                                    if (confirm('Mark this invoice as matched and validated?')) {
+                                                        router.post(route('finance.invoices.validate', inv.id));
+                                                    }
+                                                }}
+                                                className="text-emerald-500 hover:text-emerald-400 flex items-center gap-1 ml-auto text-sm"
+                                            >
                                                 <CheckCircle2 size={16} /> Validate
                                             </button>
                                         )}

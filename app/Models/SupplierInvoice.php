@@ -17,6 +17,7 @@ class SupplierInvoice extends Model
         'receiving_report_id',
         'total_amount',
         'status',
+        'recorded_by_id',
     ];
 
     protected function casts(): array

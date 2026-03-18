@@ -146,6 +146,7 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
 
     // Finance Forms
     Route::post('/finance/invoices', [FinanceFormController::class, 'storeInvoice'])->name('finance.invoices.store');
+    Route::post('/finance/invoices/{invoice}/validate', [FinanceFormController::class, 'validateInvoice'])->name('finance.invoices.validate');
     Route::post('/finance/disbursements', [FinanceFormController::class, 'storeDisbursement'])->name('finance.disbursements.store');
     Route::post('/finance/disbursements/{disbursement}/liquidate', [FinanceFormController::class, 'liquidate'])->name('finance.disbursements.liquidate');
 

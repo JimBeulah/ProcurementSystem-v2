@@ -46,7 +46,10 @@ class FinanceController extends Controller
             ->where('status', 'APPROVED')
             ->get();
 
-        $users = \App\Models\User::where('is_active', true)->orderBy('name')->get();
+        $users = \App\Models\User::where('role', 'procurement_officer')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
 
         return Inertia::render('Finance/Disbursements/Index', [
             'payments' => $payments,

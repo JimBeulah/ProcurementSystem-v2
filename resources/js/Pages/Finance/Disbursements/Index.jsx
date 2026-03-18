@@ -157,11 +157,11 @@ export default function DisbursementsIndex() {
                         />
                     </div>
                     <div>
-                        <label className="text-xs text-slate-500 uppercase font-bold mb-1 block">Received By <span className="text-slate-400 font-normal">(Procurement Officer / Employee)</span></label>
+                        <label className="text-xs text-slate-500 uppercase font-bold mb-1 block">Received By <span className="text-slate-400 font-normal">(Procurement Officer)</span></label>
                         <Combobox
                             value={receivedById}
                             onChange={(val) => setReceivedById(val)}
-                            options={[{ value: '', label: 'Select receiver (optional)...' }, ...userList.map(u => ({
+                            options={[{ value: '', label: 'Select procurement officer...' }, ...userList.map(u => ({
                                 value: String(u.id),
                                 label: u.name
                             }))]}

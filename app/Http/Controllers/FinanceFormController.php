@@ -73,4 +73,11 @@ class FinanceFormController extends Controller
 
         return redirect()->back()->with('success', 'Disbursement liquidated successfully.');
     }
+
+    public function validateInvoice(\App\Models\SupplierInvoice $invoice): RedirectResponse
+    {
+        $this->service->validateInvoice($invoice);
+
+        return redirect()->back()->with('success', 'Invoice validated successfully.');
+    }
 }
