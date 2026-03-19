@@ -20,7 +20,7 @@ class ReceivingController extends Controller
 
     public function index(): Response
     {
-        $query = \App\Models\ReceivingReport::with(['purchaseOrder.supplier', 'items'])
+        $query = \App\Models\ReceivingReport::with(['purchaseOrder.supplier', 'purchaseOrder.project', 'items'])
             ->orderBy('received_date', 'desc');
 
         if (auth()->user()->hasRole('site_engineer')) {
