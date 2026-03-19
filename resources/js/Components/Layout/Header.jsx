@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
-import { Bell, Search, Menu, LogOut, ChevronDown, Settings, ChevronRight, LayoutDashboard } from 'lucide-react';
+import { Bell, Search, Menu, LogOut, ChevronDown, Settings, ChevronRight, LayoutDashboard, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from '@/Components/UI/ThemeToggle';
 import GlobalSearch from '@/Components/ui/GlobalSearch';
@@ -11,6 +11,39 @@ export default function Header({ user, onMenuClick }) {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const { url } = usePage();
     const { auth } = usePage().props;
+
+    const handleMarkAllAsRead = (e) => {
+        e.preventDefault();
+        router.post(route('notifications.read-all'), {}, {
+            preserveScroll: true,
+            onSuccess: () => {
+                // Optional: show a success toast or message
+            }
+        });
+    };
+
+    const handleMarkAsRead = (e, id) => {
+        e.preventDefault();
+        e.stopPropagation();
+        router.post(route('notifications.read', { notification: id }), {}, {
+            preserveScroll: true
+        });
+    };
+
+    const handleNotificationClick = (notification) => {
+        if (!notification.read_at) {
+            router.post(route('notifications.read', { notification: notification.id }), {}, {
+                preserveScroll: true,
+                onFinish: () => {
+                    if (notification.data?.url) {
+                        router.visit(notification.data.url);
+                    }
+                }
+            });
+        } else if (notification.data?.url) {
+            router.visit(notification.data.url);
+        }
+    };
 
     // Listen for Ctrl+K OR Cmd+K to toggle global search
     useEffect(() => {
@@ -130,17 +163,44 @@ export default function Header({ user, onMenuClick }) {
                                         <div className="p-4 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
                                             <h3 className="text-sm font-semibold text-foreground tracking-tight">Notifications</h3>
                                             {auth?.notifications_count > 0 && (
-                                                <button className="text-[11px] text-blue-600 hover:text-blue-700 font-medium">Mark all read</button>
+                                                <button
+                                                    onClick={handleMarkAllAsRead}
+                                                    className="text-[11px] text-blue-600 hover:text-blue-700 font-medium"
+                                                >
+                                                    Mark all read
+                                                </button>
                                             )}
                                         </div>
                                         <div className="max-h-[300px] overflow-y-auto overscroll-contain">
                                             {auth?.notifications?.length > 0 ? (
                                                 <div className="divide-y divide-black/5 dark:divide-white/5">
                                                     {auth.notifications.map((notification) => (
-                                                        <Link href={notification.data?.url || '#'} key={notification.id} className="block p-4 hover:bg-muted/30 transition-colors">
-                                                            <p className="text-sm text-foreground mb-1">{notification.data?.message || 'New notification'}</p>
-                                                            <p className="text-[11px] text-muted-foreground">{new Date(notification.created_at).toLocaleDateString()}</p>
-                                                        </Link>
+                                                        <div
+                                                            key={notification.id}
+                                                            className={`group relative flex items-start gap-3 p-4 hover:bg-muted/30 transition-colors cursor-pointer ${!notification.read_at ? 'bg-blue-50/30 dark:bg-blue-500/5' : ''}`}
+                                                            onClick={() => handleNotificationClick(notification)}
+                                                        >
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className={`text-sm mb-1 ${!notification.read_at ? 'font-semibold text-foreground' : 'text-foreground/70'}`}>
+                                                                    {notification.data?.message || 'New notification'}
+                                                                </p>
+                                                                <p className="text-[11px] text-muted-foreground">
+                                                                    {new Date(notification.created_at).toLocaleDateString()}
+                                                                </p>
+                                                            </div>
+                                                            {!notification.read_at && (
+                                                                <button
+                                                                    onClick={(e) => handleMarkAsRead(e, notification.id)}
+                                                                    className="opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-600 transition-all"
+                                                                    title="Mark as read"
+                                                                >
+                                                                    <Check size={14} />
+                                                                </button>
+                                                            )}
+                                                            {!notification.read_at && (
+                                                                <div className="absolute top-4 right-2 w-2 h-2 rounded-full bg-blue-600 group-hover:hidden" />
+                                                            )}
+                                                        </div>
                                                     ))}
                                                 </div>
                                             ) : (

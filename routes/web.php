@@ -17,6 +17,7 @@ use App\Http\Controllers\RfqController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SiteReleaseController;
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OperationsController;
 use App\Http\Controllers\SupplierReturnController;
 use App\Http\Controllers\UserController;
@@ -34,6 +35,10 @@ Route::get('/', function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/password/change', [ForcePasswordChangeController::class, 'show'])->name('password.change');
     Route::post('/password/change', [ForcePasswordChangeController::class, 'update'])->name('password.change.update');
+
+    // Notifications
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
 });
 
 Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
@@ -100,8 +105,10 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
     });
 
     // Suppliers
-    Route::get('/purchasing/suppliers', [App\Http\Controllers\SupplierController::class, 'index'])->name('purchasing.suppliers.index');
-    Route::post('/purchasing/suppliers', [App\Http\Controllers\SupplierController::class, 'store'])->name('purchasing.suppliers.store');
+    Route::middleware(['can:view suppliers'])->group(function () {
+        Route::get('/purchasing/suppliers', [App\Http\Controllers\SupplierController::class, 'index'])->name('purchasing.suppliers.index');
+        Route::post('/purchasing/suppliers', [App\Http\Controllers\SupplierController::class, 'store'])->name('purchasing.suppliers.store')->middleware('can:manage suppliers');
+    });
 
     // RFQ
     Route::middleware(['can:view rfq'])->group(function () {
@@ -140,16 +147,21 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
     Route::get('/finance/disbursements', [FinanceController::class, 'disbursements'])->name('finance.disbursements')->middleware('can:view disbursements');
     Route::get('/finance/reports', [FinanceController::class, 'reports'])->name('finance.reports')->middleware('can:view financial reports');
 
+    // Finance Actions
+    Route::middleware(['can:manage invoices'])->group(function () {
+        Route::post('/finance/invoices', [FinanceFormController::class, 'storeInvoice'])->name('finance.invoices.store');
+        Route::post('/finance/invoices/{invoice}/validate', [FinanceFormController::class, 'validateInvoice'])->name('finance.invoices.validate');
+    });
+
+    Route::middleware(['can:manage disbursements'])->group(function () {
+        Route::post('/finance/disbursements', [FinanceFormController::class, 'storeDisbursement'])->name('finance.disbursements.store');
+        Route::post('/finance/disbursements/{disbursement}/liquidate', [FinanceFormController::class, 'liquidate'])->name('finance.disbursements.liquidate');
+    });
+
     // Approvals
-    Route::get('/purchasing/approvals', [ApprovalController::class, 'index'])->name('purchasing.approvals');
-
-
-
-    // Finance Forms
-    Route::post('/finance/invoices', [FinanceFormController::class, 'storeInvoice'])->name('finance.invoices.store');
-    Route::post('/finance/invoices/{invoice}/validate', [FinanceFormController::class, 'validateInvoice'])->name('finance.invoices.validate');
-    Route::post('/finance/disbursements', [FinanceFormController::class, 'storeDisbursement'])->name('finance.disbursements.store');
-    Route::post('/finance/disbursements/{disbursement}/liquidate', [FinanceFormController::class, 'liquidate'])->name('finance.disbursements.liquidate');
+    Route::get('/purchasing/approvals', [ApprovalController::class, 'index'])
+        ->name('purchasing.approvals')
+        ->middleware('can:view purchase orders');
 
     // Operations
     Route::get('/operations/deliveries', [OperationsController::class, 'deliveries'])->name('operations.deliveries')->middleware('role_or_permission:site_engineer|view receiving');
@@ -165,13 +177,15 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
     Route::post('/inventory/returns/{materialReturn}/receive', [\App\Http\Controllers\MaterialReturnController::class, 'receive'])->name('material-returns.receive')->middleware('can:manage inventory');
 
     // Supplier Returns (Wrong Purchase / Return-to-Vendor)
-    Route::get('/purchasing/supplier-returns', [SupplierReturnController::class, 'index'])->name('supplier-returns.index')->middleware('can:view purchase orders');
-    Route::get('/purchasing/supplier-returns/create', [SupplierReturnController::class, 'create'])->name('supplier-returns.create')->middleware('can:create purchase orders');
-    Route::post('/purchasing/supplier-returns', [SupplierReturnController::class, 'store'])->name('supplier-returns.store')->middleware('can:create purchase orders');
-    Route::get('/purchasing/supplier-returns/{supplierReturn}', [SupplierReturnController::class, 'show'])->name('supplier-returns.show');
-    Route::post('/purchasing/supplier-returns/{supplierReturn}/approve', [SupplierReturnController::class, 'approve'])->name('supplier-returns.approve')->middleware('can:approve purchase orders');
-    Route::post('/purchasing/supplier-returns/{supplierReturn}/mark-returned', [SupplierReturnController::class, 'markReturned'])->name('supplier-returns.mark-returned')->middleware('can:approve purchase orders');
-    Route::post('/purchasing/supplier-returns/{supplierReturn}/cancel', [SupplierReturnController::class, 'cancel'])->name('supplier-returns.cancel')->middleware('can:create purchase orders');
+    Route::middleware(['can:view purchase orders'])->group(function () {
+        Route::get('/purchasing/supplier-returns', [SupplierReturnController::class, 'index'])->name('supplier-returns.index');
+        Route::get('/purchasing/supplier-returns/create', [SupplierReturnController::class, 'create'])->name('supplier-returns.create')->middleware('can:create purchase orders');
+        Route::post('/purchasing/supplier-returns', [SupplierReturnController::class, 'store'])->name('supplier-returns.store')->middleware('can:create purchase orders');
+        Route::get('/purchasing/supplier-returns/{supplierReturn}', [SupplierReturnController::class, 'show'])->name('supplier-returns.show');
+        Route::post('/purchasing/supplier-returns/{supplierReturn}/approve', [SupplierReturnController::class, 'approve'])->name('supplier-returns.approve')->middleware('can:approve purchase orders');
+        Route::post('/purchasing/supplier-returns/{supplierReturn}/mark-returned', [SupplierReturnController::class, 'markReturned'])->name('supplier-returns.mark-returned')->middleware('can:approve purchase orders');
+        Route::post('/purchasing/supplier-returns/{supplierReturn}/cancel', [SupplierReturnController::class, 'cancel'])->name('supplier-returns.cancel')->middleware('can:create purchase orders');
+    });
 
 
     // Settings
