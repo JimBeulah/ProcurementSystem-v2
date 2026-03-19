@@ -2,16 +2,19 @@ import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage, router } from '@inertiajs/react';
 import { usePermissions } from '@/Hooks/usePermissions';
-import { Briefcase, Plus, Star } from 'lucide-react';
+import { Briefcase, Plus, MoreVertical, Edit2, Slash, CheckCircle } from 'lucide-react';
 import Modal from '@/Components/UI/Modal';
 import { toast } from 'sonner';
 import { DataTable } from '@/Components/UI/DataTable';
+import Dropdown from '@/Components/Dropdown';
 
 export default function SuppliersIndex() {
     const { suppliers } = usePage().props;
     const { can } = usePermissions();
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [selectedSupplier, setSelectedSupplier] = useState(null);
 
     // Form Data
     const [formData, setFormData] = useState({
@@ -20,14 +23,22 @@ export default function SuppliersIndex() {
         email: '',
         phone: '',
         address: '',
-        rating: 3,
     });
 
     const columns = React.useMemo(() => [
         {
             accessorKey: 'name',
             header: 'Supplier Name',
-            cell: info => <span className="font-bold text-slate-900 dark:text-white">{info.getValue()}</span>,
+            cell: info => (
+                <div className="flex flex-col">
+                    <span className="font-bold text-slate-900 dark:text-white">{info.getValue()}</span>
+                    {!info.row.original.is_active && (
+                        <span className="text-[10px] bg-rose-100 text-rose-600 px-1.5 py-0.5 rounded w-fit font-bold uppercase tracking-wider mt-1">
+                            Disabled
+                        </span>
+                    )}
+                </div>
+            ),
         },
         {
             accessorKey: 'contact_person',
@@ -45,17 +56,6 @@ export default function SuppliersIndex() {
             cell: info => info.getValue() || '-',
         },
         {
-            accessorKey: 'rating',
-            header: 'Rating',
-            cell: info => (
-                <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                        <Star key={i} size={14} className={i < info.getValue() ? "text-amber-400 fill-amber-400" : "text-slate-300 dark:text-slate-600"} />
-                    ))}
-                </div>
-            )
-        },
-        {
             accessorKey: 'address',
             header: 'Address',
             cell: info => (
@@ -63,17 +63,82 @@ export default function SuppliersIndex() {
                     {info.getValue() || '-'}
                 </span>
             ),
+        },
+        {
+            id: 'actions',
+            header: () => <div className="text-center">Actions</div>,
+            cell: info => can('manage suppliers') && (
+                <div className="flex justify-center">
+                    <Dropdown>
+                        <Dropdown.Trigger>
+                            <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+                                <MoreVertical size={16} className="text-slate-500" />
+                            </button>
+                        </Dropdown.Trigger>
+                        <Dropdown.Content width="48">
+                            <button
+                                onClick={() => handleEdit(info.row.original)}
+                                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                            >
+                                <Edit2 size={14} /> Edit Supplier
+                            </button>
+                            <button
+                                onClick={() => handleToggleActive(info.row.original)}
+                                className={`w-full flex items-center gap-2 px-4 py-2 text-sm transition-colors ${
+                                    info.row.original.is_active 
+                                    ? 'text-rose-600 hover:bg-rose-50' 
+                                    : 'text-emerald-600 hover:bg-emerald-50'
+                                }`}
+                            >
+                                {info.row.original.is_active ? (
+                                    <><Slash size={14} /> Disable Supplier</>
+                                ) : (
+                                    <><CheckCircle size={14} /> Enable Supplier</>
+                                )}
+                            </button>
+                        </Dropdown.Content>
+                    </Dropdown>
+                </div>
+            )
         }
-    ], []);
+    ], [can]);
+
+    const handleEdit = (supplier) => {
+        setSelectedSupplier(supplier);
+        setFormData({
+            name: supplier.name,
+            contact_person: supplier.contact_person || '',
+            email: supplier.email || '',
+            phone: supplier.phone || '',
+            address: supplier.address || '',
+        });
+        setIsEditModalOpen(true);
+    };
+
+    const handleToggleActive = (supplier) => {
+        if (confirm(`Are you sure you want to ${supplier.is_active ? 'disable' : 'enable'} this supplier?`)) {
+            router.patch(route('purchasing.suppliers.toggle-active', supplier.id), {}, {
+                onSuccess: () => toast.success(`Supplier ${supplier.is_active ? 'disabled' : 'enabled'} successfully`),
+            });
+        }
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
         setSubmitting(true);
-        router.post(route('purchasing.suppliers.store'), formData, {
+        
+        const url = isEditModalOpen 
+            ? route('purchasing.suppliers.update', selectedSupplier.id)
+            : route('purchasing.suppliers.store');
+            
+        const method = isEditModalOpen ? 'put' : 'post';
+
+        router[method](url, formData, {
             onSuccess: () => {
                 setIsAddModalOpen(false);
-                setFormData({ name: '', contact_person: '', email: '', phone: '', address: '', rating: 3 });
-                toast.success('Supplier added successfully');
+                setIsEditModalOpen(false);
+                setFormData({ name: '', contact_person: '', email: '', phone: '', address: '' });
+                toast.success(`Supplier ${isEditModalOpen ? 'updated' : 'added'} successfully`);
             },
             onError: (err) => {
                 if (err.name) toast.error(err.name);
@@ -92,11 +157,14 @@ export default function SuppliersIndex() {
                         <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
                             <Briefcase className="text-blue-500" /> Suppliers
                         </h1>
-                        <p className="text-slate-500">Manage vendor contact information and ratings.</p>
+                        <p className="text-slate-500">Manage vendor contact information.</p>
                     </div>
                     {can('manage suppliers') && (
                         <button
-                            onClick={() => setIsAddModalOpen(true)}
+                            onClick={() => {
+                                setFormData({ name: '', contact_person: '', email: '', phone: '', address: '' });
+                                setIsAddModalOpen(true);
+                            }}
                             className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors shadow-lg shadow-blue-500/20"
                         >
                             <Plus size={18} /> Add Supplier
@@ -115,11 +183,14 @@ export default function SuppliersIndex() {
                 </div>
             </div>
 
-            {/* Add Modal */}
+            {/* Add/Edit Modal */}
             <Modal
-                isOpen={isAddModalOpen}
-                onClose={() => setIsAddModalOpen(false)}
-                title="Add New Supplier"
+                isOpen={isAddModalOpen || isEditModalOpen}
+                onClose={() => {
+                    setIsAddModalOpen(false);
+                    setIsEditModalOpen(false);
+                }}
+                title={isEditModalOpen ? "Edit Supplier" : "Add New Supplier"}
                 maxWidth="max-w-md"
             >
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -135,27 +206,15 @@ export default function SuppliersIndex() {
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="text-xs text-slate-500 uppercase font-bold mb-1 block tracking-widest">Contact Person</label>
-                            <input
-                                type="text"
-                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-blue-500 outline-none"
-                                value={formData.contact_person}
-                                onChange={e => setFormData({ ...formData, contact_person: e.target.value })}
-                                placeholder="John Doe"
-                            />
-                        </div>
-                        <div>
-                            <label className="text-xs text-slate-500 uppercase font-bold mb-1 block tracking-widest">Rating (1-5)</label>
-                            <select
-                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-blue-500 outline-none"
-                                value={formData.rating}
-                                onChange={e => setFormData({ ...formData, rating: Number(e.target.value) })}
-                            >
-                                {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n} Stars</option>)}
-                            </select>
-                        </div>
+                    <div>
+                        <label className="text-xs text-slate-500 uppercase font-bold mb-1 block tracking-widest">Contact Person</label>
+                        <input
+                            type="text"
+                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-blue-500 outline-none"
+                            value={formData.contact_person}
+                            onChange={e => setFormData({ ...formData, contact_person: e.target.value })}
+                            placeholder="John Doe"
+                        />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -197,7 +256,7 @@ export default function SuppliersIndex() {
                             disabled={submitting || !formData.name}
                             className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 rounded-lg font-bold text-sm transition-colors disabled:opacity-50"
                         >
-                            {submitting ? 'Saving...' : 'Save Supplier'}
+                            {submitting ? 'Saving...' : (isEditModalOpen ? 'Update Supplier' : 'Save Supplier')}
                         </button>
                     </div>
                 </form>

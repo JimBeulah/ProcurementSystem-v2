@@ -108,6 +108,8 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
     Route::middleware(['can:view suppliers'])->group(function () {
         Route::get('/purchasing/suppliers', [App\Http\Controllers\SupplierController::class, 'index'])->name('purchasing.suppliers.index');
         Route::post('/purchasing/suppliers', [App\Http\Controllers\SupplierController::class, 'store'])->name('purchasing.suppliers.store')->middleware('can:manage suppliers');
+        Route::put('/purchasing/suppliers/{supplier}', [App\Http\Controllers\SupplierController::class, 'update'])->name('purchasing.suppliers.update')->middleware('can:manage suppliers');
+        Route::patch('/purchasing/suppliers/{supplier}/toggle-active', [App\Http\Controllers\SupplierController::class, 'toggleActive'])->name('purchasing.suppliers.toggle-active')->middleware('can:manage suppliers');
     });
 
     // RFQ

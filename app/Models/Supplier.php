@@ -14,7 +14,11 @@ class Supplier extends Model
         'email',
         'phone',
         'address',
-        'rating',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     public function quotations()
