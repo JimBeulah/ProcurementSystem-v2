@@ -54,11 +54,6 @@ class RolesAndPermissionsSeeder extends Seeder
             'view suppliers',
             'manage suppliers',
 
-            // RFQ
-            'view rfq',
-            'manage rfq',
-            'award rfq',
-
             // Inventory
             'view inventory',
             'manage inventory',
@@ -106,7 +101,6 @@ class RolesAndPermissionsSeeder extends Seeder
                 'manage purchase requests',
                 'view purchase orders',
                 'approve purchase orders',
-                'view rfq',
                 'view inventory',
                 'view receiving',
                 'view financial reports',
@@ -148,9 +142,6 @@ class RolesAndPermissionsSeeder extends Seeder
                 'create purchase orders',
                 'view suppliers',
                 'manage suppliers',
-                'view rfq',
-                'manage rfq',
-                'award rfq',
                 'view inventory',
                 'view receiving',
             ],

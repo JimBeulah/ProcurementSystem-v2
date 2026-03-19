@@ -59,7 +59,6 @@ class HandleInertiaRequests extends Middleware
                         $query->whereRaw('1 = 0');
                     }
                 })->count() : 0,
-                'rfqs' => $request->user() && $request->user()->can('view rfq') ? \App\Models\Rfq::where('status', 'OPEN')->count() : 0,
                 'approvals' => $request->user() ? (
                     \App\Models\PurchaseRequest::where('status', 'PENDING')->count() +
                     \App\Models\PurchaseOrder::where('status', 'PENDING')->count() +

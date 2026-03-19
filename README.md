@@ -14,8 +14,7 @@ A comprehensive procurement management system built with **Laravel 12**, **Inert
 - **Role-Based Access Control (RBAC)**: secure access management powered by `spatie/laravel-permission`.
 - **Project Management**: Comprehensive project tracking and management.
 - **Bill of Quantities (BOQ)**: detailed BOQ management with itemized tracking.
-- **Material & Purchase Requests**: Request workflow with budget and quantity validation against BOQ limits, RFQs, and Supplier management.
-- **Finance & Inventory**: Tracks GRN, receiving, site release, invoices, and disbursements.
+- **Material & Purchase Requests**: Request workflow with budget and quantity validation against BOQ limits and Supplier management.- **Finance & Inventory**: Tracks GRN, receiving, site release, invoices, and disbursements.
 - **Modern UI**: macOS-inspired interface featuring glassmorphism, dark/light mode support, smooth interactions, and integrated charts via `recharts`.
 - **Real-time Feedback**: Instant validation and toast notifications using `sonner`.
 

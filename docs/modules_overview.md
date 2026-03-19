@@ -10,7 +10,6 @@ Procurement System v2 is divided into several cohesive modules that track the li
 ## 2. Purchasing & Procurement
 - **Material Requests (MR)**: Initiated by Site Engineers to request materials needed on site based on the BOQ limits. Requires approval.
 - **Purchase Requests (PR)**: Internal formalized request by Procurement to purchase grouped items based on approved MRs.
-- **Requests for Quotation (RFQ)**: Solicitation from multiple suppliers. The system tracks quotes and handles the "Award" process to the lowest/best bidder.
 - **Purchase Orders (PO)**: The finalized external contract with a supplier. Includes multi-stage approval workflows and budget checking against the BOQ.
 - **Suppliers**: Database of verified vendors and past performance tracking.
 

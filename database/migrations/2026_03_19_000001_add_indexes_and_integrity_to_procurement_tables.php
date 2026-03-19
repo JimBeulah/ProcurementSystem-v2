@@ -15,10 +15,6 @@ return new class extends Migration {
             $table->index('status');
         });
 
-        Schema::table('rfqs', function (Blueprint $table) {
-            $table->index('status');
-        });
-
         Schema::table('purchase_orders', function (Blueprint $table) {
             $table->index('status');
         });
@@ -51,10 +47,6 @@ return new class extends Migration {
         });
 
         Schema::table('purchase_orders', function (Blueprint $table) {
-            $table->dropIndex(['status']);
-        });
-
-        Schema::table('rfqs', function (Blueprint $table) {
             $table->dropIndex(['status']);
         });
 

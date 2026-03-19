@@ -53,9 +53,4 @@ class MaterialRequest extends Model
     {
         return $this->hasMany(MaterialRequestItem::class);
     }
-
-    public function rfqs()
-    {
-        return $this->hasMany(Rfq::class, 'mr_id');
-    }
 }

@@ -23,7 +23,7 @@ export default function WorkflowsIndex() {
                 </header>
 
                 <div className="grid gap-4">
-                    {['PO', 'RFQ', 'PAYMENT'].map(type => {
+                    {['PO', 'PAYMENT'].map(type => {
                         const typeRules = ruleList.filter(r => r.process_type === type);
                         if (typeRules.length === 0) return null;
                         return (
@@ -63,7 +63,7 @@ export default function WorkflowsIndex() {
                         <div>
                             <label className="text-xs text-slate-500 uppercase font-bold mb-1 block">Module</label>
                             <select className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white" value={formData.processType} onChange={e => setFormData({ ...formData, processType: e.target.value })}>
-                                <option value="PO">Purchase Order (PO)</option><option value="RFQ">Request for Quotation (RFQ)</option><option value="PAYMENT">Payment / Disbursement</option>
+                                <option value="PO">Purchase Order (PO)</option><option value="PAYMENT">Payment / Disbursement</option>
                             </select>
                         </div>
                         <div className="grid grid-cols-2 gap-4">

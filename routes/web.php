@@ -13,7 +13,6 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\PurchaseRequestController;
 use App\Http\Controllers\ReceivingController;
-use App\Http\Controllers\RfqController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SiteReleaseController;
 use App\Http\Controllers\ActivityLogController;
@@ -110,16 +109,6 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
         Route::post('/purchasing/suppliers', [App\Http\Controllers\SupplierController::class, 'store'])->name('purchasing.suppliers.store')->middleware('can:manage suppliers');
         Route::put('/purchasing/suppliers/{supplier}', [App\Http\Controllers\SupplierController::class, 'update'])->name('purchasing.suppliers.update')->middleware('can:manage suppliers');
         Route::patch('/purchasing/suppliers/{supplier}/toggle-active', [App\Http\Controllers\SupplierController::class, 'toggleActive'])->name('purchasing.suppliers.toggle-active')->middleware('can:manage suppliers');
-    });
-
-    // RFQ
-    Route::middleware(['can:view rfq'])->group(function () {
-        Route::get('/purchasing/rfq', [RfqController::class, 'index'])->name('purchasing.rfq.index');
-        Route::get('/purchasing/rfq/create', [RfqController::class, 'create'])->name('purchasing.rfq.create')->middleware('can:manage rfq');
-        Route::post('/purchasing/rfq', [RfqController::class, 'store'])->name('purchasing.rfq.store')->middleware('can:manage rfq');
-        Route::get('/purchasing/rfq/{rfq}', [RfqController::class, 'show'])->name('purchasing.rfq.show');
-        Route::post('/purchasing/rfq/{rfq}/quotation', [RfqController::class, 'addQuotation'])->name('purchasing.rfq.quotation')->middleware('can:manage rfq');
-        Route::post('/purchasing/rfq/{rfq}/award/{quotation}', [RfqController::class, 'award'])->name('purchasing.rfq.award')->middleware('can:award rfq');
     });
 
     // Purchase Requests

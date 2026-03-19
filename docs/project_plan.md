@@ -17,7 +17,7 @@ This document outlines the high-level project plan and timeline for the developm
 ### Phase 3: Procurement Workflows
 - **Material Requests**: Requesting items required for a project.
 - **Purchase Requests (PR)**: Internal requests to buy materials.
-- **Request for Quotation (RFQ) & Suppliers**: Getting quotes and awarding to suppliers.
+- **Suppliers**: Manage supplier contacts and details.
 - **Purchase Orders (PO)**: Officially ordering materials with multi-level approval workflows.
 
 ### Phase 4: Inventory & Finance
@@ -50,7 +50,7 @@ gantt
     
     section Phase 3: Procurement Flow
     Material & Purchase Requests      :done,    dev4, after dev3, 14d
-    RFQ & Supplier Management         :done,    dev5, after dev4, 14d
+    Supplier Management               :done,    dev5, after dev4, 10d
     Purchase Orders & Approvals       :done,    dev6, after dev5, 14d
     
     section Phase 4: Inventory & Finance

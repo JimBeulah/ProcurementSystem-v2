@@ -16,24 +16,18 @@ export default function ProcurementOfficerDashboard({ stats }) {
                     <div className="relative z-10">
                         <p className="text-indigo-100 text-xs font-semibold uppercase tracking-widest mb-1">Procurement Hub</p>
                         <h2 className="text-2xl font-bold mb-1">Ready to Procure! 📦</h2>
-                        <p className="text-indigo-100 text-sm">You have <span className="font-bold text-white">{stats?.pendingPRs || 0} purchase requests</span> and <span className="font-bold text-white">{stats?.openRFQs || 0} open RFQs</span> to process.</p>
+                        <p className="text-indigo-100 text-sm">You have <span className="font-bold text-white">{stats?.pendingPRs || 0} purchase requests</span> to process.</p>
                     </div>
                 </div>
 
                 {/* Stat Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <StatCard
                         title="Pending PRs"
                         value={stats?.pendingPRs?.toString() || '0'}
                         icon={<FileText className="text-orange-500" size={20} />}
                         trend="Action Needed"
                         color="from-orange-500/10 to-transparent"
-                    />
-                    <StatCard
-                        title="Open RFQs"
-                        value={stats?.openRFQs?.toString() || '0'}
-                        icon={<Clock className="text-amber-500" size={20} />}
-                        color="from-amber-500/10 to-transparent"
                     />
                     <StatCard
                         title="Total Orders"
@@ -54,10 +48,9 @@ export default function ProcurementOfficerDashboard({ stats }) {
                 {/* Quick Actions */}
                 <Card className="bg-white/40 dark:bg-zinc-900/40 backdrop-blur-2xl border-white/20 dark:border-white/5 shadow-sm p-6 rounded-3xl">
                     <h3 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 mb-4">Quick Actions</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                         {[
                             { label: 'Purchase Requests', href: '/purchasing/requests', icon: <FileText size={18} />, color: 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' },
-                            { label: 'RFQ Management', href: '/purchasing/rfq', icon: <Clock size={18} />, color: 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400' },
                             { label: 'Purchase Orders', href: '/purchasing/orders', icon: <ShoppingCart size={18} />, color: 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' },
                             { label: 'Suppliers', href: '/purchasing/suppliers', icon: <Truck size={18} />, color: 'bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400' },
                         ].map((action) => (

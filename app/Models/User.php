@@ -65,11 +65,6 @@ class User extends Authenticatable
         return $this->hasMany(MaterialRequest::class, 'approver_id');
     }
 
-    public function rfqs()
-    {
-        return $this->hasMany(Rfq::class, 'created_by_id');
-    }
-
     public function receivingReports()
     {
         return $this->hasMany(ReceivingReport::class, 'received_by_id');

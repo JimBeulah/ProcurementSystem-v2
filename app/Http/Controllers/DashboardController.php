@@ -97,7 +97,6 @@ class DashboardController extends Controller
     {
         $stats = [
             'pendingPRs' => \App\Models\PurchaseRequest::where('status', 'PENDING')->count(),
-            'openRFQs' => \App\Models\Rfq::where('status', 'OPEN')->count(),
             'totalOrders' => PurchaseOrder::count(),
             'deliveredOrders' => PurchaseOrder::where('status', 'DELIVERED')->count(),
         ];

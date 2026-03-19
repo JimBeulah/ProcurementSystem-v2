@@ -18,7 +18,7 @@ The system follows a **Monolithic Model-View-Controller (MVC)** architecture, en
 - **Models**: Handle data representation and database interactions. They house business logic and relationships (e.g., `Project` has many `BoqItem`s).
 - **Controllers**: Act as the entry points for HTTP requests. They validate input (via `FormRequests`), authorize actions (via `Policies`), and pass data to Inertia views.
 - **Middleware**: Used heavily for route-level protection based on Roles and Permissions (e.g., `can:view projects`).
-- **Services (Optional)**: Complex business logic (like PO auto-receiving or RFQ awarding) is extracted into service classes to keep controllers thin.
+- **Services (Optional)**: Complex business logic (like PO auto-receiving) is extracted into service classes to keep controllers thin.
 
 ### 2.2 Frontend (React + Inertia)
 - **Pages**: Top-level React components located in `resources/js/Pages`. Each corresponds to a specific Laravel route controller method.

@@ -31,7 +31,6 @@ export const NAVIGATION_CONFIG = [
                 anyPermission: ['approve boq', 'approve material requests', 'approve purchase orders', 'manage purchase requests'],
                 badgeKey: 'approvals',
             },
-            { label: 'RFQ', href: '/purchasing/rfq', icon: <FileSearch />, permission: 'view rfq', matchPrefix: '/purchasing/rfq', badgeKey: 'rfqs' },
             { label: 'Suppliers', href: '/purchasing/suppliers', icon: <Factory />, permission: 'view suppliers', matchPrefix: '/purchasing/suppliers' },
             { label: 'Clients', href: '/clients', icon: <Users />, permission: 'view clients', matchPrefix: '/clients' },
             { label: 'Supplier Returns', href: '/purchasing/supplier-returns', icon: <ArrowLeftRight />, permission: 'view purchase orders', matchPrefix: '/purchasing/supplier-returns' },

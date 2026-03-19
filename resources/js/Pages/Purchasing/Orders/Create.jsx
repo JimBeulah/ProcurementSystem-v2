@@ -3,7 +3,7 @@ import { Link, router, usePage } from '@inertiajs/react';
 import { Save, Search, Plus, X, Package, AlertTriangle, CheckCircle, Warehouse } from 'lucide-react';
 
 export default function CreatePurchaseOrder({ onSuccess, supplierReturn: propSupplierReturn }) {
-    const { projects, suppliers, materials, rfqId, quoteId, purchaseRequest, supplierReturn: pageSupplierReturn, inventoryMatches = {} } = usePage().props;
+    const { projects, suppliers, materials, purchaseRequest, supplierReturn: pageSupplierReturn, inventoryMatches = {} } = usePage().props;
     const supplierReturn = propSupplierReturn || pageSupplierReturn;
     const hasInventoryMatches = Object.keys(inventoryMatches).length > 0;
     const [dismissedMatches, setDismissedMatches] = useState({});
