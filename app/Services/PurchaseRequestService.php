@@ -36,6 +36,11 @@ class PurchaseRequestService
             ]);
         }
 
+        $approvers = \App\Models\User::role(['admin', 'project_manager'])->get();
+        if ($approvers->isNotEmpty()) {
+            \Illuminate\Support\Facades\Notification::send($approvers, new \App\Notifications\NewPurchaseRequestSubmitted($pr));
+        }
+
         return $pr;
     }
 
@@ -48,6 +53,15 @@ class PurchaseRequestService
             'status' => 'APPROVED',
             'approver_id' => Auth::id(),
         ]);
+
+        if ($purchaseRequest->requester) {
+            $purchaseRequest->requester->notify(new \App\Notifications\PurchaseRequestApproved($purchaseRequest));
+        }
+
+        $procurementOfficers = \App\Models\User::role('procurement_officer')->get();
+        if ($procurementOfficers->isNotEmpty()) {
+            \Illuminate\Support\Facades\Notification::send($procurementOfficers, new \App\Notifications\PurchaseRequestReadyForSourcing($purchaseRequest));
+        }
     }
 
     /**

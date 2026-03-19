@@ -100,6 +100,11 @@ class PurchaseOrderService
                 $this->updatePurchaseRequestStatus(PurchaseRequest::find($validated['purchase_request_id']));
             }
 
+            $approvers = \App\Models\User::role(['admin', 'finance'])->get();
+            if ($approvers->isNotEmpty()) {
+                \Illuminate\Support\Facades\Notification::send($approvers, new \App\Notifications\NewPurchaseOrderSubmitted($po));
+            }
+
             return $po;
         });
     }
@@ -113,6 +118,10 @@ class PurchaseOrderService
             'status' => 'APPROVED',
             'approver_id' => Auth::id(),
         ]);
+
+        if ($order->requester) {
+            $order->requester->notify(new \App\Notifications\PurchaseOrderApproved($order));
+        }
     }
 
     /**

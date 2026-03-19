@@ -24,7 +24,8 @@ function StatusBadge({ status }) {
         DECLINED: 'bg-red-500/10 text-red-600 border-red-500/20',
         CANCELLED: 'bg-slate-500/10 text-slate-500 border-slate-500/20',
     };
-    return <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider ${styles[status] || styles.PENDING}`}>{status}</span>;
+    const key = String(status).toUpperCase();
+    return <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider ${styles[key] || styles.PENDING}`}>{status}</span>;
 }
 
 export default function PurchaseRequestsIndex() {

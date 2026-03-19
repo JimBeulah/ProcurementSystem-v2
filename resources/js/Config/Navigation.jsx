@@ -19,13 +19,9 @@ export const NAVIGATION_CONFIG = [
         group: 'Procurement',
         icon: <Briefcase />,
         items: [
-            { label: 'Clients', href: '/clients', icon: <Users />, permission: 'view clients', matchPrefix: '/clients' },
             { label: 'Projects', href: '/projects', icon: <Building2 />, permission: 'view projects', matchPrefix: '/projects' },
             { label: 'Purchase Requests', href: '/purchasing/requests', icon: <ShoppingCart />, permission: 'view purchase requests', matchPrefix: '/purchasing/requests', badgeKey: 'requests' },
-            { label: 'RFQ', href: '/purchasing/rfq', icon: <FileSearch />, permission: 'view rfq', matchPrefix: '/purchasing/rfq', badgeKey: 'rfqs' },
-            { label: 'Suppliers', href: '/purchasing/suppliers', icon: <Factory />, permission: 'view suppliers', matchPrefix: '/purchasing/suppliers' },
             { label: 'Orders', href: '/purchasing/orders', icon: <ClipboardList />, permission: 'view purchase orders', matchPrefix: '/purchasing/orders' },
-            { label: 'Supplier Returns', href: '/purchasing/supplier-returns', icon: <ArrowLeftRight />, permission: 'view purchase orders', matchPrefix: '/purchasing/supplier-returns' },
             {
                 label: 'Approvals',
                 href: '/purchasing/approvals',
@@ -35,6 +31,10 @@ export const NAVIGATION_CONFIG = [
                 anyPermission: ['approve boq', 'approve material requests', 'approve purchase orders', 'manage purchase requests'],
                 badgeKey: 'approvals',
             },
+            { label: 'RFQ', href: '/purchasing/rfq', icon: <FileSearch />, permission: 'view rfq', matchPrefix: '/purchasing/rfq', badgeKey: 'rfqs' },
+            { label: 'Suppliers', href: '/purchasing/suppliers', icon: <Factory />, permission: 'view suppliers', matchPrefix: '/purchasing/suppliers' },
+            { label: 'Clients', href: '/clients', icon: <Users />, permission: 'view clients', matchPrefix: '/clients' },
+            { label: 'Supplier Returns', href: '/purchasing/supplier-returns', icon: <ArrowLeftRight />, permission: 'view purchase orders', matchPrefix: '/purchasing/supplier-returns' },
         ],
     },
     {
