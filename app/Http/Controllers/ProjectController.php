@@ -13,7 +13,8 @@ use Inertia\Inertia;
 class ProjectController extends Controller
 {
     public function __construct(
-        protected ProjectService $service
+        protected ProjectService $service,
+        protected \App\Services\ReportService $reportService
     ) {
     }
 
@@ -38,6 +39,16 @@ class ProjectController extends Controller
 
         return Inertia::render('Projects/Show', [
             'project' => $project,
+        ]);
+    }
+
+    public function financials(Project $project)
+    {
+        $this->authorize('view', $project);
+
+        return Inertia::render('Projects/Financials', [
+            'project' => $project,
+            'financialData' => $this->reportService->getFinancialReportsData($project->id),
         ]);
     }
 

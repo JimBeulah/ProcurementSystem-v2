@@ -56,6 +56,16 @@ export default function ProjectShow() {
             href: `/projects/${project.id}/material-returns`,
         },
         {
+            title: 'Financial Performance',
+            description: 'View project revenue, costs, and profit/loss statement.',
+            icon: Activity,
+            color: 'from-emerald-500 to-teal-500',
+            iconColor: 'text-emerald-600 dark:text-emerald-400',
+            bg: 'bg-emerald-500/10',
+            href: `/projects/${project.id}/financials`,
+            hideForSiteEngineer: true,
+        },
+        {
             title: 'Procurement Status',
             description: 'Track POs, deliveries, and supplier performance.',
             icon: ShoppingCart,

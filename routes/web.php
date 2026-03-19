@@ -51,6 +51,7 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
     Route::middleware(['can:view projects'])->group(function () {
         Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
         Route::get('/projects/{project}', [ProjectController::class, 'show'])->name('projects.show');
+        Route::get('/projects/{project}/financials', [ProjectController::class, 'financials'])->name('projects.financials');
 
         Route::post('/projects', [ProjectController::class, 'store'])->name('projects.store')->middleware('can:create projects');
         Route::put('/projects/{project}', [ProjectController::class, 'update'])->name('projects.update')->middleware('can:edit projects');

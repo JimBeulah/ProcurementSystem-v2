@@ -61,16 +61,34 @@ class ReportService
 
         $budget = (float) $project->budget;
 
-        // Income sources (FinancialTransactions of type INCOME + Project Budget as estimated revenue)
+        // 1. Operating Revenue
         $extraIncome = FinancialTransaction::where('project_id', $projectId)->where('type', 'INCOME')->sum('amount');
-        $totalRevenue = $budget + $extraIncome;
+        $operatingRevenue = $budget + (float) $extraIncome;
 
-        // Expenses (PO total + Extra Expenses)
-        $committedExpenses = $project->purchaseOrders->sum('total_amount');
-        $extraExpenses = FinancialTransaction::where('project_id', $projectId)->where('type', 'EXPENSE')->sum('amount');
-        $totalExpenses = $committedExpenses + $extraExpenses;
+        // 2. Cost of Goods Sold (Direct Costs)
+        // Committed POs are usually direct costs (Materials/Subcontractors)
+        $committedDirectCosts = (float) $project->purchaseOrders->sum('total_amount');
+        // We'll treat other direct expenses from FinancialTransaction if they exist (need category check)
+        $extraDirectCosts = FinancialTransaction::where('project_id', $projectId)
+            ->where('type', 'EXPENSE')
+            ->whereIn('category', ['MATERIALS', 'LABOR', 'EQUIPMENT', 'SUBCONTRACTOR'])
+            ->sum('amount');
 
-        // Paid amounts
+        $cogs = $committedDirectCosts + (float) $extraDirectCosts;
+
+        // 3. Gross Profit
+        $grossProfit = $operatingRevenue - $cogs;
+
+        // 4. Operating Expenses (Indirect Costs / Overhead)
+        $operatingExpenses = FinancialTransaction::where('project_id', $projectId)
+            ->where('type', 'EXPENSE')
+            ->whereNotIn('category', ['MATERIALS', 'LABOR', 'EQUIPMENT', 'SUBCONTRACTOR'])
+            ->sum('amount');
+
+        // 5. Net Income
+        $netIncome = $grossProfit - (float) $operatingExpenses;
+
+        // Paid amounts for cash flow tracking
         $totalPaid = Disbursement::whereIn('purchase_order_id', $project->purchaseOrders->pluck('id'))->sum('amount');
 
         return [
@@ -80,26 +98,49 @@ class ReportService
                 'clientName' => $project->client?->name ?? 'N/A',
                 'budget' => $budget,
             ],
+            'income_statement' => [
+                'revenue' => [
+                    'contract_amount' => $budget,
+                    'other_income' => (float) $extraIncome,
+                    'total_operating_revenue' => $operatingRevenue,
+                ],
+                'cogs' => [
+                    'committed_pos' => $committedDirectCosts,
+                    'other_direct_costs' => (float) $extraDirectCosts,
+                    'total_cogs' => $cogs,
+                ],
+                'gross_profit' => [
+                    'amount' => $grossProfit,
+                    'margin' => $operatingRevenue > 0 ? ($grossProfit / $operatingRevenue) * 100 : 0,
+                ],
+                'operating_expenses' => [
+                    'total' => (float) $operatingExpenses,
+                ],
+                'net_income' => [
+                    'amount' => $netIncome,
+                    'margin' => $operatingRevenue > 0 ? ($netIncome / $operatingRevenue) * 100 : 0,
+                ],
+            ],
+            // Keep legacy keys for backward compatibility if needed, using the new structure
             'revenue' => [
                 'budget' => $budget,
                 'extra' => (float) $extraIncome,
-                'total' => (float) $totalRevenue,
+                'total' => (float) $operatingRevenue,
             ],
             'expenses' => [
-                'committed' => (float) $committedExpenses,
-                'extra' => (float) $extraExpenses,
-                'total' => (float) $totalExpenses,
+                'committed' => $committedDirectCosts,
+                'extra' => (float) ($extraDirectCosts + $operatingExpenses),
+                'total' => (float) ($cogs + $operatingExpenses),
                 'paid' => (float) $totalPaid,
             ],
             'profit_loss' => [
-                'amount' => (float) ($totalRevenue - $totalExpenses),
-                'margin' => $totalRevenue > 0 ? (($totalRevenue - $totalExpenses) / $totalRevenue) * 100 : 0,
+                'amount' => (float) $netIncome,
+                'margin' => $operatingRevenue > 0 ? ($netIncome / $operatingRevenue) * 100 : 0,
             ],
-            // Breakdown for POs
             'purchase_orders' => $project->purchaseOrders->map(function ($po) {
                 return [
                     'id' => $po->id,
-                    'ref' => $po->id, // PO Number if exists
+                    'ref' => $po->id,
                     'supplier' => $po->supplier?->name ?? 'N/A',
                     'amount' => (float) $po->total_amount,
                     'paid' => (float) $po->disbursements->sum('amount'),

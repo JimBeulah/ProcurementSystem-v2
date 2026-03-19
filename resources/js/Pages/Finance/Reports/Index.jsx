@@ -1,7 +1,8 @@
 import React from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage, router } from '@inertiajs/react';
-import { PieChart, PhilippinePeso, TrendingUp, Activity, BarChart3, ChevronDown, CheckCircle2, AlertCircle, ShoppingCart, CreditCard } from 'lucide-react';
+import { PieChart, PhilippinePeso, TrendingUp, Activity, BarChart3, ChevronDown, CheckCircle2, AlertCircle, ShoppingCart, CreditCard, Printer } from 'lucide-react';
+import IncomeStatement from '@/Components/Finance/IncomeStatement';
 
 export default function FinancialReports() {
     const { data, projects, filters } = usePage().props;
@@ -35,19 +36,29 @@ export default function FinancialReports() {
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <label htmlFor="project-select" className="text-sm font-medium text-slate-500">Project:</label>
-                        <select
-                            id="project-select"
-                            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none min-w-[200px]"
-                            value={filters?.project_id || ''}
-                            onChange={handleProjectChange}
-                        >
-                            <option value="">All Projects (Summary)</option>
-                            {projects.map(p => (
-                                <option key={p.id} value={p.id}>{p.name}</option>
-                            ))}
-                        </select>
+                    <div className="flex items-center gap-3">
+                        {isProjectView && (
+                            <button
+                                onClick={() => window.print()}
+                                className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all no-print"
+                            >
+                                <Printer size={14} /> Print
+                            </button>
+                        )}
+                        <div className="flex items-center gap-2 no-print">
+                            <label htmlFor="project-select" className="text-sm font-medium text-slate-500">Project:</label>
+                            <select
+                                id="project-select"
+                                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none min-w-[200px]"
+                                value={filters?.project_id || ''}
+                                onChange={handleProjectChange}
+                            >
+                                <option value="">All Projects (Summary)</option>
+                                {projects.map(p => (
+                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
                 </header>
 
@@ -129,122 +140,62 @@ export default function FinancialReports() {
                     </>
                 ) : (
                     <div className="space-y-6">
-                        {/* Profit and Loss Summary Card */}
-                        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-8 shadow-xl relative overflow-hidden ring-1 ring-slate-200 dark:ring-slate-700">
-                            <div className={`absolute top-0 right-0 w-32 h-32 -mr-16 -mt-16 rounded-full opacity-10 ${plData.profit_loss.amount >= 0 ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
+                        <IncomeStatement data={plData} />
 
-                            <div className="flex flex-col md:flex-row justify-between gap-8 relative z-10">
-                                <div className="space-y-4">
-                                    <div className="text-sm font-bold text-slate-400 uppercase tracking-widest">Project Performance</div>
-                                    <div>
-                                        <div className="text-5xl font-mono text-slate-900 dark:text-white font-black">
-                                            {plData.profit_loss.amount.toLocaleString(undefined, { style: 'currency', currency: 'PHP' })}
-                                        </div>
-                                        <div className={`flex items-center gap-1 mt-2 font-bold ${plData.profit_loss.amount >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                                            {plData.profit_loss.amount >= 0 ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
-                                            {plData.profit_loss.amount >= 0 ? 'NET PROFIT' : 'NET LOSS'}
-                                            <span className="ml-2 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-xs">
-                                                {plData.profit_loss.margin.toFixed(1)}% Margin
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-x-12 gap-y-6 border-l border-slate-100 dark:border-slate-700 pl-8">
-                                    <div>
-                                        <div className="text-xs text-slate-500 mb-1 flex items-center gap-1"><TrendingUp size={12} /> Revenue</div>
-                                        <div className="text-xl font-mono text-slate-900 dark:text-white font-bold">{plData.revenue.total.toLocaleString()}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-slate-500 mb-1 flex items-center gap-1"><ShoppingCart size={12} /> Cost (POs)</div>
-                                        <div className="text-xl font-mono text-orange-500 font-bold">{plData.expenses.committed.toLocaleString()}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-slate-500 mb-1 flex items-center gap-1"><Activity size={12} /> Other Exp</div>
-                                        <div className="text-xl font-mono text-slate-500 font-bold">{plData.expenses.extra.toLocaleString()}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-slate-500 mb-1 flex items-center gap-1"><CreditCard size={12} /> Cash Out</div>
-                                        <div className="text-xl font-mono text-emerald-500 font-bold">{plData.expenses.paid.toLocaleString()}</div>
-                                    </div>
-                                </div>
+                        {/* Purchase Order Details */}
+                        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden mt-6">
+                            <div className="p-4 border-b border-slate-200 dark:border-slate-700 font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <ShoppingCart size={18} className="text-orange-500" /> Procurement Breakdown
                             </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Purchase Order Details */}
-                            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
-                                <div className="p-4 border-b border-slate-200 dark:border-slate-700 font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                    <ShoppingCart size={18} className="text-orange-500" /> Procurement Breakdown
-                                </div>
-                                <div className="max-h-[400px] overflow-y-auto">
-                                    <table className="w-full text-sm">
-                                        <thead className="bg-slate-50 dark:bg-slate-800/80 sticky top-0 text-slate-400 text-xs uppercase text-left">
-                                            <tr>
-                                                <th className="p-3">Ref/Supplier</th>
-                                                <th className="p-3 text-right">Committed</th>
-                                                <th className="p-3 text-right">Paid</th>
+                            <div className="max-h-[600px] overflow-y-auto">
+                                <table className="w-full text-sm">
+                                    <thead className="bg-slate-50 dark:bg-slate-800/80 sticky top-0 text-slate-400 text-xs uppercase text-left">
+                                        <tr>
+                                            <th className="p-3">Ref/Supplier</th>
+                                            <th className="p-3 text-right">Committed</th>
+                                            <th className="p-3 text-right">Paid</th>
+                                            <th className="p-3">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+                                        {plData.purchase_orders.map(po => (
+                                            <tr key={po.id}>
+                                                <td className="p-3">
+                                                    <div className="font-bold text-slate-900 dark:text-white">PO-#{po.ref}</div>
+                                                    <div className="text-xs text-slate-500">{po.supplier}</div>
+                                                </td>
+                                                <td className="p-3 text-right font-mono text-orange-500">{po.amount.toLocaleString()}</td>
+                                                <td className="p-3 text-right font-mono text-emerald-600">{po.paid.toLocaleString()}</td>
+                                                <td className="p-3">
+                                                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${po.status === 'PAID' ? 'bg-emerald-100 text-emerald-600' : 'bg-orange-100 text-orange-600'}`}>
+                                                        {po.status}
+                                                    </span>
+                                                </td>
                                             </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
-                                            {plData.purchase_orders.map(po => (
-                                                <tr key={po.id}>
-                                                    <td className="p-3">
-                                                        <div className="font-bold text-slate-900 dark:text-white">PO-#{po.ref}</div>
-                                                        <div className="text-xs text-slate-500">{po.supplier}</div>
-                                                    </td>
-                                                    <td className="p-3 text-right font-mono text-orange-500">{po.amount.toLocaleString()}</td>
-                                                    <td className="p-3 text-right font-mono text-emerald-600">{po.paid.toLocaleString()}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            {/* Revenue and Budget Info */}
-                            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden p-6 space-y-6">
-                                <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                    <PieChart size={18} className="text-indigo-500" /> Summary Insights
-                                </h3>
-
-                                <div className="space-y-4">
-                                    <div className="flex justify-between items-center">
-                                        <div className="text-sm text-slate-500">Project Budget Utilization</div>
-                                        <div className="text-sm font-bold">{((plData.expenses.committed / plData.revenue.budget) * 100).toFixed(1)}%</div>
-                                    </div>
-                                    <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2">
-                                        <div className="bg-indigo-500 h-full rounded-full" style={{ width: `${Math.min((plData.expenses.committed / plData.revenue.budget) * 100, 100)}%` }}></div>
-                                    </div>
-
-                                    <div className="flex justify-between items-center mt-6">
-                                        <div className="text-sm text-slate-500">Cash Flow (Paid vs Revenue)</div>
-                                        <div className="text-sm font-bold">{((plData.expenses.paid / plData.revenue.total) * 100).toFixed(1)}%</div>
-                                    </div>
-                                    <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2">
-                                        <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${Math.min((plData.expenses.paid / plData.revenue.total) * 100, 100)}%` }}></div>
-                                    </div>
-                                </div>
-
-                                <div className="pt-6 border-t border-slate-100 dark:border-slate-700 grid grid-cols-2 gap-4 text-center">
-                                    <div className="p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg">
-                                        <div className="text-xs text-slate-500">Committed ROI</div>
-                                        <div className="text-lg font-bold text-slate-900 dark:text-white">
-                                            {plData.expenses.committed > 0 ? (plData.profit_loss.amount / plData.expenses.committed * 100).toFixed(1) : 0}%
-                                        </div>
-                                    </div>
-                                    <div className="p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg">
-                                        <div className="text-xs text-slate-500">Remaining Budget</div>
-                                        <div className="text-lg font-bold text-indigo-500">
-                                            {(plData.revenue.budget - plData.expenses.committed).toLocaleString()}
-                                        </div>
-                                    </div>
-                                </div>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
                 )}
             </div>
+
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                @media print {
+                    .no-print, header nav, aside {
+                        display: none !important;
+                    }
+                    body {
+                        background: white !important;
+                    }
+                    .max-w-7xl {
+                        max-width: 100% !important;
+                        padding: 0 !important;
+                    }
+                }
+            `}} />
         </AuthenticatedLayout>
     );
 }
