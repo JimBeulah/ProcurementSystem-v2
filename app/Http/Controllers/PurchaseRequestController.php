@@ -58,6 +58,33 @@ class PurchaseRequestController extends Controller
             'requests' => $requests,
             'projects' => $projects,
             'filters' => request()->only(['search', 'date', 'status']),
+            'suppliers' => Inertia::lazy(fn () => \App\Models\Supplier::orderBy('name')->get()),
+            'materials' => Inertia::lazy(fn () => \App\Models\Material::orderBy('name')->get()),
+            'purchaseRequest' => Inertia::lazy(fn () => PurchaseRequest::with('items')->find(request('prId'))),
+            'inventoryMatches' => Inertia::lazy(function () {
+                $prId = request('prId');
+                if (!$prId) return [];
+                $pr = PurchaseRequest::with('items')->find($prId);
+                $inventoryMatches = [];
+                if ($pr && $pr->items) {
+                    foreach ($pr->items as $item) {
+                        $matches = \App\Models\InventoryItem::where('quantity', '>', 0)
+                            ->whereNull('project_id')
+                            ->where('material_name', 'LIKE', '%' . $item->item_description . '%')
+                            ->get(['id', 'material_name', 'quantity', 'unit', 'project_id'])
+                            ->toArray();
+        
+                        if (count($matches) > 0) {
+                            $inventoryMatches[$item->item_description] = [
+                                'requested_qty' => (float) $item->quantity,
+                                'unit' => $item->unit,
+                                'stock' => $matches,
+                            ];
+                        }
+                    }
+                }
+                return $inventoryMatches;
+            }),
         ]);
     }
 

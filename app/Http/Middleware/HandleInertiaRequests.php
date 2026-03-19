@@ -36,7 +36,7 @@ class HandleInertiaRequests extends Middleware
                 'permissions' => $request->user() ? $request->user()->getAllPermissions()->pluck('name') : [],
                 'roles' => $request->user() ? $request->user()->getRoleNames() : [],
                 'notifications_count' => $request->user() ? $request->user()->unreadNotifications()->count() : 0,
-                'notifications' => $request->user() ? $request->user()->notifications()->take(5)->get() : [],
+                'notifications' => $request->user() ? $request->user()->notifications()->latest()->take(5)->get() : [],
             ],
             'search_projects' => ($request->user() && $request->user()->can('view projects'))
                 ? \App\Models\Project::forUser($request->user())

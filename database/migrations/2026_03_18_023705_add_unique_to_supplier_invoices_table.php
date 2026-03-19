@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('supplier_invoices', function (Blueprint $table) {
-            //
+            $table->unique('invoice_number');
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('supplier_invoices', function (Blueprint $table) {
-            //
+            $table->dropUnique(['invoice_number']);
         });
     }
 };

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('supplier_invoices', function (Blueprint $table) {
-            //
+            $table->foreignId('recorded_by_id')->nullable()->after('receiving_report_id')->constrained('users')->nullOnDelete();
         });
     }
 
@@ -22,7 +22,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('supplier_invoices', function (Blueprint $table) {
-            //
+            $table->dropForeign(['recorded_by_id']);
+            $table->dropColumn('recorded_by_id');
         });
     }
 };

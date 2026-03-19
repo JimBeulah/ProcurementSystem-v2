@@ -5,6 +5,7 @@ import { usePermissions } from '@/Hooks/usePermissions';
 import Modal from '@/Components/UI/Modal';
 import Drawer from '@/Components/UI/Drawer';
 import PdfPreviewModal from '@/Components/UI/PdfPreviewModal';
+import CreatePurchaseOrder from '@/Pages/Purchasing/Orders/Create';
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/Components/UI/Table';
@@ -41,6 +42,8 @@ export default function PurchaseRequestsIndex() {
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [previewUrl, setPreviewUrl] = useState('');
+    const [isCreatePoModalOpen, setIsCreatePoModalOpen] = useState(false);
+    const [isLoadingCreatePo, setIsLoadingCreatePo] = useState(false);
 
     // Filters
     const [search, setSearch] = useState(filters?.search || '');
@@ -432,9 +435,23 @@ export default function PurchaseRequestsIndex() {
                                 </button>
 
                                 {(selectedPr.status === 'APPROVED' || selectedPr.status === 'PARTIAL') && can('create purchase orders') && (
-                                    <Link href={`/purchasing/orders/create?prId=${selectedPr.id}`} className="px-4 py-2 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 rounded-xl transition-colors flex items-center gap-2 shadow-sm shadow-violet-600/20 cursor-pointer">
-                                        <ShoppingCart size={14} /> Create PO
-                                    </Link>
+                                    <button
+                                        onClick={() => {
+                                            setIsLoadingCreatePo(true);
+                                            router.reload({
+                                                only: ['suppliers', 'materials', 'inventoryMatches', 'purchaseRequest'],
+                                                data: { prId: selectedPr.id },
+                                                onSuccess: () => {
+                                                    setIsLoadingCreatePo(false);
+                                                    setIsCreatePoModalOpen(true);
+                                                }
+                                            });
+                                        }}
+                                        disabled={isLoadingCreatePo}
+                                        className="px-4 py-2 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 disabled:opacity-50 rounded-xl transition-colors flex items-center gap-2 shadow-sm shadow-violet-600/20 cursor-pointer"
+                                    >
+                                        <ShoppingCart size={14} /> {isLoadingCreatePo ? 'Loading...' : 'Create PO'}
+                                    </button>
                                 )}
 
                                 {selectedPr.status === 'PENDING' && can('manage purchase requests') && (
@@ -551,6 +568,21 @@ export default function PurchaseRequestsIndex() {
                 url={previewUrl}
                 title="Purchase Request Preview"
             />
+
+            <Modal
+                isOpen={isCreatePoModalOpen}
+                onClose={() => setIsCreatePoModalOpen(false)}
+                title="Create Purchase Order"
+                maxWidth="max-w-6xl"
+            >
+                <div className="pt-4">
+                    {isCreatePoModalOpen && <CreatePurchaseOrder onSuccess={() => {
+                        setIsCreatePoModalOpen(false);
+                        setShowDrawer(false);
+                        toast.success("Purchase order created successfully.");
+                    }} />}
+                </div>
+            </Modal>
         </AuthenticatedLayout>
     );
 }
