@@ -183,10 +183,10 @@ export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleColl
                 {/* Bottom utilities */}
                 <div className="mt-auto border-t border-black/5 dark:border-white/5 p-3 flex flex-col gap-1 bg-background/50">
                     <NavItem
-                        href="/profile"
+                        href="/settings"
                         icon={<Settings />}
                         label="Settings"
-                        isActive={url.startsWith('/profile')}
+                        isActive={url.startsWith('/settings')}
                         isCollapsed={isCollapsed}
                         onClick={handleLinkClick}
                         onHover={setActiveTooltip}

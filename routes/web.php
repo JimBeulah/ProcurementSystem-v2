@@ -14,6 +14,7 @@ use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\PurchaseRequestController;
 use App\Http\Controllers\ReceivingController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\DatabaseManagementController;
 use App\Http\Controllers\SiteReleaseController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\NotificationController;
@@ -217,6 +218,12 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
     // Activity Logs (Admin only)
     Route::middleware(['role:admin'])->group(function () {
         Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+
+        // Database Management
+        Route::get('/settings/database', [DatabaseManagementController::class, 'index'])->name('settings.database.index');
+        Route::get('/settings/database/backup', [DatabaseManagementController::class, 'backup'])->name('settings.database.backup');
+        Route::post('/settings/database/import', [DatabaseManagementController::class, 'import'])->name('settings.database.import');
+        Route::post('/settings/database/reset', [DatabaseManagementController::class, 'reset'])->name('settings.database.reset');
     });
 });
 

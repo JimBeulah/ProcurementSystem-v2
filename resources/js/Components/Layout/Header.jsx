@@ -245,7 +245,7 @@ export default function Header({ user, onMenuClick }) {
                                         </div>
                                         <div className="p-1.5">
                                             <Link
-                                                href="/profile"
+                                                href="/settings"
                                                 className="w-full flex items-center gap-2 px-3 py-2 text-sm text-foreground/80 hover:text-foreground hover:bg-blue-500/10 hover:text-blue-600 rounded-xl transition-all"
                                             >
                                                 <Settings size={16} />
