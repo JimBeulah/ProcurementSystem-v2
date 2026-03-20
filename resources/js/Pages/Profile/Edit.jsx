@@ -1,8 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { useState } from 'react';
-import { User, Shield, AlertTriangle } from 'lucide-react';
-import DeleteUserForm from './Partials/DeleteUserForm';
+import { User, Shield } from 'lucide-react';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
 import { Card } from '@/Components/UI/Card';
@@ -13,7 +12,6 @@ export default function Edit({ mustVerifyEmail, status }) {
     const tabs = [
         { id: 'profile', label: 'Profile Information', icon: <User size={18} /> },
         { id: 'security', label: 'Security', icon: <Shield size={18} /> },
-        { id: 'danger', label: 'Danger Zone', icon: <AlertTriangle size={18} /> },
     ];
     return (
         <AuthenticatedLayout
@@ -91,20 +89,6 @@ export default function Edit({ mustVerifyEmail, status }) {
                                         Update Password
                                     </h3>
                                     <UpdatePasswordForm className="max-w-2xl" />
-                                </div>
-                            )}
-
-                            {activeTab === 'danger' && (
-                                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                    <div className="flex items-center gap-2 border-b border-red-100 dark:border-red-500/20 pb-4 mb-6">
-                                        <AlertTriangle className="text-red-500" size={20} />
-                                        <h3 className="text-lg font-bold tracking-tight text-red-600 dark:text-red-400">
-                                            Danger Zone
-                                        </h3>
-                                    </div>
-                                    <div className="bg-red-50/50 dark:bg-red-500/5 rounded-2xl border border-red-100 dark:border-red-500/20 p-6">
-                                        <DeleteUserForm className="max-w-2xl" />
-                                    </div>
                                 </div>
                             )}
                         </Card>
