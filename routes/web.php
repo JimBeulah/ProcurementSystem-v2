@@ -180,14 +180,13 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
     });
 
 
-    // Settings
+    // Settings & Profile (Accessible to all authenticated users)
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::get('/settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/settings/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    // Restricted Settings
     Route::middleware(['can:view settings'])->group(function () {
-        Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
-
-        // User Profile (available to all with view settings permission, or just auth)
-        Route::get('/settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-        Route::patch('/settings/profile', [ProfileController::class, 'update'])->name('profile.update');
-
         Route::middleware(['can:manage master data'])->group(function () {
             Route::get('/settings/master-data', [SettingsController::class, 'masterData'])->name('settings.master-data');
 

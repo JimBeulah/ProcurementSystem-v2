@@ -225,15 +225,13 @@ export default function GlobalSearch({ isOpen, onClose }) {
                                                     User Management
                                                 </Command.Item>
                                             )}
-                                            {hasPermission('view settings') && (
-                                                <Command.Item
-                                                    onSelect={() => handleSelect('/settings')}
-                                                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-foreground hover:bg-black/[0.04] dark:hover:bg-white/[0.06] data-[selected='true']:bg-blue-600 data-[selected='true']:text-white cursor-pointer transition-colors group"
-                                                >
-                                                    <Settings size={16} className="text-muted-foreground group-data-[selected='true']:text-white transition-colors" />
-                                                    System Settings
-                                                </Command.Item>
-                                            )}
+                                            <Command.Item
+                                                onSelect={() => handleSelect('/settings')}
+                                                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-foreground hover:bg-black/[0.04] dark:hover:bg-white/[0.06] data-[selected='true']:bg-blue-600 data-[selected='true']:text-white cursor-pointer transition-colors group"
+                                            >
+                                                <Settings size={16} className="text-muted-foreground group-data-[selected='true']:text-white transition-colors" />
+                                                System Settings
+                                            </Command.Item>
                                         </Command.Group>
                                     </>
                                 )}
