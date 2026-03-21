@@ -15,6 +15,26 @@ class DatabaseManagementController extends Controller
         return Inertia::render('Settings/Database/Index');
     }
 
+    protected function getBinaryPath($binary)
+    {
+        // On Windows, especially with Laragon, we might need absolute paths
+        if (PHP_OS_FAMILY === 'Windows') {
+            // Try to find in Laragon common paths if not in PATH
+            $laragonPath = 'C:\\laragon\\bin\\mysql\\';
+            if (is_dir($laragonPath)) {
+                $versions = array_diff(scandir($laragonPath, SCANDIR_SORT_DESCENDING), ['.', '..']);
+                foreach ($versions as $version) {
+                    $fullPath = $laragonPath . $version . '\\bin\\' . $binary . '.exe';
+                    if (file_exists($fullPath)) {
+                        return $fullPath;
+                    }
+                }
+            }
+        }
+
+        return $binary; // Fallback to system PATH
+    }
+
     public function backup()
     {
         $connection = config('database.default');
@@ -31,9 +51,15 @@ class DatabaseManagementController extends Controller
             mkdir(storage_path('app/backups'), 0755, true);
         }
 
-        $env = ['MYSQL_PWD' => $config['password']];
+        $mysqldump = $this->getBinaryPath('mysqldump');
+        
+        // Inherit system environment variables to avoid socket errors on Windows
+        // Critical for Windows network initialization (Winsock)
+        $env = array_merge($_SERVER, getenv(), ['MYSQL_PWD' => $config['password']]);
+        
         $command = sprintf(
-            'mysqldump --user=%s --host=%s --port=%s %s > %s',
+            '%s --user=%s --host=%s --port=%s --protocol=tcp %s > %s',
+            escapeshellarg($mysqldump),
             escapeshellarg($config['username']),
             escapeshellarg($config['host']),
             escapeshellarg($config['port']),
@@ -67,9 +93,15 @@ class DatabaseManagementController extends Controller
         $path = $file->storeAs('temp', 'import.sql');
         $fullPath = storage_path('app/' . $path);
 
-        $env = ['MYSQL_PWD' => $config['password']];
+        $mysql = $this->getBinaryPath('mysql');
+        
+        // Inherit system environment variables to avoid socket errors on Windows
+        // Critical for Windows network initialization (Winsock)
+        $env = array_merge($_SERVER, getenv(), ['MYSQL_PWD' => $config['password']]);
+        
         $command = sprintf(
-            'mysql --user=%s --host=%s --port=%s %s < %s',
+            '%s --user=%s --host=%s --port=%s --protocol=tcp %s < %s',
+            escapeshellarg($mysql),
             escapeshellarg($config['username']),
             escapeshellarg($config['host']),
             escapeshellarg($config['port']),
