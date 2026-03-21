@@ -26,17 +26,21 @@ class ReportService
     }
 
     /**
-     * Get aggregate data for all projects.
+     * Get aggregate data for all projects using DB-level aggregations.
      */
     protected function getAggregateReports(): array
     {
-        $projects = Project::with(['client', 'purchaseOrders'])->get();
+        $projects = Project::with('client')
+            ->withSum('purchaseOrders as committed_amount', 'total_amount')
+            ->withSum('disbursements as paid_amount', 'amount')
+            ->withSum('invoices as invoiced_amount', 'total_amount')
+            ->get();
 
         return $projects->map(function ($p) {
             $budget = (float) $p->budget;
-            $committed = $p->purchaseOrders->sum('total_amount');
-            $paid = Disbursement::whereIn('purchase_order_id', $p->purchaseOrders->pluck('id'))->sum('amount');
-            $invoiced = $p->purchaseOrders->flatMap->invoices->sum('total_amount');
+            $committed = (float) $p->committed_amount;
+            $invoiced = (float) $p->invoiced_amount;
+            $paid = (float) $p->paid_amount;
 
             return [
                 'id' => $p->id,
@@ -45,7 +49,7 @@ class ReportService
                 'budget' => $budget,
                 'committed' => $committed,
                 'invoiced' => $invoiced,
-                'paid' => (float) $paid,
+                'paid' => $paid,
                 'remaining' => $budget - $committed,
                 'progress' => $budget > 0 ? ($committed / $budget) * 100 : 0,
             ];
@@ -57,39 +61,48 @@ class ReportService
      */
     protected function getProjectSpecificReport(int $projectId): array
     {
-        $project = Project::with(['client', 'purchaseOrders.invoices', 'purchaseOrders.disbursements'])->findOrFail($projectId);
+        $project = Project::with(['client'])
+            ->withSum('purchaseOrders as committed_direct_costs', 'total_amount')
+            ->withSum('disbursements as total_paid', 'amount')
+            ->findOrFail($projectId);
 
         $budget = (float) $project->budget;
 
-        // 1. Operating Revenue
-        $extraIncome = FinancialTransaction::where('project_id', $projectId)->where('type', 'INCOME')->sum('amount');
-        $operatingRevenue = $budget + (float) $extraIncome;
+        // DB level aggregation for financial transactions
+        $transactions = FinancialTransaction::selectRaw("
+            SUM(CASE WHEN type = 'INCOME' THEN amount ELSE 0 END) as extra_income,
+            SUM(CASE WHEN type = 'EXPENSE' AND category IN ('MATERIALS', 'LABOR', 'EQUIPMENT', 'SUBCONTRACTOR') THEN amount ELSE 0 END) as extra_direct_costs,
+            SUM(CASE WHEN type = 'EXPENSE' AND category NOT IN ('MATERIALS', 'LABOR', 'EQUIPMENT', 'SUBCONTRACTOR') THEN amount ELSE 0 END) as operating_expenses
+        ")->where('project_id', $projectId)->first();
 
-        // 2. Cost of Goods Sold (Direct Costs)
-        // Committed POs are usually direct costs (Materials/Subcontractors)
-        $committedDirectCosts = (float) $project->purchaseOrders->sum('total_amount');
-        // We'll treat other direct expenses from FinancialTransaction if they exist (need category check)
-        $extraDirectCosts = FinancialTransaction::where('project_id', $projectId)
-            ->where('type', 'EXPENSE')
-            ->whereIn('category', ['MATERIALS', 'LABOR', 'EQUIPMENT', 'SUBCONTRACTOR'])
-            ->sum('amount');
+        $extraIncome = (float) ($transactions->extra_income ?? 0);
+        $extraDirectCosts = (float) ($transactions->extra_direct_costs ?? 0);
+        $operatingExpenses = (float) ($transactions->operating_expenses ?? 0);
+        
+        $committedDirectCosts = (float) $project->committed_direct_costs;
+        $totalPaid = (float) $project->total_paid;
 
-        $cogs = $committedDirectCosts + (float) $extraDirectCosts;
-
-        // 3. Gross Profit
+        // Derived calculations
+        $operatingRevenue = $budget + $extraIncome;
+        $cogs = $committedDirectCosts + $extraDirectCosts;
         $grossProfit = $operatingRevenue - $cogs;
+        $netIncome = $grossProfit - $operatingExpenses;
 
-        // 4. Operating Expenses (Indirect Costs / Overhead)
-        $operatingExpenses = FinancialTransaction::where('project_id', $projectId)
-            ->where('type', 'EXPENSE')
-            ->whereNotIn('category', ['MATERIALS', 'LABOR', 'EQUIPMENT', 'SUBCONTRACTOR'])
-            ->sum('amount');
-
-        // 5. Net Income
-        $netIncome = $grossProfit - (float) $operatingExpenses;
-
-        // Paid amounts for cash flow tracking
-        $totalPaid = Disbursement::whereIn('purchase_order_id', $project->purchaseOrders->pluck('id'))->sum('amount');
+        // Fetch POs with their DB-aggregated paid amount
+        $purchaseOrders = PurchaseOrder::where('project_id', $projectId)
+            ->with('supplier')
+            ->withSum('disbursements as amount_paid', 'amount')
+            ->get()
+            ->map(function ($po) {
+                return [
+                    'id' => $po->id,
+                    'ref' => $po->id,
+                    'supplier' => $po->supplier?->name ?? 'N/A',
+                    'amount' => (float) $po->total_amount,
+                    'paid' => (float) $po->amount_paid,
+                    'status' => $po->status,
+                ];
+            });
 
         return [
             'project' => [
@@ -101,12 +114,12 @@ class ReportService
             'income_statement' => [
                 'revenue' => [
                     'contract_amount' => $budget,
-                    'other_income' => (float) $extraIncome,
+                    'other_income' => $extraIncome,
                     'total_operating_revenue' => $operatingRevenue,
                 ],
                 'cogs' => [
                     'committed_pos' => $committedDirectCosts,
-                    'other_direct_costs' => (float) $extraDirectCosts,
+                    'other_direct_costs' => $extraDirectCosts,
                     'total_cogs' => $cogs,
                 ],
                 'gross_profit' => [
@@ -114,39 +127,30 @@ class ReportService
                     'margin' => $operatingRevenue > 0 ? ($grossProfit / $operatingRevenue) * 100 : 0,
                 ],
                 'operating_expenses' => [
-                    'total' => (float) $operatingExpenses,
+                    'total' => $operatingExpenses,
                 ],
                 'net_income' => [
                     'amount' => $netIncome,
                     'margin' => $operatingRevenue > 0 ? ($netIncome / $operatingRevenue) * 100 : 0,
                 ],
             ],
-            // Keep legacy keys for backward compatibility if needed, using the new structure
+            // Keep legacy keys for backward compatibility
             'revenue' => [
                 'budget' => $budget,
-                'extra' => (float) $extraIncome,
-                'total' => (float) $operatingRevenue,
+                'extra' => $extraIncome,
+                'total' => $operatingRevenue,
             ],
             'expenses' => [
                 'committed' => $committedDirectCosts,
-                'extra' => (float) ($extraDirectCosts + $operatingExpenses),
-                'total' => (float) ($cogs + $operatingExpenses),
-                'paid' => (float) $totalPaid,
+                'extra' => $extraDirectCosts + $operatingExpenses,
+                'total' => $cogs + $operatingExpenses,
+                'paid' => $totalPaid,
             ],
             'profit_loss' => [
-                'amount' => (float) $netIncome,
+                'amount' => $netIncome,
                 'margin' => $operatingRevenue > 0 ? ($netIncome / $operatingRevenue) * 100 : 0,
             ],
-            'purchase_orders' => $project->purchaseOrders->map(function ($po) {
-                return [
-                    'id' => $po->id,
-                    'ref' => $po->id,
-                    'supplier' => $po->supplier?->name ?? 'N/A',
-                    'amount' => (float) $po->total_amount,
-                    'paid' => (float) $po->disbursements->sum('amount'),
-                    'status' => $po->status,
-                ];
-            }),
+            'purchase_orders' => $purchaseOrders,
         ];
     }
 

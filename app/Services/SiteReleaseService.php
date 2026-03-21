@@ -11,12 +11,14 @@ class SiteReleaseService
     /**
      * Issue items from inventory to the site.
      */
-    public function release(InventoryItem $item, array $validated): SiteRelease
+    public function release(InventoryItem $item, array $validated, int $userId = null): SiteRelease
     {
+        $userId = $userId ?? Auth::id();
+
         $release = SiteRelease::create([
             'inventory_item_id' => $item->id,
             'project_id' => $item->project_id,
-            'released_by_id' => Auth::id(),
+            'released_by_id' => $userId,
             'issued_to' => $validated['issued_to'],
             'quantity_released' => $validated['quantity_released'],
             'unit' => $item->unit,
@@ -34,13 +36,14 @@ class SiteReleaseService
      * Confirm receipt of a released batch and merge received quantity into the
      * project site's inventory so the material is available for issuance to workers.
      */
-    public function confirmReceipt(SiteRelease $siteRelease, array $validated): void
+    public function confirmReceipt(SiteRelease $siteRelease, array $validated, int $userId = null): void
     {
         $qtyReceived = (float) $validated['quantity_received'];
+        $userId = $userId ?? Auth::id();
 
         $siteRelease->update([
             'status' => 'RECEIVED',
-            'received_by_id' => Auth::id(),
+            'received_by_id' => $userId,
             'received_date' => now(),
             'quantity_received' => $qtyReceived,
             'receipt_remarks' => $validated['receipt_remarks'] ?? null,
@@ -64,6 +67,40 @@ class SiteReleaseService
             );
 
             $siteInventory->increment('quantity', $qtyReceived);
+        }
+    }
+
+    /**
+     * Auto-release items from warehouse inventory directly to a project site.
+     * Used when fulfilling PRs directly from warehouse stock.
+     */
+    public function autoReleaseWarehouseItems(array $warehouseItems, int $projectId, int $requesterId): void
+    {
+        foreach ($warehouseItems as $wItem) {
+            // Find matching warehouse inventory
+            $inventory = InventoryItem::where('material_name', $wItem['material_name'])
+                ->where('quantity', '>', 0)
+                ->whereNotNull('warehouse_id')
+                ->first();
+
+            if ($inventory) {
+                $qtyToRelease = min($wItem['quantity'], $inventory->quantity);
+
+                SiteRelease::create([
+                    'inventory_item_id' => $inventory->id,
+                    'project_id' => $projectId,
+                    'released_by_id' => $requesterId,
+                    'issued_to' => 'Site Engineer',
+                    'quantity_released' => $qtyToRelease,
+                    'unit' => $wItem['unit'] ?? 'pcs',
+                    'purpose' => 'Auto-sourced during PR fulfillment',
+                    'release_date' => now(),
+                    'status' => 'IN_TRANSIT', // IN_TRANSIT so the Site Engineer can confirm receipt
+                ]);
+
+                // Deduct from warehouse stock
+                $inventory->decrement('quantity', $qtyToRelease);
+            }
         }
     }
 }

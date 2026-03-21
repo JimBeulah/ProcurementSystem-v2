@@ -5,16 +5,22 @@ namespace App\Services;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use App\Models\PurchaseRequest;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
+use App\Models\User;
 
 class PurchaseOrderService
 {
+    public function __construct(
+        protected SiteReleaseService $siteReleaseService
+    ) {}
+
     /**
      * Create a new purchase order with its line items.
      */
-    public function create(array $validated): ?PurchaseOrder
+    public function create(array $validated, int $requesterId): ?PurchaseOrder
     {
-        return \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
+        return DB::transaction(function () use ($validated, $requesterId) {
             // Segregate items meant for the supplier vs items sourced from the warehouse
             $supplierItems = [];
             $warehouseItems = [];
@@ -28,31 +34,8 @@ class PurchaseOrderService
             }
 
             // 1. Process Warehouse Items by auto-generating Site Releases
-            foreach ($warehouseItems as $wItem) {
-                // Find matching warehouse inventory
-                $inventory = \App\Models\InventoryItem::where('material_name', $wItem['material_name'])
-                    ->where('quantity', '>', 0)
-                    ->whereNotNull('warehouse_id')
-                    ->first();
-
-                if ($inventory) {
-                    $qtyToRelease = min($wItem['quantity'], $inventory->quantity);
-
-                    \App\Models\SiteRelease::create([
-                        'inventory_item_id' => $inventory->id,
-                        'project_id' => $validated['project_id'],
-                        'released_by_id' => Auth::id(),
-                        'issued_to' => 'Site Engineer',
-                        'quantity_released' => $qtyToRelease,
-                        'unit' => $wItem['unit'] ?? 'pcs',
-                        'purpose' => 'Auto-sourced during PR fulfillment',
-                        'release_date' => now(),
-                        'status' => 'IN_TRANSIT', // IN_TRANSIT so the Site Engineer can confirm receipt
-                    ]);
-
-                    // Deduct from warehouse stock
-                    $inventory->decrement('quantity', $qtyToRelease);
-                }
+            if (!empty($warehouseItems)) {
+                $this->siteReleaseService->autoReleaseWarehouseItems($warehouseItems, $validated['project_id'], $requesterId);
             }
 
             // 2. Create the Purchase Order ONLY for the supplier items (if any exist)
@@ -67,7 +50,7 @@ class PurchaseOrderService
                 'project_id' => $validated['project_id'],
                 'supplier_id' => $validated['supplier_id'],
                 'purchase_request_id' => $validated['purchase_request_id'] ?? null,
-                'requester_id' => Auth::id(),
+                'requester_id' => $requesterId,
                 'order_date' => now(),
                 'status' => 'PENDING',
                 'remarks' => $validated['remarks'] ?? null,
@@ -93,6 +76,7 @@ class PurchaseOrderService
                     'unit' => $item['unit'] ?? 'pcs',
                 ];
             })->toArray();
+            
             $po->items()->createMany($itemsData);
 
             // Update parent PR status if applicable
@@ -100,9 +84,9 @@ class PurchaseOrderService
                 $this->updatePurchaseRequestStatus(PurchaseRequest::find($validated['purchase_request_id']));
             }
 
-            $approvers = \App\Models\User::role(['admin', 'finance'])->get();
+            $approvers = User::role(['admin', 'finance'])->get();
             if ($approvers->isNotEmpty()) {
-                \Illuminate\Support\Facades\Notification::send($approvers, new \App\Notifications\NewPurchaseOrderSubmitted($po));
+                Notification::send($approvers, new \App\Notifications\NewPurchaseOrderSubmitted($po));
             }
 
             return $po;
@@ -112,11 +96,11 @@ class PurchaseOrderService
     /**
      * Approve a purchase order.
      */
-    public function approve(PurchaseOrder $order): void
+    public function approve(PurchaseOrder $order, int $approverId): void
     {
         $order->update([
             'status' => 'APPROVED',
-            'approver_id' => Auth::id(),
+            'approver_id' => $approverId,
         ]);
 
         if ($order->requester) {
@@ -140,7 +124,7 @@ class PurchaseOrderService
      */
     public function cancel(PurchaseOrder $order, string $remarks): void
     {
-        \Illuminate\Support\Facades\DB::transaction(function () use ($order, $remarks) {
+        DB::transaction(function () use ($order, $remarks) {
             $order->update([
                 'status' => 'CANCELLED',
                 'remarks' => $remarks,
@@ -193,8 +177,6 @@ class PurchaseOrderService
             $pr->update(['status' => 'APPROVED']);
         }
     }
-
-
 
     /**
      * Optionally find a purchase request for pre-filling the PO create form.

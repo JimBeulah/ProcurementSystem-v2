@@ -8,6 +8,7 @@ use App\Models\Project;
 use App\Models\PurchaseOrder;
 use App\Models\Supplier;
 use App\Services\PurchaseOrderService;
+use App\Services\InventoryMatchingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,9 +17,9 @@ use Inertia\Response;
 class PurchaseOrderController extends Controller
 {
     public function __construct(
-        protected PurchaseOrderService $service
-    ) {
-    }
+        protected PurchaseOrderService $service,
+        protected InventoryMatchingService $inventoryMatching
+    ) {}
 
     public function index(Request $request): Response
     {
@@ -38,25 +39,7 @@ class PurchaseOrderController extends Controller
                 ->find($request->query('returnId'));
         }
 
-        // Smart Inventory Match: for each PR item, check warehouse stock with matching name
-        $inventoryMatches = [];
-        if ($pr && $pr->items) {
-            foreach ($pr->items as $item) {
-                $matches = \App\Models\InventoryItem::where('quantity', '>', 0)
-                    ->whereNull('project_id')
-                    ->where('material_name', 'LIKE', '%' . $item->item_description . '%')
-                    ->get(['id', 'material_name', 'quantity', 'unit', 'project_id'])
-                    ->toArray();
-
-                if (count($matches) > 0) {
-                    $inventoryMatches[$item->item_description] = [
-                        'requested_qty' => (float) $item->quantity,
-                        'unit' => $item->unit,
-                        'stock' => $matches,
-                    ];
-                }
-            }
-        }
+        $inventoryMatches = $this->inventoryMatching->matchForPurchaseRequest($pr);
 
         return Inertia::render('Purchasing/Orders/Index', [
             'orders' => $orders,
@@ -92,25 +75,7 @@ class PurchaseOrderController extends Controller
                 ->find($request->query('returnId'));
         }
 
-        // Smart Inventory Match: for each PR item, check warehouse stock with matching name
-        $inventoryMatches = [];
-        if ($pr && $pr->items) {
-            foreach ($pr->items as $item) {
-                $matches = \App\Models\InventoryItem::where('quantity', '>', 0)
-                    ->whereNull('project_id')
-                    ->where('material_name', 'LIKE', '%' . $item->item_description . '%')
-                    ->get(['id', 'material_name', 'quantity', 'unit', 'project_id'])
-                    ->toArray();
-
-                if (count($matches) > 0) {
-                    $inventoryMatches[$item->item_description] = [
-                        'requested_qty' => (float) $item->quantity,
-                        'unit' => $item->unit,
-                        'stock' => $matches,
-                    ];
-                }
-            }
-        }
+        $inventoryMatches = $this->inventoryMatching->matchForPurchaseRequest($pr);
 
         return Inertia::render('Purchasing/Orders/Create', [
             'projects' => $projects,
@@ -124,7 +89,7 @@ class PurchaseOrderController extends Controller
 
     public function store(StorePurchaseOrderRequest $request): RedirectResponse
     {
-        $po = $this->service->create($request->validated());
+        $po = $this->service->create($request->validated(), \Illuminate\Support\Facades\Auth::id());
 
         if (!$po) {
             // Means 100% of the requested items were sourced from the internal warehouse
@@ -137,7 +102,7 @@ class PurchaseOrderController extends Controller
 
     public function approve(PurchaseOrder $order): RedirectResponse
     {
-        $this->service->approve($order);
+        $this->service->approve($order, \Illuminate\Support\Facades\Auth::id());
 
         return redirect()->back()->with('success', 'Purchase order approved successfully.');
     }
@@ -159,8 +124,6 @@ class PurchaseOrderController extends Controller
 
         return redirect()->back()->with('success', 'Purchase order cancelled successfully.');
     }
-
-
 
     public function print(PurchaseOrder $order)
     {

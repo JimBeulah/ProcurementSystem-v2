@@ -111,6 +111,16 @@ class Project extends Model
         return $this->hasMany(InventoryItem::class);
     }
 
+    public function disbursements()
+    {
+        return $this->hasManyThrough(Disbursement::class, PurchaseOrder::class);
+    }
+
+    public function invoices()
+    {
+        return $this->hasManyThrough(SupplierInvoice::class, PurchaseOrder::class);
+    }
+
     /**
      * Calculate the total profit for the project's BOQ.
      * Encapsulated as an accessor so controllers stay thin.
