@@ -184,6 +184,10 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
     Route::middleware(['can:view settings'])->group(function () {
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
 
+        // User Profile (available to all with view settings permission, or just auth)
+        Route::get('/settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/settings/profile', [ProfileController::class, 'update'])->name('profile.update');
+
         Route::middleware(['can:manage master data'])->group(function () {
             Route::get('/settings/master-data', [SettingsController::class, 'masterData'])->name('settings.master-data');
 
@@ -225,12 +229,6 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
         Route::post('/settings/database/import', [DatabaseManagementController::class, 'import'])->name('settings.database.import');
         Route::post('/settings/database/reset', [DatabaseManagementController::class, 'reset'])->name('settings.database.reset');
     });
-});
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    // Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 require __DIR__ . '/auth.php';
