@@ -89,7 +89,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                 ...c,
                 unit: c.unit || '',
                 quantityFactor: Number(c.quantityFactor) || 0,
-                clientUnitRate: Number(c.unitRate) || 0,
+                clientUnitRate: Number(c.clientUnitRate) || 0,
                 altapilUnitRate: Number(c.altapilUnitRate) || 0,
                 noOfPersons: Number(c.noOfPersons) || 0,
                 hours: Number(c.hours) || 0,
@@ -117,7 +117,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
     const addComponent = () => {
         setItem(prev => ({
             ...prev,
-            components: [...prev.components, { resourceType: 'MATERIAL', name: '', unit: '', quantityFactor: 0, unitRate: 0, altapilUnitRate: 0, noOfPersons: 0, hours: 0 }]
+            components: [...prev.components, { resourceType: 'MATERIAL', name: '', unit: '', quantityFactor: 0, clientUnitRate: 0, altapilUnitRate: 0, noOfPersons: 0, hours: 0 }]
         }));
         // Auto-scroll to bottom after React re-renders the new row
         setTimeout(() => {
@@ -151,10 +151,10 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
 
         const matCosts = newComponents
             .filter(c => c.resourceType === 'MATERIAL')
-            .reduce((sum, c) => sum + (Number(c.quantityFactor) * Number(c.unitRate)), 0);
+            .reduce((sum, c) => sum + (Number(c.quantityFactor) * Number(c.clientUnitRate)), 0);
         const labCosts = newComponents
             .filter(c => c.resourceType === 'LABOR' || c.resourceType === 'EQUIPMENT')
-            .reduce((sum, c) => sum + (Number(c.quantityFactor) * Number(c.unitRate)), 0);
+            .reduce((sum, c) => sum + (Number(c.quantityFactor) * Number(c.clientUnitRate)), 0);
 
         setItem(prev => ({
             ...prev,
@@ -371,8 +371,8 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                                             type="number" step="0.01"
                                             placeholder="0.00"
                                             className="w-full bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700/80 rounded shadow-sm p-1.5 text-xs text-slate-900 dark:text-white outline-none text-right focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-mono"
-                                            value={comp.unitRate || ''}
-                                            onChange={e => updateComponent(idx, 'unitRate', e.target.value)}
+                                            value={comp.clientUnitRate || ''}
+                                            onChange={e => updateComponent(idx, 'clientUnitRate', e.target.value)}
                                         />
                                     </div>
                                     <div>
@@ -393,7 +393,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                                 </div>
                                 <div className="flex justify-end mt-1">
                                     <span className="text-[9px] font-mono text-slate-400">
-                                        Row: ₱ {(Number(comp.quantityFactor) * Number(comp.unitRate)).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                        Row: ₱ {(Number(comp.quantityFactor) * Number(comp.clientUnitRate)).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </span>
                                 </div>
                             </div>
