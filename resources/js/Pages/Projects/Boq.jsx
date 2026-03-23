@@ -51,13 +51,11 @@ export default function ProjectBoq() {
             setLoading(true);
             router.post(`/projects/${project.id}/boq`, payload, {
                 onSuccess: () => {
-                    toast.success('BOQ Item Added');
                     setIsWizardOpen(false);
                     setLoading(false);
                     resolve(true);
                 },
                 onError: (errors) => {
-                    toast.error('Failed to add item');
                     console.error(errors);
                     setLoading(false);
                     reject(errors);
@@ -70,7 +68,6 @@ export default function ProjectBoq() {
         if (!deleteTarget) return;
         router.delete(`/projects/${project.id}/boq/${deleteTarget.id}`, {
             onSuccess: () => {
-                toast.success('Item Deleted');
                 setDeleteTarget(null);
             }
         });
@@ -79,8 +76,8 @@ export default function ProjectBoq() {
     const handleApprove = () => {
         if (confirm('Are you sure you want to approve this BOQ? This will lock all items from further editing.')) {
             router.post(`/projects/${project.id}/boq/approve`, {}, {
-                onSuccess: () => toast.success('BOQ Approved & Locked'),
-                onError: () => toast.error('Failed to approve BOQ')
+                onSuccess: () => {},
+                onError: () => {}
             });
         }
     };
@@ -90,12 +87,10 @@ export default function ProjectBoq() {
         setLoading(true);
         router.put(`/projects/${project.id}/boq/${editItem.id}`, editItem, {
             onSuccess: () => {
-                toast.success('Item Updated');
                 setEditItem(null);
                 setLoading(false);
             },
             onError: () => {
-                toast.error('Failed to update item');
                 setLoading(false);
             }
         });
@@ -130,24 +125,20 @@ export default function ProjectBoq() {
         if (mode === 'add') {
             router.post(`/projects/${project.id}/boq/${parentItem.id}/components`, payload, {
                 onSuccess: () => {
-                    toast.success('Resource Added');
                     setResourceModal({ ...resourceModal, open: false });
                     setLoading(false);
                 },
                 onError: (errors) => {
-                    toast.error('Failed to add resource. Please check the inputs.');
                     setLoading(false);
                 }
             });
         } else {
             router.put(`/projects/${project.id}/boq/components/${data.id}`, payload, {
                 onSuccess: () => {
-                    toast.success('Resource Updated');
                     setResourceModal({ ...resourceModal, open: false });
                     setLoading(false);
                 },
                 onError: (errors) => {
-                    toast.error('Failed to update resource. Please check the inputs.');
                     setLoading(false);
                 }
             });
@@ -157,7 +148,7 @@ export default function ProjectBoq() {
     const handleDeleteResource = (component) => {
         if (confirm('Delete this resource?')) {
             router.delete(`/projects/${project.id}/boq/components/${component.id}`, {
-                onSuccess: () => toast.success('Resource Deleted'),
+                onSuccess: () => {},
             });
         }
     };
@@ -171,8 +162,8 @@ export default function ProjectBoq() {
             if (resultItems.length > 0) {
                 setLoading(true);
                 router.post(`/projects/${project.id}/boq/bulk`, { items: resultItems }, {
-                    onSuccess: () => { toast.success('Bulk Upload Complete'); setLoading(false); },
-                    onError: () => { toast.error('Upload Failed'); setLoading(false); }
+                    onSuccess: () => { setLoading(false); },
+                    onError: () => { setLoading(false); }
                 });
             }
         } catch (error) {
@@ -245,9 +236,9 @@ export default function ProjectBoq() {
                                         onClick={() => {
                                             const reason = prompt('Please enter the reason for revision (e.g., Price Increase, Scope Change):');
                                             if (reason && reason.length >= 5) {
-                                                router.post(`/projects/${project.id}/boq/revise`, { reason }, {
-                                                    onSuccess: () => toast.success('BOQ Unlocked for Revision'),
-                                                    onError: () => toast.error('Failed to unlock BOQ')
+                                                router.post(`/projects/${project.id}/boq/unlock`, { reason }, {
+                                                    onSuccess: () => {},
+                                                    onError: () => {}
                                                 });
                                             } else if (reason) {
                                                 toast.error('Reason must be at least 5 characters.');

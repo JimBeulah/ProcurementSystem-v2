@@ -92,13 +92,6 @@ export default function ProjectMaterialRequests() {
     const [remarks, setRemarks] = useState('');
     const [cart, setCart] = useState([]);
 
-    // Show Flash Messages
-    useEffect(() => {
-        if (flash?.success) toast.success(flash.success);
-        if (flash?.error) toast.error(flash.error);
-        if (flash?.warning) toast.warning(flash.warning);
-    }, [flash]);
-
     // Derived state for budget
     const selectedBoqItem = boqItems?.find(b => b.id === Number(selectedBoqItemId));
     const selectedComponent = selectedBoqItem?.components?.find(c => c.id === Number(selectedComponentId));

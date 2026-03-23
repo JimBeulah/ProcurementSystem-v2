@@ -118,7 +118,7 @@ export default function SuppliersIndex() {
     const handleToggleActive = (supplier) => {
         if (confirm(`Are you sure you want to ${supplier.is_active ? 'disable' : 'enable'} this supplier?`)) {
             router.patch(route('purchasing.suppliers.toggle-active', supplier.id), {}, {
-                onSuccess: () => toast.success(`Supplier ${supplier.is_active ? 'disabled' : 'enabled'} successfully`),
+                onSuccess: () => {},
             });
         }
     };
@@ -138,11 +138,10 @@ export default function SuppliersIndex() {
                 setIsAddModalOpen(false);
                 setIsEditModalOpen(false);
                 setFormData({ name: '', contact_person: '', email: '', phone: '', address: '' });
-                toast.success(`Supplier ${isEditModalOpen ? 'updated' : 'added'} successfully`);
             },
             onError: (err) => {
-                if (err.name) toast.error(err.name);
-                else toast.error('Check form fields and try again.');
+                // If it's a validation error, standard Inertia handling will show it.
+                // We only log if it's unexpected or handled specifically.
             },
             onFinish: () => setSubmitting(false)
         });

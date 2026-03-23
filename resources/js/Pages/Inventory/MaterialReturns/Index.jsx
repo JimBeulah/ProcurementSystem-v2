@@ -203,13 +203,6 @@ export default function MaterialReturnsIndex({ returns }) {
                     </div>
                 </header>
 
-                {/* Flash Message */}
-                {flash?.success && (
-                    <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 rounded-xl px-4 py-3 text-sm font-medium animate-in fade-in slide-in-from-top-2 duration-300">
-                        <CheckCircle size={16} /> {flash.success}
-                    </div>
-                )}
-
                 {/* Returns Table */}
                 <div className="bg-white dark:bg-[#1e1e1e] border border-slate-200 dark:border-slate-700 p-4 rounded-xl shadow-sm">
                     <DataTable

@@ -62,11 +62,6 @@ export default function PurchaseRequestsIndex() {
     const [itemUnit, setItemUnit] = useState('');
     const [itemCost, setItemCost] = useState('');
 
-    useEffect(() => {
-        if (flash?.success) toast.success(flash.success);
-        if (flash?.error) toast.error(flash.error);
-    }, [flash]);
-
     // Handle search/filter with debounce
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -579,7 +574,6 @@ export default function PurchaseRequestsIndex() {
                     {isCreatePoModalOpen && <CreatePurchaseOrder onSuccess={() => {
                         setIsCreatePoModalOpen(false);
                         setShowDrawer(false);
-                        toast.success("Purchase order created successfully.");
                     }} />}
                 </div>
             </Modal>

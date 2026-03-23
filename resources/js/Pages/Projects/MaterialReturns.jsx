@@ -40,13 +40,6 @@ export default function ProjectMaterialReturns() {
                     </div>
                 </header>
 
-                {/* Flash Message */}
-                {flash?.success && (
-                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30 rounded-xl px-4 py-3 text-sm font-medium">
-                        <CheckCircle size={16} /> {flash.success}
-                    </motion.div>
-                )}
-
                 {/* Returns Content Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                     

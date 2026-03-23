@@ -20,13 +20,6 @@ export default function SiteReleaseIndex() {
     const [receiptRemarks, setReceiptRemarks] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
-    useEffect(() => {
-        if (flash?.success) toast.success(flash.success);
-        if (flash?.error) toast.error(flash.error);
-    }, [flash]);
-
-    const filtered = items.filter(i => i.material_name?.toLowerCase().includes(search.toLowerCase()));
-
     const canRelease = auth?.permissions?.includes('create site release') || auth?.roles?.includes('admin');
     const canConfirm = auth?.permissions?.includes('confirm site release') || auth?.roles?.includes('admin');
 

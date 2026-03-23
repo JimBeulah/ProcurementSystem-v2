@@ -24,11 +24,6 @@ export default function Deliveries() {
     const [itemRejections, setItemRejections] = useState({});
     const [receiptRemarks, setReceiptRemarks] = useState('');
 
-    useEffect(() => {
-        if (flash?.success) toast.success(flash.success);
-        if (flash?.error) toast.error(flash.error);
-    }, [flash]);
-
     const openDelivery = (item) => {
         if (confirming) return;
         if (item.type === 'purchase_order' && item.items?.length) {
