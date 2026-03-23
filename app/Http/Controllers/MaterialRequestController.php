@@ -54,8 +54,29 @@ class MaterialRequestController extends Controller
         $violations = $this->service->checkBudgetViolations($validated['items']);
 
         if (!empty($violations)) {
+            $isAuthorizedToOverride = in_array(auth()->user()->role, ['admin', 'project_manager']);
+            
+            if ($isAuthorizedToOverride && $request->input('authorize_override')) {
+                // Proceed with creation but log the override
+                $mr = $this->service->create($project, $validated);
+                
+                activity()
+                    ->performedOn($mr)
+                    ->causedBy(auth()->user())
+                    ->withProperty('violations', $violations)
+                    ->log('Material Request created with Budget Override.');
+
+                return redirect()->back()->with('success', 'Material request submitted successfully with Budget Override.');
+            }
+
             $itemsList = implode('; ', $violations);
-            return redirect()->back()->with('warning', "Budget Exceeded! The request exceeds the Altapil budget for: $itemsList. Request blocked.");
+            $msg = "Budget Exceeded! The request exceeds the Altapil budget for: $itemsList.";
+            
+            if ($isAuthorizedToOverride) {
+                return redirect()->back()->with('warning', "$msg You may choose to Authorize Override if this price increase is necessary.");
+            }
+
+            return redirect()->back()->with('warning', "$msg Request blocked. Please contact your Project Manager.");
         }
 
         $this->service->create($project, $validated);

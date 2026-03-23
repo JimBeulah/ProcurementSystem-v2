@@ -25,11 +25,11 @@ class ProjectService
             ->get();
     }
 
-    /**
-     * Create a new project.
-     */
     public function create(array $data): Project
     {
+        if (empty($data['status'])) {
+            $data['status'] = 'PLANNING';
+        }
         return Project::create($data);
     }
 

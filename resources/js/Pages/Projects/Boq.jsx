@@ -237,8 +237,28 @@ export default function ProjectBoq() {
                         <div className="h-8 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
 
                         {isApproved ? (
-                            <div className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-xl text-xs font-bold flex items-center gap-2 border border-slate-200 dark:border-slate-700">
-                                <span className="w-2 h-2 rounded-full bg-slate-400"></span> Locked
+                            <div className="flex items-center gap-2">
+                                <div className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-xl text-xs font-bold flex items-center gap-2 border border-slate-200 dark:border-slate-700">
+                                    <span className="w-2 h-2 rounded-full bg-slate-400"></span> Locked
+                                </div>
+                                {['admin', 'project_manager'].includes(auth.user.role) && (
+                                    <button 
+                                        onClick={() => {
+                                            const reason = prompt('Please enter the reason for revision (e.g., Price Increase, Scope Change):');
+                                            if (reason && reason.length >= 5) {
+                                                router.post(`/projects/${project.id}/boq/revise`, { reason }, {
+                                                    onSuccess: () => toast.success('BOQ Unlocked for Revision'),
+                                                    onError: () => toast.error('Failed to unlock BOQ')
+                                                });
+                                            } else if (reason) {
+                                                toast.error('Reason must be at least 5 characters.');
+                                            }
+                                        }} 
+                                        className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-amber-500 text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs font-bold transition-all shadow-sm active:scale-95"
+                                    >
+                                        <RefreshCcw size={14} /> Request Revision
+                                    </button>
+                                )}
                             </div>
                         ) : (
                             ['admin', 'project_manager'].includes(auth.user.role) && (

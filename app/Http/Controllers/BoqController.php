@@ -54,9 +54,36 @@ class BoqController extends Controller
         $project->update([
             'approved_by' => auth()->id(),
             'approved_at' => now(),
+            'status' => 'ACTIVE',
         ]);
 
-        return redirect()->back()->with('success', 'Project BOQ approved successfully.');
+        return redirect()->back()->with('success', 'Project BOQ approved successfully. The project is now ACTIVE.');
+    }
+
+    public function revise(Project $project, Request $request): RedirectResponse
+    {
+        if (!in_array(auth()->user()->role, ['admin', 'project_manager'])) {
+            abort(403, 'Unauthorized. Only Admins and Project Managers can request BOQ revisions.');
+        }
+
+        $request->validate([
+            'reason' => 'required|string|min:5'
+        ]);
+
+        $project->update([
+            'approved_by' => null,
+            'approved_at' => null,
+            'status' => 'PLANNING',
+        ]);
+
+        // Log the revision reason in activity log
+        activity()
+            ->performedOn($project)
+            ->causedBy(auth()->user())
+            ->withProperty('reason', $request->reason)
+            ->log('BOQ revision requested. Project status reverted to PLANNING.');
+
+        return redirect()->back()->with('success', 'BOQ has been unlocked for revision. Project status reverted to PLANNING.');
     }
 
     public function store(StoreBoqItemRequest $request, Project $project): RedirectResponse

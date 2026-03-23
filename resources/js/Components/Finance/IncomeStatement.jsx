@@ -73,7 +73,15 @@ export default function IncomeStatement({ data }) {
 
                     {/* COGS Section */}
                     <div className="pt-4">
-                        <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 border-b border-slate-50 dark:border-slate-800 pb-1">Cost of Goods Sold (Direct Costs)</h3>
+                        <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 border-b border-slate-50 dark:border-slate-800 pb-1 flex justify-between items-center">
+                            <span>Cost of Goods Sold (Direct Costs)</span>
+                            {cogs.variance !== undefined && (
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full ${cogs.variance > 0 ? 'bg-red-500/10 text-red-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                                    Variance: {cogs.variance > 0 ? '+' : ''}{formatCurrency(cogs.variance)}
+                                </span>
+                            )}
+                        </h3>
+                        {cogs.boq_baseline && <Row label="Estimated Baseline (BOQ)" amount={cogs.boq_baseline} indent className="opacity-60 italic scale-95 origin-left" />}
                         <Row label="Committed Purchase Orders" amount={cogs.committed_pos} indent />
                         <Row label="Other Direct Costs (Labor/Extra)" amount={cogs.other_direct_costs} indent />
                         <Row label="Total Cost of Goods Sold" amount={cogs.total_cogs} isSubtotal className="text-orange-600 dark:text-orange-400 underline decoration-slate-200 underline-offset-8" />

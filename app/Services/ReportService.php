@@ -88,6 +88,9 @@ class ReportService
         $grossProfit = $operatingRevenue - $cogs;
         $netIncome = $grossProfit - $operatingExpenses;
 
+        $boqBaselineCogs = (float) $project->total_altapil_budget;
+        $variance = $committedDirectCosts - $boqBaselineCogs;
+
         // Fetch POs with their DB-aggregated paid amount
         $purchaseOrders = PurchaseOrder::where('project_id', $projectId)
             ->with('supplier')
@@ -119,6 +122,8 @@ class ReportService
                 ],
                 'cogs' => [
                     'committed_pos' => $committedDirectCosts,
+                    'boq_baseline' => $boqBaselineCogs,
+                    'variance' => $variance,
                     'other_direct_costs' => $extraDirectCosts,
                     'total_cogs' => $cogs,
                 ],

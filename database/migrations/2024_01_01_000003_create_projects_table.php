@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->string('location')->nullable();
             $table->string('duration')->nullable();
             $table->decimal('budget', 15, 2);
-            $table->string('status')->default('ACTIVE');
+            $table->string('status')->default('PLANNING');
             $table->decimal('total_floor_area', 10, 2)->nullable();
             $table->decimal('carport_area', 10, 2)->nullable();
             $table->decimal('appropriation', 15, 2)->nullable();

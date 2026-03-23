@@ -131,4 +131,11 @@ class Project extends Model
             ->where('boq_items.project_id', $this->id)
             ->sum(DB::raw('client_total_cost - altapil_total_cost'));
     }
+
+    public function getTotalAltapilBudgetAttribute(): float
+    {
+        return (float) BoqItemComponent::join('boq_items', 'boq_items.id', '=', 'boq_item_components.boq_item_id')
+            ->where('boq_items.project_id', $this->id)
+            ->sum('altapil_total_cost');
+    }
 }

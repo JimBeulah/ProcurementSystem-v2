@@ -9,11 +9,12 @@ import { Truck, Plus, Package, Box, AlertTriangle, Info, CheckCircle2, User, Cal
 import { Toaster, toast } from 'sonner';
 
 export default function ProjectMaterialRequests() {
-    const { project, materialRequests: initialMRs, boqItems, inventoryItems, flash } = usePage().props;
+    const { project, materialRequests: initialMRs, boqItems, inventoryItems, flash, auth } = usePage().props;
     const requests = initialMRs || [];
 
     const [showModal, setShowModal] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [authorizeOverride, setAuthorizeOverride] = useState(false);
 
     // New additions for Drawer and DataTable
     const [selectedMr, setSelectedMr] = useState(null);
@@ -183,8 +184,8 @@ export default function ProjectMaterialRequests() {
     const handleSubmit = () => {
         if (cart.length === 0) return;
         setSubmitting(true);
-        router.post(`/projects/${project.id}/material-requests`, { items: cart, remarks }, {
-            onSuccess: () => { setShowModal(false); setCart([]); setRemarks(''); },
+        router.post(`/projects/${project.id}/material-requests`, { items: cart, remarks, authorize_override: authorizeOverride }, {
+            onSuccess: () => { setShowModal(false); setCart([]); setRemarks(''); setAuthorizeOverride(false); },
             onFinish: () => setSubmitting(false),
         });
     };
@@ -231,9 +232,18 @@ export default function ProjectMaterialRequests() {
                         </h1>
                         <p className="text-slate-500">Request materials from warehouse or procurement.</p>
                     </div>
-                    <button onClick={() => setShowModal(true)} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors text-xs font-bold shadow-lg shadow-blue-600/20 active:scale-95">
-                        <Plus size={18} /> Create Request
-                    </button>
+                    {project.status === 'ACTIVE' ? (
+                        <button onClick={() => setShowModal(true)} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors text-xs font-bold shadow-lg shadow-blue-600/20 active:scale-95">
+                            <Plus size={18} /> Create Request
+                        </button>
+                    ) : (
+                        <div className="flex flex-col items-end gap-1">
+                            <div className="bg-amber-500/10 text-amber-600 border border-amber-500/20 px-4 py-2 rounded-lg flex items-center gap-2 text-xs font-bold">
+                                <AlertTriangle size={16} /> BOQ Not Approved
+                            </div>
+                            <p className="text-[10px] text-slate-400 max-w-[200px] text-right">Sourcing is disabled until the Project BOQ is finalized and approved.</p>
+                        </div>
+                    )}
                 </header>
 
                 {/* MR Table */}
@@ -322,22 +332,38 @@ export default function ProjectMaterialRequests() {
                                         <button
                                             type="button"
                                             onClick={addToCart}
-                                            disabled={isQtyExceeded || isCostExceeded}
+                                            disabled={(isQtyExceeded || isCostExceeded) && !authorizeOverride}
                                             className={`w-full px-4 py-2 rounded font-black text-[10px] uppercase transition-all shadow-lg h-9 flex items-center justify-center gap-1 mt-2
-                                                ${isQtyExceeded || isCostExceeded
+                                                ${(isQtyExceeded || isCostExceeded) && !authorizeOverride
                                                     ? 'bg-red-500/10 text-red-500 cursor-not-allowed border border-red-500/20'
                                                     : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/20 active:scale-95'}`}
                                         >
-                                            {isQtyExceeded || isCostExceeded ? 'Limit Exceeded' : 'Add Item'}
+                                            {(isQtyExceeded || isCostExceeded) && !authorizeOverride ? 'Limit Exceeded' : 'Add Item'}
                                         </button>
                                     </div>
 
                                     {/* Detailed Validation Warnings - GENERIC FOR BLIND BUDGETING */}
                                     <div className="space-y-1 mt-2">
                                         {(isQtyExceeded || isCostExceeded) && (
-                                            <p className="text-red-500 text-[10px] font-bold flex items-center gap-1">
-                                                <AlertTriangle size={12} /> Request exceeds allocated limits.
-                                            </p>
+                                            <>
+                                                <p className="text-red-500 text-[10px] font-bold flex items-center gap-1">
+                                                    <AlertTriangle size={12} /> Request exceeds allocated limits.
+                                                </p>
+                                                {['admin', 'project_manager'].includes(auth.user.role) && (
+                                                    <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg border border-amber-200 dark:border-amber-800 mt-2">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            id="override" 
+                                                            className="rounded border-amber-400 text-amber-600 focus:ring-amber-500" 
+                                                            checked={authorizeOverride}
+                                                            onChange={e => setAuthorizeOverride(e.target.checked)}
+                                                        />
+                                                        <label htmlFor="override" className="text-[10px] font-bold text-amber-700 dark:text-amber-400 cursor-pointer">
+                                                            Authorize Budget Override
+                                                        </label>
+                                                    </div>
+                                                )}
+                                            </>
                                         )}
                                     </div>
 

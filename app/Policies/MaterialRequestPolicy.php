@@ -33,12 +33,12 @@ class MaterialRequestPolicy
         return $user->hasPermissionTo('view material requests');
     }
 
-    /**
-     * Determine if the user can create a material request for the project.
-     * Site engineers may only create requests for their assigned projects.
-     */
     public function create(User $user, Project $project): bool
     {
+        if ($project->status !== 'ACTIVE') {
+            return false;
+        }
+
         if ($user->hasRole('site_engineer')) {
             return $project->site_engineer_id === $user->id;
         }

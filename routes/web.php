@@ -78,6 +78,7 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
         });
 
         Route::post('/projects/{project}/boq/approve', [BoqController::class, 'approve'])->name('projects.boq.approve')->middleware('can:approve boq');
+        Route::post('/projects/{project}/boq/revise', [BoqController::class, 'revise'])->name('projects.boq.revise')->middleware('can:approve boq');
     });
 
 
