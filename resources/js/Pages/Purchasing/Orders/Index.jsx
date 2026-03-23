@@ -9,11 +9,12 @@ import Modal from '@/Components/UI/Modal';
 import CreatePurchaseOrder from './Create';
 import PdfPreviewModal from '@/Components/UI/PdfPreviewModal';
 import ConfirmationModal from '@/Components/UI/ConfirmationModal';
+import Pagination from '@/Components/UI/Pagination';
 
 export default function PurchaseOrdersIndex() {
     const { orders } = usePage().props;
     const { can } = usePermissions();
-    const pos = orders || [];
+    const pos = orders?.data || [];
 
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -271,7 +272,9 @@ export default function PurchaseOrdersIndex() {
                         columns={columns}
                         data={pos}
                         onRowClick={(row) => setSelectedOrder(row)}
+                        showPagination={false}
                     />
+                    <Pagination links={orders.links} meta={orders} />
                 </div>
             </div>
 

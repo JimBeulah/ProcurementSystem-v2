@@ -25,11 +25,9 @@ class PurchaseOrderController extends Controller
     {
         $orders = PurchaseOrder::with(['project', 'supplier', 'requester', 'approver', 'items'])
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(10)
+            ->withQueryString();
 
-        $projects = Project::where('status', 'ACTIVE')->orderBy('name')->get();
-        $suppliers = Supplier::orderBy('name')->get();
-        $materials = Material::orderBy('name')->get();
         $pr = $this->service->findPurchaseRequest($request->query('prId'));
 
         // Handle pre-filling from a Supplier Return
@@ -43,9 +41,9 @@ class PurchaseOrderController extends Controller
 
         return Inertia::render('Purchasing/Orders/Index', [
             'orders' => $orders,
-            'projects' => $projects,
-            'suppliers' => $suppliers,
-            'materials' => $materials,
+            'projects' => Inertia::lazy(fn () => Project::where('status', 'ACTIVE')->orderBy('name')->get()),
+            'suppliers' => Inertia::lazy(fn () => Supplier::orderBy('name')->get()),
+            'materials' => Inertia::lazy(fn () => Material::orderBy('name')->get()),
             'purchaseRequest' => $pr,
             'supplierReturn' => $supplierReturn,
             'inventoryMatches' => $inventoryMatches,
