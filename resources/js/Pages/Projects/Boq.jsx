@@ -13,7 +13,7 @@ import {
     ClipboardList, Plus, RefreshCcw, Upload, FileDown, Search, Layers, 
     Trash2, AlertTriangle, Pencil, Box, Hammer, Truck, Info, Car
 } from 'lucide-react';
-import { Toaster, toast } from 'sonner';
+import { toast } from 'sonner';
 
 export default function ProjectBoq() {
     const { project, boqItems: initialItems, materials, units, isApproved, auth } = usePage().props;
@@ -197,7 +197,6 @@ export default function ProjectBoq() {
     return (
         <AuthenticatedLayout>
             <Head title={`BOQ - ${project.name}`} />
-            <Toaster position="top-right" richColors />
 
             <div className="p-6 space-y-6 max-w-[1920px] mx-auto h-[calc(100vh-65px)] overflow-hidden flex flex-col">
 

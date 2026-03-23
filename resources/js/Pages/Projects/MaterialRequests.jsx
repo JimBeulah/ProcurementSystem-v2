@@ -6,7 +6,7 @@ import Drawer from '@/Components/UI/Drawer';
 import DataTable from '@/Components/UI/DataTable';
 import Select from '@/Components/UI/Select';
 import { Truck, Plus, Package, Box, AlertTriangle, Info, CheckCircle2, User, Calendar } from 'lucide-react';
-import { Toaster, toast } from 'sonner';
+import { toast } from 'sonner';
 
 export default function ProjectMaterialRequests() {
     const { project, materialRequests: initialMRs, boqItems, inventoryItems, flash, auth } = usePage().props;
@@ -220,7 +220,6 @@ export default function ProjectMaterialRequests() {
     return (
         <AuthenticatedLayout>
             <Head title={`Material Requests - ${project.name}`} />
-            <Toaster position="top-right" richColors />
 
             <div className="space-y-6 max-w-7xl mx-auto">
 
