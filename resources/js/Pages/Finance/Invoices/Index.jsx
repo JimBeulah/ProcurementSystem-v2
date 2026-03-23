@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage, router } from '@inertiajs/react';
-import { Receipt, Plus, CheckCircle2, Save } from 'lucide-react';
+import { Receipt, Plus, CheckCircle2, Save, Eye, Box, Hammer, FileText, ArrowRight } from 'lucide-react';
 import Modal from '@/Components/UI/Modal';
 import Combobox from '@/Components/UI/Combobox';
 import ConfirmationModal from '@/Components/UI/ConfirmationModal';
+import DataTable from '@/Components/UI/DataTable';
+import Drawer from '@/Components/UI/Drawer';
 
 export default function InvoicesIndex() {
     const { invoices, suppliers, orders, grns } = usePage().props;
@@ -14,24 +16,129 @@ export default function InvoicesIndex() {
     const grnList = grns || [];
 
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [drawerItem, setDrawerItem] = useState(null);
     const [supplierId, setSupplierId] = useState('');
     const [poId, setPoId] = useState('');
     const [grnId, setGrnId] = useState('');
     const [invoiceNum, setInvoiceNum] = useState('');
     const [amount, setAmount] = useState(0);
-    const [confirmModal, setConfirmModal] = useState({ 
-        isOpen: false, 
-        id: null 
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        id: null
     });
 
     const handleValidate = (id) => {
         setConfirmModal({ isOpen: true, id });
     };
 
+    const columns = [
+        {
+            accessorKey: 'invoice_number',
+            header: 'Invoice #',
+            cell: ({ row }) => (
+                <span className="font-bold text-slate-900 dark:text-white">
+                    {row.original.invoice_number}
+                </span>
+            ),
+        },
+        {
+            accessorKey: 'supplier.name',
+            header: 'Supplier',
+            cell: ({ row }) => (
+                <span className="text-slate-500">
+                    {row.original.supplier?.name}
+                </span>
+            ),
+        },
+        {
+            id: 'ref_docs',
+            header: 'Ref Docs',
+            cell: ({ row }) => (
+                <div className="text-xs space-y-1">
+                    {row.original.purchase_order_id ? (
+                        <div className="text-blue-500 text-[10px] bg-blue-50 dark:bg-blue-500/10 px-1.5 py-0.5 rounded inline-block font-medium">
+                            PO-{row.original.purchase_order_id}
+                        </div>
+                    ) : (
+                        <div className="text-slate-400">Missing PO</div>
+                    )}
+                    <br />
+                    {row.original.receiving_report_id ? (
+                        <div className="text-orange-500 text-[10px] bg-orange-50 dark:bg-orange-500/10 px-1.5 py-0.5 rounded inline-block font-medium">
+                            GRN-{row.original.receiving_report_id}
+                        </div>
+                    ) : (
+                        <div className="text-slate-400">No GRN</div>
+                    )}
+                </div>
+            ),
+        },
+        {
+            accessorKey: 'total_amount',
+            header: () => <div className="text-right">Amount</div>,
+            cell: ({ row }) => (
+                <div className="text-right font-mono text-slate-900 dark:text-white">
+                    {Number(row.original.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </div>
+            ),
+        },
+        {
+            accessorKey: 'status',
+            header: () => <div className="text-center">Status</div>,
+            cell: ({ row }) => {
+                const status = row.original.status;
+                return (
+                    <div className="text-center">
+                        <span className={`px-2 py-1 rounded text-[10px] border font-bold uppercase tracking-wider ${status === 'MATCHED' ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600' :
+                            status === 'PAID' ? 'border-blue-500 bg-blue-50 dark:bg-blue-500/10 text-blue-600' :
+                                'border-amber-500 bg-amber-50 dark:bg-amber-500/10 text-amber-600'
+                            }`}>
+                            {status}
+                        </span>
+                    </div>
+                );
+            },
+        },
+        {
+            id: 'actions',
+            header: () => <div className="text-center">Action</div>,
+            cell: ({ row }) => (
+                <div className="flex items-center justify-center gap-2">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setDrawerItem(row.original);
+                        }}
+                        className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-all"
+                        title="View Details"
+                    >
+                        <Eye size={18} />
+                    </button>
+                    {row.original.status === 'PENDING' && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleValidate(row.original.id);
+                            }}
+                            className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white px-2 py-1.5 rounded border border-emerald-500/20 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider transition-all"
+                        >
+                            <CheckCircle2 size={12} /> Validate
+                        </button>
+                    )}
+                </div>
+            ),
+        },
+    ];
+
     const executeValidate = () => {
         if (!confirmModal.id) return;
         router.post(route('finance.invoices.validate', confirmModal.id), {}, {
-            onSuccess: () => setConfirmModal({ isOpen: false, id: null })
+            onSuccess: () => {
+                setConfirmModal({ isOpen: false, id: null });
+                if (drawerItem && drawerItem.id === confirmModal.id) {
+                    setDrawerItem({ ...drawerItem, status: 'MATCHED' });
+                }
+            }
         });
     };
 
@@ -69,60 +176,108 @@ export default function InvoicesIndex() {
                         </h1>
                         <p className="text-slate-500">Manage payable invoices and 3-way matching.</p>
                     </div>
-                    <button onClick={() => setIsCreateOpen(true)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors">
+                    <button onClick={() => setIsCreateOpen(true)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors shadow-sm shadow-emerald-500/20">
                         <Plus size={18} /> Record Invoice
                     </button>
                 </header>
 
-                <div className="overflow-x-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm">
-                    <table className="w-full text-left text-sm">
-                        <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-400 uppercase text-xs tracking-wider">
-                            <tr>
-                                <th className="p-4">Invoice #</th>
-                                <th className="p-4">Supplier</th>
-                                <th className="p-4">Ref Docs</th>
-                                <th className="p-4 text-right">Amount</th>
-                                <th className="p-4 text-center">Status</th>
-                                <th className="p-4 text-right">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
-                            {list.map(inv => (
-                                <tr key={inv.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                                    <td className="p-4 font-bold text-slate-900 dark:text-white">{inv.invoice_number}</td>
-                                    <td className="p-4 text-slate-500">{inv.supplier?.name}</td>
-                                    <td className="p-4 text-xs space-y-1">
-                                        {inv.purchase_order_id ? <div className="text-blue-500">PO-{inv.purchase_order_id}</div> : <div className="text-slate-400">Missing PO</div>}
-                                        {inv.receiving_report_id ? <div className="text-orange-500">GRN-{inv.receiving_report_id}</div> : <div className="text-slate-400">No GRN</div>}
-                                    </td>
-                                    <td className="p-4 text-right font-mono text-slate-900 dark:text-white">
-                                        {Number(inv.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                    </td>
-                                    <td className="p-4 text-center">
-                                        <span className={`px-2 py-1 rounded text-xs border font-medium ${inv.status === 'MATCHED' ? 'border-emerald-500 text-emerald-600' :
-                                            inv.status === 'PAID' ? 'border-blue-500 text-blue-600' :
-                                                'border-amber-500 text-amber-600'
-                                            }`}>{inv.status}</span>
-                                    </td>
-                                    <td className="p-4 text-right">
-                                        {inv.status === 'PENDING' && (
-                                            <button
-                                                onClick={() => handleValidate(inv.id)}
-                                                className="text-emerald-500 hover:text-emerald-400 flex items-center gap-1 ml-auto text-sm"
-                                            >
-                                                <CheckCircle2 size={16} /> Validate
-                                            </button>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                            {list.length === 0 && (
-                                <tr><td colSpan={6} className="p-8 text-center text-slate-500">No invoices recorded.</td></tr>
-                            )}
-                        </tbody>
-                    </table>
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden p-4">
+                    <DataTable
+                        columns={columns}
+                        data={list}
+                        onRowClick={(row) => setDrawerItem(row)}
+                    />
                 </div>
             </div>
+
+            <Drawer
+                isOpen={!!drawerItem}
+                onClose={() => setDrawerItem(null)}
+                title={
+                    <div className="flex flex-col">
+                        <span className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Invoice Details</span>
+                        <span className="text-xs text-slate-500 font-mono">#{drawerItem?.invoice_number}</span>
+                    </div>
+                }
+            >
+                {drawerItem && (
+                    <div className="space-y-6">
+                        <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+                            <div className="flex justify-between items-start mb-4">
+                                <div>
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 text-center sm:text-left">Total Amount</div>
+                                    <div className="text-3xl font-black text-slate-900 dark:text-white font-mono tabular-nums">
+                                        ₱{Number(drawerItem.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                    </div>
+                                </div>
+                                <span className={`px-2.5 py-1 rounded-full text-[10px] border font-bold uppercase tracking-wider ${drawerItem.status === 'MATCHED' ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600' :
+                                    drawerItem.status === 'PAID' ? 'border-blue-500 bg-blue-50 dark:bg-blue-500/10 text-blue-600' :
+                                        'border-amber-500 bg-amber-50 dark:bg-amber-500/10 text-amber-600'
+                                    }`}>
+                                    {drawerItem.status}
+                                </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4 pt-4 border-t border-slate-200/60 dark:border-slate-700/60">
+                                <div>
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Supplier</div>
+                                    <div className="text-sm font-bold text-slate-700 dark:text-slate-200">{drawerItem.supplier?.name}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2 px-1">
+                                <FileText size={14} className="text-blue-500" /> Reference Documents
+                            </h3>
+
+                            <div className="grid grid-cols-1 gap-3">
+                                {/* PO Card */}
+                                <div className="p-4 rounded-xl border border-blue-200/50 dark:border-blue-900/30 bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/20 dark:to-slate-900 shadow-sm relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 p-3 opacity-[0.03] group-hover:opacity-10 transition-opacity"><Box size={40} /></div>
+                                    <div className="text-[10px] font-bold text-blue-600/70 dark:text-blue-400/70 uppercase tracking-widest mb-1.5 flex items-center gap-1.5 font-mono">Purchase Order</div>
+                                    {drawerItem.purchase_order_id ? (
+                                        <>
+                                            <div className="text-lg font-black text-blue-700 dark:text-blue-400 font-mono tracking-tight">PO-{drawerItem.purchase_order_id}</div>
+                                            <div className="text-[10px] text-slate-400 mt-1 font-medium italic">Matched amount: ₱{Number(drawerItem.total_amount).toLocaleString()}</div>
+                                        </>
+                                    ) : (
+                                        <div className="text-sm font-medium text-slate-400 italic">No PO Linked</div>
+                                    )}
+                                </div>
+
+                                {/* GRN Card */}
+                                <div className="p-4 rounded-xl border border-orange-200/50 dark:border-orange-900/30 bg-gradient-to-br from-orange-50 to-white dark:from-orange-950/20 dark:to-slate-900 shadow-sm relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 p-3 opacity-[0.03] group-hover:opacity-10 transition-opacity"><Hammer size={40} /></div>
+                                    <div className="text-[10px] font-bold text-orange-600/70 dark:text-orange-400/70 uppercase tracking-widest mb-1.5 flex items-center gap-1.5 font-mono">Receiving Report</div>
+                                    {drawerItem.receiving_report_id ? (
+                                        <>
+                                            <div className="text-lg font-black text-orange-700 dark:text-orange-400 font-mono tracking-tight">GRN-{drawerItem.receiving_report_id}</div>
+                                            <div className="text-[10px] text-slate-400 mt-1 font-medium italic">Confirmed Delivery</div>
+                                        </>
+                                    ) : (
+                                        <div className="text-sm font-medium text-slate-400 italic">No GRN Linked</div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {drawerItem.status === 'PENDING' && (
+                            <div className="pt-4">
+                                <button
+                                    onClick={() => handleValidate(drawerItem.id)}
+                                    className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all active:scale-95"
+                                >
+                                    <CheckCircle2 size={18} /> Validate & Match Invoice
+                                </button>
+                                <p className="text-[10px] text-slate-400 text-center mt-3 px-4 italic">
+                                    Validating this invoice confirms that the items and amounts match the Purchase Order and Receiving Report.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </Drawer>
 
             <Modal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} title="Record New Invoice" maxWidth="max-w-md">
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -164,7 +319,7 @@ export default function InvoicesIndex() {
                         <input className={inputCls} value={invoiceNum} onChange={e => setInvoiceNum(e.target.value)} required placeholder="e.g. INV-2023-001" />
                     </div>
                     <div>
-                        <label className="text-xs text-slate-500 uppercase font-bold mb-1 block">Amount formatting</label>
+                        <label className="text-xs text-slate-500 uppercase font-bold mb-1 block">Amount</label>
                         <input type="number" step="0.01" className={`${inputCls} font-mono text-lg`} value={amount} onChange={e => setAmount(parseFloat(e.target.value))} required />
                     </div>
                     <div className="pt-2">

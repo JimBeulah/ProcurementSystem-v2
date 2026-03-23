@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage, router } from '@inertiajs/react';
-import { CreditCard, Plus, ArrowUpRight, Save, Receipt, CheckCircle2 } from 'lucide-react';
-import Modal from '@/Components/ui/Modal';
-import Combobox from '@/Components/ui/Combobox';
+import { CreditCard, Plus, ArrowUpRight, Save, Receipt, CheckCircle2, Eye, FileText, Calendar, User, Wallet } from 'lucide-react';
+import Modal from '@/Components/UI/Modal';
+import Combobox from '@/Components/UI/Combobox';
+import DataTable from '@/Components/UI/DataTable';
+import Drawer from '@/Components/UI/Drawer';
 
 export default function DisbursementsIndex() {
     const { payments, orders, users } = usePage().props;
@@ -14,6 +16,7 @@ export default function DisbursementsIndex() {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isLiquidateOpen, setIsLiquidateOpen] = useState(false);
     const [selectedPayment, setSelectedPayment] = useState(null);
+    const [viewItem, setViewItem] = useState(null);
 
     // Create Form State
     const [poId, setPoId] = useState('');
@@ -28,6 +31,110 @@ export default function DisbursementsIndex() {
     const [receiptDate, setReceiptDate] = useState(new Date().toISOString().split('T')[0]);
     const [receiptFile, setReceiptFile] = useState(null);
     const [remarks, setRemarks] = useState('');
+
+    const openLiquidation = (pay) => {
+        setSelectedPayment(pay);
+        setActualAmount(Number(pay.amount));
+        setIsLiquidateOpen(true);
+    };
+
+    const columns = [
+        {
+            accessorKey: 'payment_date',
+            header: 'Date',
+            cell: ({ row }) => (
+                <div className="text-slate-500">
+                    {new Date(row.original.payment_date).toLocaleDateString()}
+                </div>
+            ),
+        },
+        {
+            accessorKey: 'amount',
+            header: () => <div className="text-right">Amount</div>,
+            cell: ({ row }) => (
+                <div className="text-right font-bold text-slate-900 dark:text-white flex items-center justify-end gap-2">
+                    ₱{Number(row.original.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    {row.original.is_liquidated && (
+                        <span className="text-[8px] bg-green-500/20 text-green-600 px-1.5 py-0.5 rounded-full uppercase tracking-wider font-bold">Liquidated</span>
+                    )}
+                </div>
+            ),
+        },
+        {
+            accessorKey: 'method',
+            header: 'Method',
+            cell: ({ row }) => (
+                <div className="text-xs">
+                    <span className="font-medium text-slate-700 dark:text-slate-300">{row.original.method}</span>
+                    <div className="text-slate-400 text-[10px]">Ref: {row.original.reference_number}</div>
+                </div>
+            ),
+        },
+        {
+            accessorKey: 'purchase_order.id',
+            header: 'Reference',
+            cell: ({ row }) => (
+                <div className="text-xs">
+                    {row.original.purchase_order ? (
+                        <>
+                            <div className="text-blue-500 font-medium">PO-{row.original.purchase_order.id}</div>
+                            <div className="text-slate-400 text-[10px] truncate max-w-[150px]">{row.original.purchase_order.supplier?.name}</div>
+                        </>
+                    ) : (
+                        <span className="text-slate-400 italic text-[10px]">Direct Payment</span>
+                    )}
+                </div>
+            ),
+        },
+        {
+            id: 'status',
+            header: 'Status',
+            cell: ({ row }) => {
+                const pay = row.original;
+                return (
+                    <div className="flex flex-col gap-1 items-start">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-500 border border-slate-200 dark:border-slate-600 inline-block text-center font-medium">
+                            {pay.status}
+                        </span>
+                        {pay.is_liquidated && (
+                            <div className="text-[9px] text-slate-400">
+                                OR: {pay.receipt_number}
+                            </div>
+                        )}
+                    </div>
+                );
+            }
+        },
+        {
+            id: 'actions',
+            header: () => <div className="text-center">Action</div>,
+            cell: ({ row }) => (
+                <div className="flex items-center justify-center gap-2">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setViewItem(row.original);
+                        }}
+                        className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-all"
+                        title="View Details"
+                    >
+                        <Eye size={18} />
+                    </button>
+                    {!row.original.is_liquidated && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                openLiquidation(row.original);
+                            }}
+                            className="bg-red-500/10 text-red-600 hover:bg-red-500 hover:text-white px-2 py-1.5 rounded border border-red-500/20 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider transition-all"
+                        >
+                            <Receipt size={14} /> Liquidate
+                        </button>
+                    )}
+                </div>
+            ),
+        }
+    ];
 
     useEffect(() => {
         if (poId) {
@@ -58,7 +165,7 @@ export default function DisbursementsIndex() {
 
     const handleLiquidateSubmit = (e) => {
         e.preventDefault();
-        
+
         const formData = new FormData();
         formData.append('actual_amount', actualAmount);
         formData.append('receipt_number', receiptNumber);
@@ -74,14 +181,12 @@ export default function DisbursementsIndex() {
                 setReceiptFile(null);
                 setRemarks('');
                 setSelectedPayment(null);
+                if (viewItem && viewItem.id === selectedPayment.id) {
+                    // Update the drawer state if open
+                    router.reload({ only: ['payments'] }); // Refresh list to get updated data
+                }
             }
         });
-    };
-
-    const openLiquidation = (pay) => {
-        setSelectedPayment(pay);
-        setActualAmount(Number(pay.amount));
-        setIsLiquidateOpen(true);
     };
 
     const inputCls = "w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-red-500";
@@ -97,59 +202,147 @@ export default function DisbursementsIndex() {
                         </h1>
                         <p className="text-slate-500">Track outgoing payments and releases.</p>
                     </div>
-                    <button onClick={() => setIsCreateOpen(true)} className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors">
+                    <button onClick={() => setIsCreateOpen(true)} className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors shadow-sm shadow-red-500/20">
                         <Plus size={18} /> Process Payment
                     </button>
                 </header>
 
-                <div className="grid gap-4">
-                    {list.map(pay => (
-                        <div key={pay.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 rounded-xl flex justify-between items-center hover:border-slate-300 dark:hover:border-slate-600 transition-colors shadow-sm">
-                            <div className="flex items-center gap-4">
-                                <div className={`p-3 rounded-lg ${pay.is_liquidated ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
-                                    {pay.is_liquidated ? <CheckCircle2 size={24} /> : <ArrowUpRight size={24} />}
-                                </div>
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden p-4">
+                    <DataTable
+                        columns={columns}
+                        data={list}
+                        onRowClick={(row) => setViewItem(row)}
+                    />
+                </div>
+            </div>
+
+            <Drawer
+                isOpen={!!viewItem}
+                onClose={() => setViewItem(null)}
+                title={
+                    <div className="flex flex-col">
+                        <span className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Disbursement Details</span>
+                        <span className="text-xs text-slate-500 font-mono">Ref: {viewItem?.reference_number}</span>
+                    </div>
+                }
+            >
+                {viewItem && (
+                    <div className="space-y-6">
+                        {/* Header Info */}
+                        <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+                            <div className="flex justify-between items-start mb-4">
                                 <div>
-                                    <div className="text-slate-900 dark:text-white font-bold text-lg flex items-center gap-2">
-                                        ₱{Number(pay.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                        {pay.is_liquidated && (
-                                            <span className="text-[10px] bg-green-500/20 text-green-600 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">Liquidated</span>
-                                        )}
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Disbursed Amount</div>
+                                    <div className="text-3xl font-black text-slate-900 dark:text-white font-mono tabular-nums">
+                                        ₱{Number(viewItem.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </div>
-                                    <div className="text-xs text-slate-500">Paid via {pay.method} • Ref: {pay.reference_number}</div>
-                                    <div className="text-xs text-slate-400 mt-1">
-                                        {pay.purchase_order ? `For PO-${pay.purchase_order.id} (${pay.purchase_order.supplier?.name})` : 'Direct Payment'}
-                                        {pay.received_by && <span> • Received by: {pay.received_by.name}</span>}
-                                    </div>
-                                    {pay.is_liquidated && (
-                                        <div className="mt-2 p-2 bg-slate-50 dark:bg-slate-900/50 rounded text-[10px] text-slate-500 flex gap-4">
-                                            <span><strong>OR#:</strong> {pay.receipt_number}</span>
-                                            <span><strong>Date:</strong> {new Date(pay.receipt_date).toLocaleDateString()}</span>
-                                        </div>
-                                    )}
+                                </div>
+                                <span className={`px-2.5 py-1 rounded-full text-[10px] border font-bold uppercase tracking-wider ${viewItem.is_liquidated ? 'border-green-500 bg-green-50 dark:bg-green-500/10 text-green-600' : 'border-slate-400 bg-slate-50 dark:bg-slate-500/10 text-slate-500'
+                                    }`}>
+                                    {viewItem.status}
+                                </span>
+                            </div>
+
+                            <div className="space-y-3 pt-4 border-t border-slate-200/60 dark:border-slate-700/60">
+                                <div className="flex items-center gap-3 text-sm">
+                                    <Calendar size={14} className="text-slate-400" />
+                                    <span className="text-slate-500 uppercase text-[10px] font-bold w-20">Date:</span>
+                                    <span className="text-slate-700 dark:text-slate-200 font-medium">{new Date(viewItem.payment_date).toLocaleDateString(undefined, { dateStyle: 'long' })}</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-sm">
+                                    <Wallet size={14} className="text-slate-400" />
+                                    <span className="text-slate-500 uppercase text-[10px] font-bold w-20">Method:</span>
+                                    <span className="text-slate-700 dark:text-slate-200 font-medium">{viewItem.method}</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-sm">
+                                    <User size={14} className="text-slate-400" />
+                                    <span className="text-slate-500 uppercase text-[10px] font-bold w-20">Recipient:</span>
+                                    <span className="text-slate-700 dark:text-slate-200 font-medium">{viewItem.received_by?.name || '---'}</span>
                                 </div>
                             </div>
-                            <div className="text-right flex flex-col items-end gap-2">
-                                <span className="text-xs px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 text-slate-500 border border-slate-200 dark:border-slate-600">{pay.status}</span>
-                                <div className="text-xs text-slate-500">{new Date(pay.payment_date).toLocaleDateString()}</div>
-                                {!pay.is_liquidated && (
-                                    <button
-                                        onClick={() => openLiquidation(pay)}
-                                        className="mt-1 text-[10px] font-bold uppercase tracking-wider text-red-600 hover:text-red-500 flex items-center gap-1"
-                                    >
-                                        <Receipt size={14} /> Liquidate Cash
-                                    </button>
+                        </div>
+
+                        {/* Reference Context */}
+                        <div className="space-y-4">
+                            <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2 px-1">
+                                <ArrowUpRight size={14} className="text-blue-500" /> Source Reference
+                            </h3>
+                            <div className="p-4 rounded-xl border border-blue-200/50 dark:border-blue-900/30 bg-gradient-to-br from-blue-50 to-white dark:from-blue-950/20 dark:to-slate-900 shadow-sm">
+                                {viewItem.purchase_order ? (
+                                    <>
+                                        <div className="text-[10px] font-bold text-blue-600/70 dark:text-blue-400/70 uppercase tracking-widest mb-1">Purchase Order</div>
+                                        <div className="text-lg font-black text-blue-700 dark:text-blue-400 font-mono tracking-tight">PO-{viewItem.purchase_order.id}</div>
+                                        <div className="mt-2 text-xs font-bold text-slate-600 dark:text-slate-300 truncate">{viewItem.purchase_order.supplier?.name}</div>
+                                    </>
+                                ) : (
+                                    <div className="text-sm font-medium text-slate-400 italic">Direct Payment (No PO)</div>
                                 )}
                             </div>
                         </div>
-                    ))}
-                    {list.length === 0 && (
-                        <div className="text-center py-12 text-slate-500 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
-                            No disbursements recorded.
-                        </div>
-                    )}
-                </div>
-            </div>
+
+                        {/* Liquidation Data */}
+                        {viewItem.is_liquidated && (
+                            <div className="space-y-4">
+                                <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2 px-1 text-green-600">
+                                    <CheckCircle2 size={14} /> Liquidation Summary
+                                </h3>
+                                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 space-y-4 shadow-sm">
+                                    <div className="grid grid-cols-2 gap-4 text-center">
+                                        <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                                            <div className="text-[8px] font-bold text-slate-400 uppercase mb-1">Actual Spent</div>
+                                            <div className="text-sm font-bold text-slate-900 dark:text-white font-mono">₱{Number(viewItem.actual_amount).toLocaleString()}</div>
+                                        </div>
+                                        <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-900/30">
+                                            <div className="text-[8px] font-bold text-green-500 uppercase mb-1">Savings/Refund</div>
+                                            <div className="text-sm font-bold text-green-600 font-mono">₱{(Number(viewItem.amount) - Number(viewItem.actual_amount)).toLocaleString()}</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between items-center text-xs">
+                                            <span className="text-slate-400 font-medium">Receipt #</span>
+                                            <span className="font-bold text-slate-700 dark:text-slate-200">{viewItem.receipt_number}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-xs">
+                                            <span className="text-slate-400 font-medium">Receipt Date</span>
+                                            <span className="font-bold text-slate-700 dark:text-slate-200">{new Date(viewItem.receipt_date).toLocaleDateString()}</span>
+                                        </div>
+                                        {viewItem.liquidation_remarks && (
+                                            <div className="pt-2">
+                                                <div className="text-[8px] font-bold text-slate-400 uppercase mb-1">Remarks</div>
+                                                <div className="text-[11px] text-slate-500 italic bg-slate-50 dark:bg-slate-900 p-2 rounded leading-relaxed">{viewItem.liquidation_remarks}</div>
+                                            </div>
+                                        )}
+                                        {viewItem.receipt_path && (
+                                            <a
+                                                href={`/storage/${viewItem.receipt_path}`}
+                                                target="_blank"
+                                                className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors"
+                                            >
+                                                <FileText size={14} /> View Receipt Document
+                                            </a>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {!viewItem.is_liquidated && (
+                            <div className="pt-4">
+                                <button
+                                    onClick={() => {
+                                        setViewItem(null);
+                                        openLiquidation(viewItem);
+                                    }}
+                                    className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-red-500/20 flex items-center justify-center gap-2 transition-all active:scale-95"
+                                >
+                                    <Receipt size={18} /> Open Liquidation Form
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </Drawer>
 
             {/* Create Payment Modal */}
             <Modal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} title="Process Payment" maxWidth="max-w-md">
@@ -246,4 +439,5 @@ export default function DisbursementsIndex() {
         </AuthenticatedLayout>
     );
 }
+
 
