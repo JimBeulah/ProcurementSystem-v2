@@ -1,16 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage, router } from '@inertiajs/react';
 import { PieChart, PhilippinePeso, TrendingUp, Activity, BarChart3, ChevronDown, CheckCircle2, AlertCircle, ShoppingCart, CreditCard, Printer } from 'lucide-react';
 import IncomeStatement from '@/Components/Finance/IncomeStatement';
+import PdfPreviewModal from '@/Components/UI/PdfPreviewModal';
 
 export default function FinancialReports() {
     const { data, projects, filters } = usePage().props;
+    const [previewUrl, setPreviewUrl] = useState(null);
 
     const isProjectView = filters?.project_id !== null && filters?.project_id !== undefined;
 
     const handleProjectChange = (e) => {
         router.get(route('finance.reports'), { project_id: e.target.value }, { preserveState: true });
+    };
+
+    const handlePrint = () => {
+        const url = route('finance.reports.print', { project_id: filters?.project_id || '' });
+        setPreviewUrl(url);
     };
 
     // Aggregate View Logic
@@ -37,14 +44,12 @@ export default function FinancialReports() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        {isProjectView && (
-                            <button
-                                onClick={() => window.print()}
-                                className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all no-print"
-                            >
-                                <Printer size={14} /> Print
-                            </button>
-                        )}
+                        <button
+                            onClick={handlePrint}
+                            className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all no-print"
+                        >
+                            <Printer size={14} /> Print
+                        </button>
                         <div className="flex items-center gap-2 no-print">
                             <label htmlFor="project-select" className="text-sm font-medium text-slate-500">Project:</label>
                             <select
@@ -180,6 +185,13 @@ export default function FinancialReports() {
                     </div>
                 )}
             </div>
+
+            <PdfPreviewModal
+                isOpen={!!previewUrl}
+                onClose={() => setPreviewUrl(null)}
+                url={previewUrl}
+                title={isProjectView ? `Financial Report - ${plData.project.name}` : "Aggregate Financial Report"}
+            />
 
             <style dangerouslySetInnerHTML={{
                 __html: `

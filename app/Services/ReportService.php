@@ -166,4 +166,22 @@ class ReportService
     {
         return Project::select('id', 'name')->orderBy('name')->get();
     }
+
+    /**
+     * Generate a PDF for the financial report.
+     */
+    public function generatePdf(?int $projectId = null)
+    {
+        $data = $this->getFinancialReportsData($projectId);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('print.finance-report', [
+            'data' => $data,
+            'isProjectView' => $projectId !== null,
+        ]);
+
+        // Secure the PDF: Enforce printing only
+        $pdf->setEncryption('', config('app.key'), ['print']);
+
+        return $pdf;
+    }
 }

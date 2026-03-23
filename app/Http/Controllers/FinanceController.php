@@ -70,4 +70,13 @@ class FinanceController extends Controller
             ],
         ]);
     }
+
+    public function print(Request $request)
+    {
+        $projectId = $request->input('project_id');
+        $pdf = $this->reportService->generatePdf($projectId);
+
+        $filename = $projectId ? 'Project-Report-' . $projectId : 'Aggregate-Finance-Report';
+        return $pdf->stream($filename . '.pdf');
+    }
 }
