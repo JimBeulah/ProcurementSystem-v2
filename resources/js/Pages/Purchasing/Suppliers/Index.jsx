@@ -4,6 +4,7 @@ import { Head, usePage, router } from '@inertiajs/react';
 import { usePermissions } from '@/Hooks/usePermissions';
 import { Briefcase, Plus, MoreVertical, Edit2, Slash, CheckCircle } from 'lucide-react';
 import Modal from '@/Components/UI/Modal';
+import ConfirmationModal from '@/Components/UI/ConfirmationModal';
 import { toast } from 'sonner';
 import { DataTable } from '@/Components/UI/DataTable';
 import Dropdown from '@/Components/Dropdown';
@@ -15,6 +16,7 @@ export default function SuppliersIndex() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [selectedSupplier, setSelectedSupplier] = useState(null);
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, supplier: null });
 
     // Form Data
     const [formData, setFormData] = useState({
@@ -116,11 +118,14 @@ export default function SuppliersIndex() {
     };
 
     const handleToggleActive = (supplier) => {
-        if (confirm(`Are you sure you want to ${supplier.is_active ? 'disable' : 'enable'} this supplier?`)) {
-            router.patch(route('purchasing.suppliers.toggle-active', supplier.id), {}, {
-                onSuccess: () => {},
-            });
-        }
+        setConfirmModal({ isOpen: true, supplier });
+    };
+
+    const executeToggleActive = () => {
+        if (!confirmModal.supplier) return;
+        router.patch(route('purchasing.suppliers.toggle-active', confirmModal.supplier.id), {}, {
+            onSuccess: () => { setConfirmModal({ isOpen: false, supplier: null }); },
+        });
     };
 
     const handleSubmit = (e) => {
@@ -260,6 +265,16 @@ export default function SuppliersIndex() {
                     </div>
                 </form>
             </Modal>
+
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ isOpen: false, supplier: null })}
+                onConfirm={executeToggleActive}
+                title={confirmModal.supplier?.is_active ? "Disable Supplier" : "Enable Supplier"}
+                message={`Are you sure you want to ${confirmModal.supplier?.is_active ? 'disable' : 'enable'} this supplier?`}
+                type={confirmModal.supplier?.is_active ? "danger" : "confirm"}
+                confirmText={confirmModal.supplier?.is_active ? "Disable" : "Enable"}
+            />
         </AuthenticatedLayout >
     );
 }

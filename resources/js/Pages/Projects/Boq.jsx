@@ -7,6 +7,7 @@ import BoqMetricsModal from '@/Components/Boq/BoqMetricsModal';
 import EditBoqItemModal from '@/Components/Boq/EditBoqItemModal';
 import ResourceModal from '@/Components/Boq/ResourceModal';
 import DeleteBoqItemModal from '@/Components/Boq/DeleteBoqItemModal';
+import ConfirmationModal from '@/Components/UI/ConfirmationModal';
 import { useBoqCalculations } from '@/Hooks/useBoqCalculations';
 import { downloadBoqTemplate, parseBoqCsv } from '@/Utils/boqFileUtils';
 import {
@@ -31,6 +32,13 @@ export default function ProjectBoq() {
     // Resource State
     const [resourceModal, setResourceModal] = useState({ open: false, mode: 'add', data: null });
     const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
+    const [confirmModal, setConfirmModal] = useState({ 
+        isOpen: false, 
+        type: 'confirm', 
+        title: '', 
+        message: '', 
+        onConfirm: () => {} 
+    });
 
     // Memoized calculations
     const calculations = useBoqCalculations(items, project);
@@ -74,12 +82,30 @@ export default function ProjectBoq() {
     };
 
     const handleApprove = () => {
-        if (confirm('Are you sure you want to approve this BOQ? This will lock all items from further editing.')) {
-            router.post(`/projects/${project.id}/boq/approve`, {}, {
-                onSuccess: () => {},
-                onError: () => {}
-            });
-        }
+        setConfirmModal({
+            isOpen: true,
+            type: 'confirm',
+            title: 'Approve BOQ',
+            message: 'Are you sure you want to approve this BOQ? This will lock all items from further editing.',
+            onConfirm: () => router.post(`/projects/${project.id}/boq/approve`)
+        });
+    };
+
+    const handleUnlock = () => {
+        setConfirmModal({
+            isOpen: true,
+            type: 'prompt',
+            title: 'Request Revision',
+            message: 'Please enter the reason for revision (e.g., Price Increase, Scope Change):',
+            inputPlaceholder: 'Reason for revision...',
+            onConfirm: (reason) => {
+                if (reason && reason.length >= 5) {
+                    router.post(`/projects/${project.id}/boq/unlock`, { reason });
+                } else if (reason) {
+                    toast.error('Reason must be at least 5 characters.');
+                }
+            }
+        });
     };
 
     const handleUpdateItem = (e) => {
@@ -146,11 +172,14 @@ export default function ProjectBoq() {
     };
 
     const handleDeleteResource = (component) => {
-        if (confirm('Delete this resource?')) {
-            router.delete(`/projects/${project.id}/boq/components/${component.id}`, {
-                onSuccess: () => {},
-            });
-        }
+        setConfirmModal({
+            isOpen: true,
+            type: 'danger',
+            title: 'Delete Resource',
+            message: 'Are you sure you want to delete this resource?',
+            confirmText: 'Delete',
+            onConfirm: () => router.delete(`/projects/${project.id}/boq/components/${component.id}`)
+        });
     };
 
     const handleBulkUpload = async (e) => {
@@ -233,17 +262,7 @@ export default function ProjectBoq() {
                                 </div>
                                 {['admin', 'project_manager'].includes(auth.user.role) && (
                                     <button 
-                                        onClick={() => {
-                                            const reason = prompt('Please enter the reason for revision (e.g., Price Increase, Scope Change):');
-                                            if (reason && reason.length >= 5) {
-                                                router.post(`/projects/${project.id}/boq/unlock`, { reason }, {
-                                                    onSuccess: () => {},
-                                                    onError: () => {}
-                                                });
-                                            } else if (reason) {
-                                                toast.error('Reason must be at least 5 characters.');
-                                            }
-                                        }} 
+                                        onClick={handleUnlock} 
                                         className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-amber-500 text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs font-bold transition-all shadow-sm active:scale-95"
                                     >
                                         <RefreshCcw size={14} /> Request Revision
@@ -506,6 +525,17 @@ export default function ProjectBoq() {
                     onSubmit={handleResourceSubmit} 
                     loading={loading}
                     parentItem={drawerItem} 
+                />
+
+                <ConfirmationModal
+                    isOpen={confirmModal.isOpen}
+                    onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                    onConfirm={confirmModal.onConfirm}
+                    title={confirmModal.title}
+                    message={confirmModal.message}
+                    type={confirmModal.type}
+                    confirmText={confirmModal.confirmText}
+                    inputPlaceholder={confirmModal.inputPlaceholder}
                 />
             </div>
         </AuthenticatedLayout>

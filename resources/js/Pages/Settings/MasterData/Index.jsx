@@ -3,12 +3,14 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage, router } from '@inertiajs/react';
 import { Package, Truck, Home, Plus, Edit2, Trash2 } from 'lucide-react';
 import Modal from '@/Components/UI/Modal';
+import ConfirmationModal from '@/Components/UI/ConfirmationModal';
 
 export default function MasterDataIndex() {
     const [activeTab, setActiveTab] = useState('suppliers');
     const [showModal, setShowModal] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
     const [formData, setFormData] = useState({});
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, id: null });
 
     // Data would come from controller in a real implementation; using placeholder for now
     const data = usePage().props[activeTab] || [];
@@ -16,11 +18,14 @@ export default function MasterDataIndex() {
     const handleEdit = (item) => { setEditingItem(item); setFormData({ ...item }); setShowModal(true); };
 
     const handleDelete = (id) => {
-        if (confirm(`Delete this ${activeTab.slice(0, -1)}?`)) {
-            router.delete(`/settings/master-data/${activeTab}/${id}`, {
-                preserveScroll: true
-            });
-        }
+        setConfirmModal({ isOpen: true, id });
+    };
+
+    const executeDelete = () => {
+        if (!confirmModal.id) return;
+        router.delete(`/settings/master-data/${activeTab}/${confirmModal.id}`, {
+            preserveScroll: true
+        });
     };
 
     const handleSubmit = (e) => {
@@ -128,6 +133,16 @@ export default function MasterDataIndex() {
                         </div>
                     </form>
                 </Modal>
+
+                <ConfirmationModal
+                    isOpen={confirmModal.isOpen}
+                    onClose={() => setConfirmModal({ isOpen: false, id: null })}
+                    onConfirm={executeDelete}
+                    title={`Delete ${activeTab.slice(0, -1)}`}
+                    message={`Are you sure you want to delete this ${activeTab.slice(0, -1)}?`}
+                    type="danger"
+                    confirmText="Delete"
+                />
             </div>
         </AuthenticatedLayout>
     );

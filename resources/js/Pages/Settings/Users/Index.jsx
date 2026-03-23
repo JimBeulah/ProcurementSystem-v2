@@ -5,6 +5,7 @@ import { UserCog, Plus, Edit2, UserCheck, UserX, X, KeyRound, Save, MoreVertical
 import { DataTable } from '@/Components/UI/DataTable';
 import Select from '@/Components/UI/Select';
 import Dropdown from '@/Components/Dropdown';
+import ConfirmationModal from '@/Components/UI/ConfirmationModal';
 const ROLES = [
     { value: 'admin', label: 'Admin' },
     { value: 'project_manager', label: 'Project Manager' },
@@ -140,6 +141,7 @@ export default function UsersIndex() {
     const [modal, setModal] = useState(null); // null | 'add' | { user object }
     const [roleFilter, setRoleFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, user: null });
 
     const filteredUsers = React.useMemo(() => {
         return list.filter(u => {
@@ -156,8 +158,12 @@ export default function UsersIndex() {
     };
 
     const handleResetPassword = (user) => {
-        if (!window.confirm(`Reset password for "${user.name}"? They will be required to change it on next login.`)) return;
-        router.patch(route('users.reset-password', user.id), {}, {
+        setConfirmModal({ isOpen: true, user });
+    };
+
+    const executeResetPassword = () => {
+        if (!confirmModal.user) return;
+        router.patch(route('users.reset-password', confirmModal.user.id), {}, {
             preserveScroll: true,
         });
     };
@@ -293,6 +299,16 @@ export default function UsersIndex() {
                     onClose={() => setModal(null)}
                 />
             )}
+
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ isOpen: false, user: null })}
+                onConfirm={executeResetPassword}
+                title="Reset Password"
+                message={`Reset password for "${confirmModal.user?.name}"? They will be required to change it on next login.`}
+                confirmText="Reset Password"
+                type="danger"
+            />
 
             <div className="max-w-7xl mx-auto space-y-6">
                 {/* Header */}

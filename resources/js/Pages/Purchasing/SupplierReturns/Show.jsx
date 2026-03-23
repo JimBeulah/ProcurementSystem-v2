@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, CheckCircle, XCircle, PackageCheck, ShoppingCart } from 'lucide-react';
 import { usePermissions } from '@/Hooks/usePermissions';
+import ConfirmationModal from '@/Components/UI/ConfirmationModal';
 
 const STATUS_STYLES = {
     DRAFT: 'border-slate-400 text-slate-500',
@@ -17,31 +18,60 @@ export default function SupplierReturnShow() {
     const { can } = usePermissions();
     const [returnedDate, setReturnedDate] = useState(new Date().toISOString().slice(0, 10));
     const [returnRef, setReturnRef] = useState('');
+    const [confirmModal, setConfirmModal] = useState({ 
+        isOpen: false, 
+        type: 'confirm', 
+        title: '', 
+        message: '', 
+        onConfirm: () => {} 
+    });
 
     if (!ret) return <div className="p-12 text-center text-red-500">Return record not found.</div>;
 
     const totalCredit = (ret.items || []).reduce((sum, i) => sum + (Number(i.quantity) * Number(i.unit_price)), 0);
 
     const handleApprove = () => {
-        if (confirm('Approve this supplier return request? Procurement may proceed with returning items.')) {
-            router.post(`/purchasing/supplier-returns/${ret.id}/approve`);
-        }
+        setConfirmModal({
+            isOpen: true,
+            type: 'confirm',
+            title: 'Approve Return',
+            message: 'Approve this supplier return request? Procurement may proceed with returning items.',
+            onConfirm: () => router.post(`/purchasing/supplier-returns/${ret.id}/approve`)
+        });
     };
 
     const handleMarkReturned = () => {
-        if (!returnedDate) { alert('Please enter the date items were returned.'); return; }
-        if (confirm('Mark all items as physically returned to the supplier?')) {
-            router.post(`/purchasing/supplier-returns/${ret.id}/mark-returned`, {
+        if (!returnedDate) {
+            setConfirmModal({
+                isOpen: true,
+                type: 'alert',
+                title: 'Missing Date',
+                message: 'Please enter the date items were returned.',
+                onConfirm: () => {}
+            });
+            return;
+        }
+        setConfirmModal({
+            isOpen: true,
+            type: 'confirm',
+            title: 'Confirm Return',
+            message: 'Mark all items as physically returned to the supplier?',
+            onConfirm: () => router.post(`/purchasing/supplier-returns/${ret.id}/mark-returned`, {
                 returned_date: returnedDate,
                 return_reference: returnRef,
-            });
-        }
+            })
+        });
     };
 
     const handleCancel = () => {
-        if (confirm('Cancel this return? Inventory will be restored.')) {
-            router.post(`/purchasing/supplier-returns/${ret.id}/cancel`);
-        }
+        setConfirmModal({
+            isOpen: true,
+            type: 'danger',
+            title: 'Cancel Return',
+            message: 'Cancel this return? Inventory will be restored.',
+            confirmText: 'Cancel Return',
+            onConfirm: () => router.post(`/purchasing/supplier-returns/${ret.id}/cancel`)
+        });
     };
 
     return (
@@ -180,6 +210,16 @@ export default function SupplierReturnShow() {
                     </div>
                 )}
             </div>
+
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                type={confirmModal.type}
+                confirmText={confirmModal.confirmText}
+            />
         </AuthenticatedLayout>
     );
 }

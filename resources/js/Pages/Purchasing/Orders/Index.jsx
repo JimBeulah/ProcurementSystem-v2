@@ -8,6 +8,7 @@ import Drawer from '@/Components/UI/Drawer';
 import Modal from '@/Components/UI/Modal';
 import CreatePurchaseOrder from './Create';
 import PdfPreviewModal from '@/Components/UI/PdfPreviewModal';
+import ConfirmationModal from '@/Components/UI/ConfirmationModal';
 
 export default function PurchaseOrdersIndex() {
     const { orders } = usePage().props;
@@ -18,6 +19,13 @@ export default function PurchaseOrdersIndex() {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [previewUrl, setPreviewUrl] = useState('');
+    const [confirmModal, setConfirmModal] = useState({ 
+        isOpen: false, 
+        type: 'confirm', 
+        title: '', 
+        message: '', 
+        onConfirm: () => {} 
+    });
 
     const columns = [
         {
@@ -112,6 +120,35 @@ export default function PurchaseOrdersIndex() {
         }
     ];
 
+    const handleApprove = (po) => {
+        setConfirmModal({
+            isOpen: true,
+            type: 'confirm',
+            title: 'Approve Purchase Order',
+            message: 'Are you sure you want to approve this Purchase Order?',
+            onConfirm: () => router.post(`/purchasing/orders/${po.id}/approve`, {}, {
+                onSuccess: () => setSelectedOrder(null)
+            })
+        });
+    };
+
+    const handleCancel = (po) => {
+        setConfirmModal({
+            isOpen: true,
+            type: 'prompt',
+            title: 'Cancel Purchase Order',
+            message: 'Please enter the reason for cancellation:',
+            inputPlaceholder: 'Reason for cancellation...',
+            onConfirm: (remarks) => {
+                if (remarks) {
+                    router.post(`/purchasing/orders/${po.id}/cancel`, { remarks }, {
+                        onSuccess: () => setSelectedOrder(null)
+                    });
+                }
+            }
+        });
+    };
+
     const renderOrderDetails = (po) => {
         if (!po) return null;
         return (
@@ -140,25 +177,12 @@ export default function PurchaseOrdersIndex() {
                             <Printer size={18} /> Print
                         </button>
                         {po.status === 'PENDING' && can('approve purchase orders') && (
-                            <button onClick={() => {
-                                if (confirm('Approve this Purchase Order?')) {
-                                    router.post(`/purchasing/orders/${po.id}/approve`, {}, {
-                                        onSuccess: () => setSelectedOrder(null)
-                                    });
-                                }
-                            }} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold transition-colors active:scale-95">
+                            <button onClick={() => handleApprove(po)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold transition-colors active:scale-95">
                                 <CheckCircle size={18} /> Approve PO
                             </button>
                         )}
                         {po.status !== 'CANCELLED' && po.status !== 'COMPLETED' && can('create purchase orders') && (
-                            <button onClick={() => {
-                                const remarks = prompt("Please enter the reason for cancellation:");
-                                if (remarks) {
-                                    router.post(`/purchasing/orders/${po.id}/cancel`, { remarks }, {
-                                        onSuccess: () => setSelectedOrder(null)
-                                    });
-                                }
-                            }} className="bg-rose-100 dark:bg-rose-900/30 hover:bg-rose-200 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold transition-colors outline-none">
+                            <button onClick={() => handleCancel(po)} className="bg-rose-100 dark:bg-rose-900/30 hover:bg-rose-200 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold transition-colors outline-none">
                                 Cancel Order
                             </button>
                         )}
@@ -278,6 +302,15 @@ export default function PurchaseOrdersIndex() {
                 title="Purchase Order Preview"
             />
 
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                type={confirmModal.type}
+                inputPlaceholder={confirmModal.inputPlaceholder}
+            />
         </AuthenticatedLayout>
     );
 }

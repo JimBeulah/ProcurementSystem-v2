@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage, router } from '@inertiajs/react';
 import { Receipt, Plus, CheckCircle2, Save } from 'lucide-react';
-import Modal from '@/Components/ui/Modal';
-import Combobox from '@/Components/ui/Combobox';
+import Modal from '@/Components/UI/Modal';
+import Combobox from '@/Components/UI/Combobox';
+import ConfirmationModal from '@/Components/UI/ConfirmationModal';
 
 export default function InvoicesIndex() {
     const { invoices, suppliers, orders, grns } = usePage().props;
@@ -18,6 +19,21 @@ export default function InvoicesIndex() {
     const [grnId, setGrnId] = useState('');
     const [invoiceNum, setInvoiceNum] = useState('');
     const [amount, setAmount] = useState(0);
+    const [confirmModal, setConfirmModal] = useState({ 
+        isOpen: false, 
+        id: null 
+    });
+
+    const handleValidate = (id) => {
+        setConfirmModal({ isOpen: true, id });
+    };
+
+    const executeValidate = () => {
+        if (!confirmModal.id) return;
+        router.post(route('finance.invoices.validate', confirmModal.id), {}, {
+            onSuccess: () => setConfirmModal({ isOpen: false, id: null })
+        });
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -91,11 +107,7 @@ export default function InvoicesIndex() {
                                     <td className="p-4 text-right">
                                         {inv.status === 'PENDING' && (
                                             <button
-                                                onClick={() => {
-                                                    if (confirm('Mark this invoice as matched and validated?')) {
-                                                        router.post(route('finance.invoices.validate', inv.id));
-                                                    }
-                                                }}
+                                                onClick={() => handleValidate(inv.id)}
                                                 className="text-emerald-500 hover:text-emerald-400 flex items-center gap-1 ml-auto text-sm"
                                             >
                                                 <CheckCircle2 size={16} /> Validate
@@ -162,6 +174,15 @@ export default function InvoicesIndex() {
                     </div>
                 </form>
             </Modal>
+
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ isOpen: false, id: null })}
+                onConfirm={executeValidate}
+                title="Validate Invoice"
+                message="Mark this invoice as matched and validated?"
+                confirmText="Validate"
+            />
         </AuthenticatedLayout>
     );
 }

@@ -4,18 +4,45 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, CheckCircle, Printer } from 'lucide-react';
 import { usePermissions } from '@/Hooks/usePermissions';
 import PdfPreviewModal from '@/Components/UI/PdfPreviewModal';
+import ConfirmationModal from '@/Components/UI/ConfirmationModal';
 
 export default function PurchaseOrderShow() {
     const { order: po } = usePage().props;
     const { can } = usePermissions();
     const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
+    const [confirmModal, setConfirmModal] = React.useState({ 
+        isOpen: false, 
+        type: 'confirm', 
+        title: '', 
+        message: '', 
+        onConfirm: () => {} 
+    });
 
     if (!po) return <div className="p-12 text-center text-red-500">PO Not Found</div>;
 
     const handleApprove = () => {
-        if (confirm('Approve this Purchase Order?')) {
-            router.post(`/purchasing/orders/${po.id}/approve`);
-        }
+        setConfirmModal({
+            isOpen: true,
+            type: 'confirm',
+            title: 'Approve Purchase Order',
+            message: 'Are you sure you want to approve this Purchase Order?',
+            onConfirm: () => router.post(`/purchasing/orders/${po.id}/approve`)
+        });
+    };
+
+    const handleCancel = () => {
+        setConfirmModal({
+            isOpen: true,
+            type: 'prompt',
+            title: 'Cancel Purchase Order',
+            message: 'Please enter the reason for cancellation:',
+            inputPlaceholder: 'Reason for cancellation...',
+            onConfirm: (remarks) => {
+                if (remarks) {
+                    router.post(`/purchasing/orders/${po.id}/cancel`, { remarks });
+                }
+            }
+        });
     };
 
     return (
@@ -50,12 +77,7 @@ export default function PurchaseOrderShow() {
                             </button>
                         )}
                         {po.status !== 'CANCELLED' && po.status !== 'COMPLETED' && can('create purchase orders') && (
-                            <button onClick={() => {
-                                const remarks = prompt("Please enter the reason for cancellation:");
-                                if (remarks) {
-                                    router.post(`/purchasing/orders/${po.id}/cancel`, { remarks });
-                                }
-                            }} className="bg-rose-100 dark:bg-rose-900/30 hover:bg-rose-200 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold transition-colors outline-none">
+                            <button onClick={handleCancel} className="bg-rose-100 dark:bg-rose-900/30 hover:bg-rose-200 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold transition-colors outline-none">
                                 Cancel Order
                             </button>
                         )}
@@ -124,6 +146,16 @@ export default function PurchaseOrderShow() {
                 onClose={() => setIsPreviewOpen(false)}
                 url={`/purchasing/orders/${po.id}/print`}
                 title={`Purchase Order PO-${po.id.toString().padStart(4, '0')} Preview`}
+            />
+
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                type={confirmModal.type}
+                inputPlaceholder={confirmModal.inputPlaceholder}
             />
         </AuthenticatedLayout>
     );

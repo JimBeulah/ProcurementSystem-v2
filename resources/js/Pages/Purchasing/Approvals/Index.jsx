@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage, router } from '@inertiajs/react';
 import { ShieldCheck, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react';
 import { usePermissions } from '@/Hooks/usePermissions';
+import ConfirmationModal from '@/Components/UI/ConfirmationModal';
 
 export default function ApprovalsIndex() {
     const { pendingPos, pendingMrs } = usePage().props;
@@ -11,6 +12,13 @@ export default function ApprovalsIndex() {
     const mrs = pendingMrs || [];
     const [tab, setTab] = useState('mr');
     const [processing, setProcessing] = useState(null);
+    const [confirmModal, setConfirmModal] = useState({ 
+        isOpen: false, 
+        type: 'confirm', 
+        title: '', 
+        message: '', 
+        onConfirm: () => {} 
+    });
 
     const handleApprove = (type, id) => {
         if (processing) return;
@@ -28,18 +36,25 @@ export default function ApprovalsIndex() {
 
     const handleReject = (type, id) => {
         if (processing) return;
-        const remarks = window.prompt('Reason for declining (optional):');
-        if (remarks === null) return; // User cancelled
-        setProcessing(id);
-        if (type === 'po') {
-            router.post(route('purchasing.orders.decline', id), { remarks }, {
-                onFinish: () => setProcessing(null),
-            });
-        } else if (type === 'mr') {
-            router.post(route('material-requests.reject', id), { remarks }, {
-                onFinish: () => setProcessing(null),
-            });
-        }
+        setConfirmModal({
+            isOpen: true,
+            type: 'prompt',
+            title: 'Decline Request',
+            message: 'Reason for declining (optional):',
+            inputPlaceholder: 'Reason...',
+            onConfirm: (remarks) => {
+                setProcessing(id);
+                if (type === 'po') {
+                    router.post(route('purchasing.orders.decline', id), { remarks }, {
+                        onFinish: () => setProcessing(null),
+                    });
+                } else if (type === 'mr') {
+                    router.post(route('material-requests.reject', id), { remarks }, {
+                        onFinish: () => setProcessing(null),
+                    });
+                }
+            }
+        });
     };
 
     const TabBtn = ({ id, label, count }) => (
@@ -127,6 +142,16 @@ export default function ApprovalsIndex() {
                     )}
                 </div>
             </div>
+
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                type={confirmModal.type}
+                inputPlaceholder={confirmModal.inputPlaceholder}
+            />
         </AuthenticatedLayout>
     );
 }

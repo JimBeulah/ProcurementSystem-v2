@@ -7,6 +7,7 @@ import DataTable from '@/Components/UI/DataTable';
 import Drawer from '@/Components/UI/Drawer';
 import Modal from '@/Components/Modal';
 import CreatePurchaseOrder from '@/Pages/Purchasing/Orders/Create';
+import ConfirmationModal from '@/Components/UI/ConfirmationModal';
 
 const STATUS_STYLES = {
     DRAFT: 'bg-slate-100 dark:bg-slate-700 text-slate-500 border-slate-300 dark:border-slate-600',
@@ -26,33 +27,62 @@ export default function SupplierReturnsIndex() {
 
     const [returnedDate, setReturnedDate] = useState(new Date().toISOString().slice(0, 10));
     const [returnRef, setReturnRef] = useState('');
+    const [confirmModal, setConfirmModal] = useState({ 
+        isOpen: false, 
+        type: 'confirm', 
+        title: '', 
+        message: '', 
+        onConfirm: () => {} 
+    });
 
     const handleApprove = (retId) => {
-        if (confirm('Approve this supplier return request? Procurement may proceed with returning items.')) {
-            router.post(`/purchasing/supplier-returns/${retId}/approve`, {}, {
+        setConfirmModal({
+            isOpen: true,
+            type: 'confirm',
+            title: 'Approve Return',
+            message: 'Approve this supplier return request? Procurement may proceed with returning items.',
+            onConfirm: () => router.post(`/purchasing/supplier-returns/${retId}/approve`, {}, {
                 onSuccess: () => setSelectedReturn(null)
-            });
-        }
+            })
+        });
     };
 
     const handleMarkReturned = (retId) => {
-        if (!returnedDate) { alert('Please enter the date items were returned.'); return; }
-        if (confirm('Mark all items as physically returned to the supplier?')) {
-            router.post(`/purchasing/supplier-returns/${retId}/mark-returned`, {
+        if (!returnedDate) {
+            setConfirmModal({
+                isOpen: true,
+                type: 'alert',
+                title: 'Missing Date',
+                message: 'Please enter the date items were returned.',
+                onConfirm: () => {}
+            });
+            return;
+        }
+        setConfirmModal({
+            isOpen: true,
+            type: 'confirm',
+            title: 'Confirm Return',
+            message: 'Mark all items as physically returned to the supplier?',
+            onConfirm: () => router.post(`/purchasing/supplier-returns/${retId}/mark-returned`, {
                 returned_date: returnedDate,
                 return_reference: returnRef,
             }, {
                 onSuccess: () => setSelectedReturn(null)
-            });
-        }
+            })
+        });
     };
 
     const handleCancel = (retId) => {
-        if (confirm('Cancel this return? Inventory will be restored.')) {
-            router.post(`/purchasing/supplier-returns/${retId}/cancel`, {}, {
+        setConfirmModal({
+            isOpen: true,
+            type: 'danger',
+            title: 'Cancel Return',
+            message: 'Cancel this return? Inventory will be restored.',
+            confirmText: 'Cancel Return',
+            onConfirm: () => router.post(`/purchasing/supplier-returns/${retId}/cancel`, {}, {
                 onSuccess: () => setSelectedReturn(null)
-            });
-        }
+            })
+        });
     };
 
     const columns = [
@@ -307,6 +337,16 @@ export default function SupplierReturnsIndex() {
                     </div>
                 </div>
             </Modal>
+
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                type={confirmModal.type}
+                confirmText={confirmModal.confirmText}
+            />
         </AuthenticatedLayout>
     );
 }
