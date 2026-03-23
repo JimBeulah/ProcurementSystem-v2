@@ -83,27 +83,31 @@ class FinanceService
         }
 
         \Illuminate\Support\Facades\DB::transaction(function () use ($disbursement, $data) {
+            $actualAmount = $data['actual_amount'] ?? $disbursement->amount;
+            
             $disbursement->update(array_merge($data, [
+                'actual_amount' => $actualAmount,
                 'is_liquidated' => true,
                 'liquidated_at' => now(),
                 'status' => 'LIQUIDATED',
             ]));
 
-            $actualAmount = $data['actual_amount'] ?? $disbursement->amount;
             $change = $disbursement->amount - $actualAmount;
 
             // Automatically record an invoice for audit and reporting
             if ($disbursement->purchase_order_id) {
                 $po = $disbursement->purchaseOrder;
-                SupplierInvoice::create([
-                    'invoice_number' => $data['receipt_number'],
-                    'invoice_date' => $data['receipt_date'],
-                    'supplier_id' => $po->supplier_id,
-                    'purchase_order_id' => $po->id,
-                    'total_amount' => $actualAmount,
-                    'status' => 'PENDING',
-                    'recorded_by_id' => Auth::id(),
-                ]);
+                if ($po && $po->supplier_id) {
+                    SupplierInvoice::create([
+                        'invoice_number' => $data['receipt_number'],
+                        'invoice_date' => $data['receipt_date'],
+                        'supplier_id' => $po->supplier_id,
+                        'purchase_order_id' => $po->id,
+                        'total_amount' => $actualAmount,
+                        'status' => 'PENDING',
+                        'recorded_by_id' => Auth::id(),
+                    ]);
+                }
             }
 
             // Record change returned into Ledger if actual spend was less than disbursed

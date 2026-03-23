@@ -13,6 +13,7 @@ class Disbursement extends Model
         'processed_by_id',
         'received_by_id',
         'amount',
+        'actual_amount',
         'payment_date',
         'method',
         'reference_number',
@@ -21,6 +22,7 @@ class Disbursement extends Model
         'liquidated_at',
         'receipt_number',
         'receipt_date',
+        'receipt_path',
         'liquidation_remarks',
     ];
 
@@ -28,6 +30,7 @@ class Disbursement extends Model
     {
         return [
             'amount' => 'decimal:2',
+            'actual_amount' => 'decimal:2',
             'payment_date' => 'datetime',
             'liquidated_at' => 'datetime',
             'receipt_date' => 'date',

@@ -23,8 +23,10 @@ export default function DisbursementsIndex() {
     const [reference, setReference] = useState('');
 
     // Liquidation Form State
+    const [actualAmount, setActualAmount] = useState(0);
     const [receiptNumber, setReceiptNumber] = useState('');
     const [receiptDate, setReceiptDate] = useState(new Date().toISOString().split('T')[0]);
+    const [receiptFile, setReceiptFile] = useState(null);
     const [remarks, setRemarks] = useState('');
 
     useEffect(() => {
@@ -56,14 +58,20 @@ export default function DisbursementsIndex() {
 
     const handleLiquidateSubmit = (e) => {
         e.preventDefault();
-        router.post(route('finance.disbursements.liquidate', selectedPayment.id), {
-            receipt_number: receiptNumber,
-            receipt_date: receiptDate,
-            liquidation_remarks: remarks,
-        }, {
+        
+        const formData = new FormData();
+        formData.append('actual_amount', actualAmount);
+        formData.append('receipt_number', receiptNumber);
+        formData.append('receipt_date', receiptDate);
+        if (receiptFile) formData.append('receipt_file', receiptFile);
+        formData.append('liquidation_remarks', remarks);
+
+        router.post(route('finance.disbursements.liquidate', selectedPayment.id), formData, {
             onSuccess: () => {
                 setIsLiquidateOpen(false);
                 setReceiptNumber('');
+                setActualAmount(0);
+                setReceiptFile(null);
                 setRemarks('');
                 setSelectedPayment(null);
             }
@@ -72,6 +80,7 @@ export default function DisbursementsIndex() {
 
     const openLiquidation = (pay) => {
         setSelectedPayment(pay);
+        setActualAmount(Number(pay.amount));
         setIsLiquidateOpen(true);
     };
 
@@ -203,12 +212,23 @@ export default function DisbursementsIndex() {
                         </div>
 
                         <div>
+                            <label className="text-xs text-slate-500 uppercase font-bold mb-1 block">Actual Amount Spent</label>
+                            <input type="number" step="0.01" className={`${inputCls} font-mono text-lg`} value={actualAmount} onChange={e => setActualAmount(parseFloat(e.target.value))} required />
+                            {actualAmount < Number(selectedPayment.amount) && (
+                                <div className="text-[10px] text-green-600 font-bold mt-1 uppercase">Refund to Company: ₱{(Number(selectedPayment.amount) - actualAmount).toLocaleString()}</div>
+                            )}
+                        </div>
+                        <div>
                             <label className="text-xs text-slate-500 uppercase font-bold mb-1 block">Official Receipt / Invoice Number</label>
                             <input className={inputCls} value={receiptNumber} onChange={e => setReceiptNumber(e.target.value)} required placeholder="OR-XXXXXX" />
                         </div>
                         <div>
                             <label className="text-xs text-slate-500 uppercase font-bold mb-1 block">Receipt Date</label>
                             <input type="date" className={inputCls} value={receiptDate} onChange={e => setReceiptDate(e.target.value)} required />
+                        </div>
+                        <div>
+                            <label className="text-xs text-slate-500 uppercase font-bold mb-1 block">Scan of Receipt <span className="text-slate-400 font-normal">(PDF or Image)</span></label>
+                            <input type="file" className={inputCls} onChange={e => setReceiptFile(e.target.files[0])} accept=".pdf,image/*" />
                         </div>
                         <div>
                             <label className="text-xs text-slate-500 uppercase font-bold mb-1 block">Liquidation Remarks</label>

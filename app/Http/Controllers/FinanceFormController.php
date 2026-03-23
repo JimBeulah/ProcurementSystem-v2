@@ -70,11 +70,19 @@ class FinanceFormController extends Controller
     public function liquidate(Request $request, \App\Models\Disbursement $disbursement): RedirectResponse
     {
         $validated = $request->validate([
-            'actual_amount' => 'nullable|numeric|min:0',
+            'actual_amount' => 'required|numeric|min:0',
             'receipt_number' => 'required|string|max:255',
             'receipt_date' => 'required|date',
+            'receipt_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
             'liquidation_remarks' => 'nullable|string|max:1000',
         ]);
+
+        if ($request->hasFile('receipt_file')) {
+            $path = $request->file('receipt_file')->store('receipts', 'public');
+            $validated['receipt_path'] = $path;
+        }
+
+        unset($validated['receipt_file']);
 
         try {
             $this->service->liquidateDisbursement($disbursement, $validated);
