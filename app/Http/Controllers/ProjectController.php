@@ -15,8 +15,7 @@ class ProjectController extends Controller
     public function __construct(
         protected ProjectService $service,
         protected \App\Services\ReportService $reportService
-    ) {
-    }
+    ) {}
 
     public function index()
     {

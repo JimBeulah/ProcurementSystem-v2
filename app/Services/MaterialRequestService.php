@@ -28,7 +28,7 @@ class MaterialRequestService
 
             $component = BoqItemComponent::with('boqItem')->find($item['boq_item_component_id']);
 
-            if (!$component || !$component->boqItem) {
+            if (! $component || ! $component->boqItem) {
                 continue;
             }
 
@@ -42,11 +42,11 @@ class MaterialRequestService
                     $q->where('status', '!=', 'REJECTED');
                 })
                 ->get()
-                ->sum(fn($reqItem) => $reqItem->quantity * ($reqItem->material_unit_price + $reqItem->labor_unit_price));
+                ->sum(fn ($reqItem) => $reqItem->quantity * ($reqItem->material_unit_price + $reqItem->labor_unit_price));
 
             if (($previousRequestsCost + $currentRequestCost) > $totalAltapilBudget) {
                 $remaining = max(0, $totalAltapilBudget - $previousRequestsCost);
-                $overBudgetItems[] = "{$component->name} (Budget: " . number_format($totalAltapilBudget, 2) . ", Remaining: " . number_format($remaining, 2) . ", Requested: " . number_format($currentRequestCost, 2) . ")";
+                $overBudgetItems[] = "{$component->name} (Budget: ".number_format($totalAltapilBudget, 2).', Remaining: '.number_format($remaining, 2).', Requested: '.number_format($currentRequestCost, 2).')';
             }
         }
 
@@ -97,7 +97,7 @@ class MaterialRequestService
             $materialRequest->load('items');
 
             $totalCost = collect($materialRequest->items)->sum(
-                fn($item) => $item->quantity * ($item->material_unit_price + $item->labor_unit_price)
+                fn ($item) => $item->quantity * ($item->material_unit_price + $item->labor_unit_price)
             );
 
             $pr = PurchaseRequest::create([
@@ -106,7 +106,7 @@ class MaterialRequestService
                 'approver_id' => Auth::id(),
                 'request_date' => now(),
                 'status' => 'APPROVED',
-                'purpose' => 'Generated from MR-' . str_pad($materialRequest->id, 5, '0', STR_PAD_LEFT),
+                'purpose' => 'Generated from MR-'.str_pad($materialRequest->id, 5, '0', STR_PAD_LEFT),
                 'remarks' => $materialRequest->remarks,
                 'total_estimated_cost' => $totalCost,
             ]);

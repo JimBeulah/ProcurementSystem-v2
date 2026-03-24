@@ -18,6 +18,7 @@ class PurchaseOrder extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
+
     protected $fillable = [
         'order_date',
         'project_id',

@@ -8,6 +8,7 @@ use Illuminate\Console\Command;
 class BackfillUsernames extends Command
 {
     protected $signature = 'users:backfill-usernames';
+
     protected $description = 'Generate usernames for any users that do not have one.';
 
     public function handle(): void
@@ -16,6 +17,7 @@ class BackfillUsernames extends Command
 
         if ($users->isEmpty()) {
             $this->info('All users already have usernames.');
+
             return;
         }
 
@@ -27,7 +29,7 @@ class BackfillUsernames extends Command
             $i = 1;
 
             while (User::where('username', $username)->where('id', '!=', $user->id)->exists()) {
-                $username = $base . $i++;
+                $username = $base.$i++;
             }
 
             $user->update(['username' => $username, 'is_active' => true]);

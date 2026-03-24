@@ -11,7 +11,7 @@ class SiteReleaseService
     /**
      * Issue items from inventory to the site.
      */
-    public function release(InventoryItem $item, array $validated, int $userId = null): SiteRelease
+    public function release(InventoryItem $item, array $validated, ?int $userId = null): SiteRelease
     {
         $userId = $userId ?? Auth::id();
 
@@ -36,7 +36,7 @@ class SiteReleaseService
      * Confirm receipt of a released batch and merge received quantity into the
      * project site's inventory so the material is available for issuance to workers.
      */
-    public function confirmReceipt(SiteRelease $siteRelease, array $validated, int $userId = null): void
+    public function confirmReceipt(SiteRelease $siteRelease, array $validated, ?int $userId = null): void
     {
         $qtyReceived = (float) $validated['quantity_received'];
         $userId = $userId ?? Auth::id();
@@ -57,12 +57,12 @@ class SiteReleaseService
             $siteInventory = InventoryItem::firstOrCreate(
                 [
                     'material_name' => $sourceItem->material_name,
-                    'project_id'    => $siteRelease->project_id,
-                    'warehouse_id'  => null,
+                    'project_id' => $siteRelease->project_id,
+                    'warehouse_id' => null,
                 ],
                 [
                     'quantity' => 0,
-                    'unit'     => $sourceItem->unit,
+                    'unit' => $sourceItem->unit,
                 ]
             );
 

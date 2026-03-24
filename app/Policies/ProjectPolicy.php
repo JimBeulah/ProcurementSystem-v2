@@ -10,7 +10,7 @@ class ProjectPolicy
     /**
      * Admins and project managers can always do anything.
      */
-    public function before(User $user, string $ability): bool|null
+    public function before(User $user, string $ability): ?bool
     {
         if ($user->hasAnyRole(['admin', 'project_manager'])) {
             return true;

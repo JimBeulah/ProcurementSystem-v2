@@ -3,10 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\Client;
-use App\Models\Project;
-use App\Models\User;
-use App\Models\PurchaseOrder;
 use App\Models\Disbursement;
+use App\Models\Project;
+use App\Models\PurchaseOrder;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -19,7 +19,9 @@ class FinanceReportTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+        $this->user = User::factory()->create(['role' => 'finance']);
+        $this->user->assignRole('finance');
     }
 
     public function test_finance_reports_page_loads_with_all_projects_summary()
@@ -32,7 +34,7 @@ class FinanceReportTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertInertia(
-            fn($page) => $page
+            fn ($page) => $page
                 ->component('Finance/Reports/Index')
                 ->has('data', 3)
                 ->has('projects', 3)
@@ -71,14 +73,14 @@ class FinanceReportTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertInertia(
-            fn($page) => $page
+            fn ($page) => $page
                 ->component('Finance/Reports/Index')
                 ->has('data.project')
                 ->where('data.project.id', $project->id)
-                ->where('data.revenue.total', 500000.0)
-                ->where('data.expenses.committed', 100000.0)
-                ->where('data.expenses.paid', 50000.0)
-                ->where('data.profit_loss.amount', 400000.0)
+                ->where('data.revenue.total', 500000)
+                ->where('data.expenses.committed', 100000)
+                ->where('data.expenses.paid', 50000)
+                ->where('data.profit_loss.amount', 400000)
         );
     }
 }

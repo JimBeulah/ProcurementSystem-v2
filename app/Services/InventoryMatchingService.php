@@ -2,29 +2,26 @@
 
 namespace App\Services;
 
-use App\Models\PurchaseRequest;
 use App\Models\InventoryItem;
+use App\Models\PurchaseRequest;
 
 class InventoryMatchingService
 {
     /**
      * Find available warehouse inventory that matches the requested items in a PR.
-     *
-     * @param PurchaseRequest|null $pr
-     * @return array
      */
     public function matchForPurchaseRequest(?PurchaseRequest $pr): array
     {
         $inventoryMatches = [];
 
-        if (!$pr || !$pr->items) {
+        if (! $pr || ! $pr->items) {
             return $inventoryMatches;
         }
 
         foreach ($pr->items as $item) {
             $matches = InventoryItem::where('quantity', '>', 0)
                 ->whereNull('project_id') // Ensure it's warehouse stock, not project stock
-                ->where('material_name', 'LIKE', '%' . $item->item_description . '%')
+                ->where('material_name', 'LIKE', '%'.$item->item_description.'%')
                 ->get(['id', 'material_name', 'quantity', 'unit', 'project_id'])
                 ->toArray();
 

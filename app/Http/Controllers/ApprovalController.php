@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PurchaseOrder;
 use App\Models\MaterialRequest;
-use Illuminate\Http\Request;
+use App\Models\PurchaseOrder;
 use Inertia\Inertia;
 
 class ApprovalController extends Controller

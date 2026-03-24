@@ -6,7 +6,6 @@ use App\Models\InventoryItem;
 use App\Models\PurchaseOrder;
 use App\Models\ReceivingItem;
 use App\Models\ReceivingReport;
-use App\Models\Warehouse;
 use Illuminate\Support\Facades\Auth;
 
 class ReceivingService
@@ -26,7 +25,6 @@ class ReceivingService
             'notes' => $validated['notes'] ?? null,
         ]);
 
-
         $rejectedItems = [];
 
         foreach ($validated['items'] as $itemData) {
@@ -40,7 +38,7 @@ class ReceivingService
             ]);
 
             // Only increment inventory if NOT rejected
-            if (!$isRejected) {
+            if (! $isRejected) {
                 $poItem = collect($po->items)->firstWhere('id', $itemData['id']);
 
                 $inventoryItem = InventoryItem::firstOrCreate(
@@ -65,20 +63,20 @@ class ReceivingService
                     'unit' => $poItem ? $poItem->unit : 'unit',
                     'quantity' => $itemData['quantity_received'],
                     'unit_price' => $poItem ? $poItem->unit_price : 0,
-                    'notes' => 'Rejected during manual GRN entry.'
+                    'notes' => 'Rejected during manual GRN entry.',
                 ];
             }
         }
 
         // Automatically create a Supplier Return request for rejected items
-        if (!empty($rejectedItems)) {
+        if (! empty($rejectedItems)) {
             app(SupplierReturnService::class)->create([
                 'purchase_order_id' => $po->id,
                 'project_id' => $po->project_id,
                 'supplier_id' => $po->supplier_id,
                 'reason' => 'Items rejected during manual receiving.',
                 'remarks' => $validated['notes'] ?? null,
-                'items' => $rejectedItems
+                'items' => $rejectedItems,
             ], true); // skipInventory = true because they never entered stock
         }
 
@@ -86,7 +84,6 @@ class ReceivingService
 
         return $report;
     }
-
 
     /**
      * Automatically receive the full requested quantity for a Purchase Order (Direct-to-site).
@@ -124,7 +121,7 @@ class ReceivingService
             ]);
 
             // Only increment inventory if NOT rejected
-            if (!$isRejected) {
+            if (! $isRejected) {
                 $inventoryItem = InventoryItem::firstOrCreate(
                     [
                         'material_name' => $poItem->material_name,
@@ -146,20 +143,20 @@ class ReceivingService
                     'unit' => $poItem->unit,
                     'quantity' => $receivedQty,
                     'unit_price' => $poItem->unit_price,
-                    'notes' => 'Rejected at gate during delivery receipt.'
+                    'notes' => 'Rejected at gate during delivery receipt.',
                 ];
             }
         }
 
         // Automatically create a Supplier Return request for rejected items
-        if (!empty($rejectedItems)) {
+        if (! empty($rejectedItems)) {
             app(SupplierReturnService::class)->create([
                 'purchase_order_id' => $po->id,
                 'project_id' => $po->project_id,
                 'supplier_id' => $po->supplier_id,
                 'reason' => 'Items rejected during delivery confirmation.',
                 'remarks' => $notes,
-                'items' => $rejectedItems
+                'items' => $rejectedItems,
             ], true); // skipInventory = true because they never entered stock
         }
 

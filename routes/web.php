@@ -1,31 +1,28 @@
 <?php
 
+use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\ApprovalController;
+use App\Http\Controllers\Auth\ForcePasswordChangeController;
 use App\Http\Controllers\BoqController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DatabaseManagementController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\FinanceFormController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\MaterialRequestController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OperationsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\PurchaseRequestController;
 use App\Http\Controllers\ReceivingController;
 use App\Http\Controllers\SettingsController;
-use App\Http\Controllers\DatabaseManagementController;
 use App\Http\Controllers\SiteReleaseController;
-use App\Http\Controllers\ActivityLogController;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\OperationsController;
 use App\Http\Controllers\SupplierReturnController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\Auth\ForcePasswordChangeController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -80,7 +77,6 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
         Route::post('/projects/{project}/boq/approve', [BoqController::class, 'approve'])->name('projects.boq.approve')->middleware('can:approve boq');
         Route::post('/projects/{project}/boq/revise', [BoqController::class, 'revise'])->name('projects.boq.revise')->middleware('can:approve boq');
     });
-
 
     // Material Requests & Returns
     Route::middleware(['can:view material requests'])->group(function () {
@@ -181,11 +177,11 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
         Route::post('/purchasing/supplier-returns/{supplierReturn}/cancel', [SupplierReturnController::class, 'cancel'])->name('supplier-returns.cancel')->middleware('can:create purchase orders');
     });
 
-
     // Settings & Profile (Accessible to all authenticated users)
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::get('/settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/settings/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/settings/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Restricted Settings
     Route::middleware(['can:view settings'])->group(function () {
@@ -232,7 +228,7 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
     });
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
 
 Route::get('/test-flash', function () {
     return redirect()->route('login')->with('success', 'Sonner is working perfectly!');

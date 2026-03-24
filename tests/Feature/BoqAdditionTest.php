@@ -2,37 +2,36 @@
 
 namespace Tests\Feature;
 
+use App\Models\Client;
 use App\Models\Project;
 use App\Models\User;
-use App\Models\Client;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class BoqAdditionTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class);
+    }
+
     private function giveUserBoqPermissions(User $user): void
     {
-        // Create permissions required by the RBAC middleware
-        Permission::findOrCreate('view boq');
-        Permission::findOrCreate('manage boq');
-        $user->givePermissionTo(['view boq', 'manage boq']);
+        $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+        $user->assignRole('admin');
     }
 
     public function test_can_add_boq_item_with_material_component()
     {
-        $user = User::factory()->create(['role' => 'ADMIN']);
-        $client = Client::create(['name' => 'Test Client', 'email' => 'test@example.com']);
-        $project = Project::create([
+        $user = User::factory()->create(['role' => 'admin']);
+        $client = Client::factory()->create(['name' => 'Test Client']);
+        $project = Project::factory()->create([
             'name' => 'Test Project',
             'client_id' => $client->id,
-            'location' => 'Test Location',
-            'budget' => 1000000,
             'status' => 'ACTIVE',
-            'project_type' => 'BUILDING',
         ]);
 
         $this->giveUserBoqPermissions($user);
@@ -54,7 +53,7 @@ class BoqAdditionTest extends TestCase
                     'altapilUnitRate' => 80,
                     'noOfPersons' => 0,
                     'hours' => 0,
-                ]
+                ],
             ],
         ];
 

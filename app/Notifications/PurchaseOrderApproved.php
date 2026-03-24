@@ -2,11 +2,10 @@
 
 namespace App\Notifications;
 
+use App\Models\PurchaseOrder;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use App\Models\PurchaseOrder;
 
 class PurchaseOrderApproved extends Notification implements ShouldQueue
 {
@@ -40,9 +39,10 @@ class PurchaseOrderApproved extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         $id = str_pad($this->purchaseOrder->id, 4, '0', STR_PAD_LEFT);
+
         return [
             'message' => "Your Purchase Order (PO-{$id}) has been approved.",
-            'url' => route('purchasing.orders.index', [], false)
+            'url' => route('purchasing.orders.index', [], false),
         ];
     }
 }

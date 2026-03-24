@@ -20,25 +20,25 @@ class DashboardController extends Controller
 
         return match ($role) {
             'admin' => Inertia::render('Dashboards/AdminDashboard', [
-                'stats' => $this->dashboardService->getAdminDashboardStats()
+                'stats' => $this->dashboardService->getAdminDashboardStats(),
             ]),
             'project_manager' => Inertia::render('Dashboards/ProjectManagerDashboard', [
-                'stats' => $this->dashboardService->getProjectManagerDashboardStats()
+                'stats' => $this->dashboardService->getProjectManagerDashboardStats(),
             ]),
             'procurement_officer' => Inertia::render('Dashboards/ProcurementOfficerDashboard', [
-                'stats' => $this->dashboardService->getProcurementOfficerDashboardStats()
+                'stats' => $this->dashboardService->getProcurementOfficerDashboardStats(),
             ]),
             'warehouse' => Inertia::render('Dashboards/WarehouseDashboard', [
-                'stats' => $this->dashboardService->getWarehouseDashboardStats()
+                'stats' => $this->dashboardService->getWarehouseDashboardStats(),
             ]),
             'finance' => Inertia::render('Dashboards/FinanceDashboard', [
-                'stats' => $this->dashboardService->getFinanceDashboardStats()
+                'stats' => $this->dashboardService->getFinanceDashboardStats(),
             ]),
             'site_engineer' => Inertia::render('Dashboards/SiteEngineerDashboard', [
-                'stats' => $this->dashboardService->getSiteEngineerDashboardStats($user)
+                'stats' => $this->dashboardService->getSiteEngineerDashboardStats($user),
             ]),
             default => Inertia::render('Dashboard', [
-                'stats' => $this->dashboardService->getGenericDashboardStats()
+                'stats' => $this->dashboardService->getGenericDashboardStats(),
             ]),
         };
     }

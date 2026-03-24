@@ -7,8 +7,8 @@ use App\Models\Material;
 use App\Models\Project;
 use App\Models\PurchaseOrder;
 use App\Models\Supplier;
-use App\Services\PurchaseOrderService;
 use App\Services\InventoryMatchingService;
+use App\Services\PurchaseOrderService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -89,7 +89,7 @@ class PurchaseOrderController extends Controller
     {
         $po = $this->service->create($request->validated(), \Illuminate\Support\Facades\Auth::id());
 
-        if (!$po) {
+        if (! $po) {
             // Means 100% of the requested items were sourced from the internal warehouse
             return redirect()->route('purchasing.orders.index')
                 ->with('success', 'Order fully fulfilled from warehouse stock. Site Releases have been auto-generated for the project site.');
@@ -115,7 +115,7 @@ class PurchaseOrderController extends Controller
     public function cancel(Request $request, PurchaseOrder $order): RedirectResponse
     {
         $request->validate([
-            'remarks' => 'required|string|max:500'
+            'remarks' => 'required|string|max:500',
         ]);
 
         $this->service->cancel($order, $request->input('remarks'));
@@ -128,6 +128,6 @@ class PurchaseOrderController extends Controller
         // Delegate PDF generation to the Service layer
         $pdf = $this->service->generatePdf($order);
 
-        return $pdf->stream('PO-' . str_pad($order->id, 5, '0', STR_PAD_LEFT) . '.pdf');
+        return $pdf->stream('PO-'.str_pad($order->id, 5, '0', STR_PAD_LEFT).'.pdf');
     }
 }

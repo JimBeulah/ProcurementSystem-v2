@@ -14,8 +14,7 @@ class SiteReleaseController extends Controller
 {
     public function __construct(
         protected SiteReleaseService $service
-    ) {
-    }
+    ) {}
 
     public function index(): Response
     {

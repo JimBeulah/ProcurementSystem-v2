@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Client;
 use App\Models\Project;
 use App\Models\User;
 
@@ -18,7 +17,7 @@ class ProjectService
                 'projects.*',
                 'total_profit' => \App\Models\BoqItemComponent::selectRaw('COALESCE(SUM(client_total_cost - altapil_total_cost), 0)')
                     ->join('boq_items', 'boq_items.id', '=', 'boq_item_components.boq_item_id')
-                    ->whereColumn('boq_items.project_id', 'projects.id')
+                    ->whereColumn('boq_items.project_id', 'projects.id'),
             ])
             ->forUser($user)
             ->orderBy('created_at', 'desc')
@@ -30,6 +29,7 @@ class ProjectService
         if (empty($data['status'])) {
             $data['status'] = 'PLANNING';
         }
+
         return Project::create($data);
     }
 
@@ -39,6 +39,7 @@ class ProjectService
     public function update(Project $project, array $data): Project
     {
         $project->update($data);
+
         return $project;
     }
 

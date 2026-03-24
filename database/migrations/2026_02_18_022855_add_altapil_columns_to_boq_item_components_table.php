@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -18,10 +19,10 @@ return new class extends Migration {
                 $table->renameColumn('total_component_cost', 'client_total_cost');
             }
 
-            if (!Schema::hasColumn('boq_item_components', 'altapil_unit_rate')) {
+            if (! Schema::hasColumn('boq_item_components', 'altapil_unit_rate')) {
                 $table->decimal('altapil_unit_rate', 10, 2)->default(0)->after('client_unit_rate');
             }
-            if (!Schema::hasColumn('boq_item_components', 'altapil_total_cost')) {
+            if (! Schema::hasColumn('boq_item_components', 'altapil_total_cost')) {
                 $table->decimal('altapil_total_cost', 15, 2)->default(0)->after('client_total_cost');
             }
         });

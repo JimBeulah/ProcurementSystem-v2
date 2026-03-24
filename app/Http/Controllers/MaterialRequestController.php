@@ -16,8 +16,7 @@ class MaterialRequestController extends Controller
 {
     public function __construct(
         protected MaterialRequestService $service
-    ) {
-    }
+    ) {}
 
     public function index(Project $project): Response
     {
@@ -53,13 +52,13 @@ class MaterialRequestController extends Controller
         $validated = $request->validated();
         $violations = $this->service->checkBudgetViolations($validated['items']);
 
-        if (!empty($violations)) {
+        if (! empty($violations)) {
             $isAuthorizedToOverride = in_array(auth()->user()->role, ['admin', 'project_manager']);
-            
+
             if ($isAuthorizedToOverride && $request->input('authorize_override')) {
                 // Proceed with creation but log the override
                 $mr = $this->service->create($project, $validated);
-                
+
                 activity()
                     ->performedOn($mr)
                     ->causedBy(auth()->user())
@@ -71,7 +70,7 @@ class MaterialRequestController extends Controller
 
             $itemsList = implode('; ', $violations);
             $msg = "Budget Exceeded! The request exceeds the Altapil budget for: $itemsList.";
-            
+
             if ($isAuthorizedToOverride) {
                 return redirect()->back()->with('warning', "$msg You may choose to Authorize Override if this price increase is necessary.");
             }
@@ -96,7 +95,7 @@ class MaterialRequestController extends Controller
 
         return redirect()->back()->with(
             'success',
-            "Material Request MR-{$materialRequest->id} approved and Purchase Request PR-" . str_pad($pr->id, 5, '0', STR_PAD_LEFT) . " generated."
+            "Material Request MR-{$materialRequest->id} approved and Purchase Request PR-".str_pad($pr->id, 5, '0', STR_PAD_LEFT).' generated.'
         );
     }
 

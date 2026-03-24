@@ -18,6 +18,7 @@ class MaterialRequest extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
+
     protected $fillable = [
         'project_id',
         'requester_id',

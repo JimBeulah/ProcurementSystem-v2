@@ -13,9 +13,7 @@ use Inertia\Response;
 
 class BoqController extends Controller
 {
-    public function __construct(protected \App\Services\BoqService $boqService)
-    {
-    }
+    public function __construct(protected \App\Services\BoqService $boqService) {}
 
     public function index(Project $project): Response
     {
@@ -37,13 +35,13 @@ class BoqController extends Controller
             'boqItems' => $boqItems,
             'materials' => $materials,
             'units' => $units,
-            'isApproved' => !!$project->approved_by
+            'isApproved' => (bool) $project->approved_by,
         ]);
     }
 
     public function approve(Project $project): RedirectResponse
     {
-        if (!in_array(auth()->user()->role, ['admin', 'project_manager'])) {
+        if (! in_array(auth()->user()->role, ['admin', 'project_manager'])) {
             abort(403, 'Unauthorized. Only Admins and Project Managers can approve BOQs.');
         }
 
@@ -62,12 +60,12 @@ class BoqController extends Controller
 
     public function revise(Project $project, Request $request): RedirectResponse
     {
-        if (!in_array(auth()->user()->role, ['admin', 'project_manager'])) {
+        if (! in_array(auth()->user()->role, ['admin', 'project_manager'])) {
             abort(403, 'Unauthorized. Only Admins and Project Managers can request BOQ revisions.');
         }
 
         $request->validate([
-            'reason' => 'required|string|min:5'
+            'reason' => 'required|string|min:5',
         ]);
 
         $project->update([
@@ -111,7 +109,7 @@ class BoqController extends Controller
             'items.*.materialUnitPrice' => 'required|numeric',
             'items.*.laborUnitPrice' => 'required|numeric',
             'items.*.isCarport' => 'boolean',
-            'items.*.components' => 'array'
+            'items.*.components' => 'array',
         ]);
 
         $this->boqService->bulkStore($validated['items'], $project);
@@ -195,6 +193,7 @@ class BoqController extends Controller
         }
 
         $boqComponent->delete();
+
         return redirect()->back()->with('success', 'Resource deleted successfully.');
     }
 }

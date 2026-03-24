@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
@@ -10,7 +11,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Project extends Model
 {
-    use LogsActivity, SoftDeletes;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -19,6 +20,7 @@ class Project extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
+
     protected $fillable = [
         'client_id',
         'name',
@@ -78,6 +80,7 @@ class Project extends Model
         if ($user && $user->hasRole('site_engineer')) {
             return $query->where('site_engineer_id', $user->id);
         }
+
         return $query;
     }
 

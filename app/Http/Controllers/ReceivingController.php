@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreReceivingRequest;
-use App\Models\InventoryItem;
 use App\Models\PurchaseOrder;
 use App\Services\ReceivingService;
 use Illuminate\Http\RedirectResponse;
@@ -15,8 +14,7 @@ class ReceivingController extends Controller
 {
     public function __construct(
         protected ReceivingService $service
-    ) {
-    }
+    ) {}
 
     public function index(): Response
     {
@@ -75,6 +73,6 @@ class ReceivingController extends Controller
 
         $this->service->autoReceiveFullOrder($purchaseOrder, $quantities, $notes, $rejections);
 
-        return redirect()->back()->with('success', 'Delivery for PO-' . str_pad($purchaseOrder->id, 4, '0', STR_PAD_LEFT) . ' has been recorded.');
+        return redirect()->back()->with('success', 'Delivery for PO-'.str_pad($purchaseOrder->id, 4, '0', STR_PAD_LEFT).' has been recorded.');
     }
 }

@@ -24,7 +24,7 @@ class ClientController extends Controller
         $validated = $request->validated();
         $client = Client::create(['name' => $validated['name']]);
 
-        if (!empty($validated['contacts'])) {
+        if (! empty($validated['contacts'])) {
             foreach ($validated['contacts'] as $contactData) {
                 $client->contacts()->create([
                     'name' => $contactData['name'],
@@ -43,9 +43,9 @@ class ClientController extends Controller
 
         // Sync contacts
         $existingContactIds = [];
-        if (!empty($validated['contacts'])) {
+        if (! empty($validated['contacts'])) {
             foreach ($validated['contacts'] as $contactData) {
-                if (!empty($contactData['id'])) {
+                if (! empty($contactData['id'])) {
                     // Update existing
                     $contact = $client->contacts()->find($contactData['id']);
                     if ($contact) {

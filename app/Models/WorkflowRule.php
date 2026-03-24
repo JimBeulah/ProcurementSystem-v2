@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class WorkflowRule extends Model
 {
     public $timestamps = false;
+
     const CREATED_AT = null;
 
     protected $fillable = [

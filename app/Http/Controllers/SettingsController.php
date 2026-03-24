@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Supplier;
 use App\Models\Material;
+use App\Models\Supplier;
+use App\Models\User;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -18,7 +18,7 @@ class SettingsController extends Controller
 
     public function users()
     {
-        $users = User::with('roles')->orderBy('name')->get()->map(fn($u) => [
+        $users = User::with('roles')->orderBy('name')->get()->map(fn ($u) => [
             'id' => $u->id,
             'name' => $u->name,
             'email' => $u->email,
@@ -28,6 +28,7 @@ class SettingsController extends Controller
             'must_change_password' => (bool) $u->must_change_password,
             'created_at' => $u->created_at,
         ]);
+
         return Inertia::render('Settings/Users/Index', ['users' => $users]);
     }
 
@@ -56,6 +57,7 @@ class SettingsController extends Controller
         ]);
 
         Supplier::create($validated);
+
         return back()->with('success', 'Supplier created successfully.');
     }
 
@@ -70,12 +72,14 @@ class SettingsController extends Controller
         ]);
 
         $supplier->update($validated);
+
         return back()->with('success', 'Supplier updated successfully.');
     }
 
     public function destroySupplier(Supplier $supplier)
     {
         $supplier->delete();
+
         return back()->with('success', 'Supplier deleted successfully.');
     }
 
@@ -91,13 +95,14 @@ class SettingsController extends Controller
         ]);
 
         Material::create($validated);
+
         return back()->with('success', 'Material created successfully.');
     }
 
     public function updateMaterial(Request $request, Material $material)
     {
         $validated = $request->validate([
-            'code' => 'required|string|max:255|unique:materials,code,' . $material->id,
+            'code' => 'required|string|max:255|unique:materials,code,'.$material->id,
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'unit' => 'nullable|string|max:50',
@@ -105,12 +110,14 @@ class SettingsController extends Controller
         ]);
 
         $material->update($validated);
+
         return back()->with('success', 'Material updated successfully.');
     }
 
     public function destroyMaterial(Material $material)
     {
         $material->delete();
+
         return back()->with('success', 'Material deleted successfully.');
     }
 
@@ -124,6 +131,7 @@ class SettingsController extends Controller
         ]);
 
         Warehouse::create($validated);
+
         return back()->with('success', 'Warehouse created successfully.');
     }
 
@@ -136,12 +144,14 @@ class SettingsController extends Controller
         ]);
 
         $warehouse->update($validated);
+
         return back()->with('success', 'Warehouse updated successfully.');
     }
 
     public function destroyWarehouse(Warehouse $warehouse)
     {
         $warehouse->delete();
+
         return back()->with('success', 'Warehouse deleted successfully.');
     }
 

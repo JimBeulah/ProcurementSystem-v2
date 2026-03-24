@@ -1,14 +1,14 @@
 <?php
+
 /**
  * Senior Laravel Engineer Principle: Move business logic into Services.
  */
 
 namespace App\Services;
 
+use App\Models\FinancialTransaction;
 use App\Models\Project;
 use App\Models\PurchaseOrder;
-use App\Models\Disbursement;
-use App\Models\FinancialTransaction;
 use Illuminate\Support\Collection;
 
 class ReportService
@@ -78,7 +78,7 @@ class ReportService
         $extraIncome = (float) ($transactions->extra_income ?? 0);
         $extraDirectCosts = (float) ($transactions->extra_direct_costs ?? 0);
         $operatingExpenses = (float) ($transactions->operating_expenses ?? 0);
-        
+
         $committedDirectCosts = (float) $project->committed_direct_costs;
         $totalPaid = (float) $project->total_paid;
 

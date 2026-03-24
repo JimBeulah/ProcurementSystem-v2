@@ -24,7 +24,6 @@ class PurchaseRequestItem extends Model
         return $this->quantity - $this->ordered_quantity;
     }
 
-
     protected function casts(): array
     {
         return [

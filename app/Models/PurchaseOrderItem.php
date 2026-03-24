@@ -24,7 +24,6 @@ class PurchaseOrderItem extends Model
         return $this->belongsTo(PurchaseRequestItem::class);
     }
 
-
     protected function casts(): array
     {
         return [

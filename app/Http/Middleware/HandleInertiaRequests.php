@@ -55,7 +55,7 @@ class HandleInertiaRequests extends Middleware
                         $query->orWhereIn('status', ['APPROVED', 'PARTIAL']);
                         $hasAny = true;
                     }
-                    if (!$hasAny) {
+                    if (! $hasAny) {
                         $query->whereRaw('1 = 0');
                     }
                 })->count() : 0,

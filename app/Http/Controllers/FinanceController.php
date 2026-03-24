@@ -3,10 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Disbursement;
-use App\Models\Project;
 use App\Models\SupplierInvoice;
-use Illuminate\Http\Request;
 use App\Services\ReportService;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,6 +17,7 @@ class FinanceController extends Controller
     {
         $this->reportService = $reportService;
     }
+
     public function invoices(): Response
     {
         $invoices = SupplierInvoice::with(['supplier', 'purchaseOrder'])
@@ -76,7 +76,8 @@ class FinanceController extends Controller
         $projectId = $request->input('project_id');
         $pdf = $this->reportService->generatePdf($projectId);
 
-        $filename = $projectId ? 'Project-Report-' . $projectId : 'Aggregate-Finance-Report';
-        return $pdf->stream($filename . '.pdf');
+        $filename = $projectId ? 'Project-Report-'.$projectId : 'Aggregate-Finance-Report';
+
+        return $pdf->stream($filename.'.pdf');
     }
 }

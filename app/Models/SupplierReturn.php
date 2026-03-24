@@ -70,6 +70,6 @@ class SupplierReturn extends Model
 
     public function getTotalCreditAttribute(): float
     {
-        return $this->items->sum(fn($i) => $i->quantity * $i->unit_price);
+        return $this->items->sum(fn ($i) => $i->quantity * $i->unit_price);
     }
 }

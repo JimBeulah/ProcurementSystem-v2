@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class SupplierInvoice extends Model
 {
     public $timestamps = false;
+
     const UPDATED_AT = null;
 
     protected $fillable = [

@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Project;
 use App\Models\User;
 use App\Notifications\ProjectDeadlineNotification;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
 class CheckProjectDeadlines extends Command
@@ -60,7 +60,7 @@ class CheckProjectDeadlines extends Command
                 }
 
                 $usersToNotify = $admins;
-                if ($siteEngineer && !$usersToNotify->contains($siteEngineer->id)) {
+                if ($siteEngineer && ! $usersToNotify->contains($siteEngineer->id)) {
                     $usersToNotify->push($siteEngineer);
                 }
 

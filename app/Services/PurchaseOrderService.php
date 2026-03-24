@@ -3,11 +3,10 @@
 namespace App\Services;
 
 use App\Models\PurchaseOrder;
-use App\Models\PurchaseOrderItem;
 use App\Models\PurchaseRequest;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
-use App\Models\User;
 
 class PurchaseOrderService
 {
@@ -34,7 +33,7 @@ class PurchaseOrderService
             }
 
             // 1. Process Warehouse Items by auto-generating Site Releases
-            if (!empty($warehouseItems)) {
+            if (! empty($warehouseItems)) {
                 $this->siteReleaseService->autoReleaseWarehouseItems($warehouseItems, $validated['project_id'], $requesterId);
             }
 
@@ -44,7 +43,7 @@ class PurchaseOrderService
                 return null;
             }
 
-            $totalAmount = collect($supplierItems)->sum(fn($i) => $i['quantity'] * $i['unit_price']);
+            $totalAmount = collect($supplierItems)->sum(fn ($i) => $i['quantity'] * $i['unit_price']);
 
             $po = PurchaseOrder::create([
                 'project_id' => $validated['project_id'],
@@ -59,7 +58,7 @@ class PurchaseOrderService
 
             $itemsData = collect($supplierItems)->map(function ($item) {
                 // If this is sourced from a PR, update the ordered_quantity
-                if (!empty($item['purchase_request_item_id'])) {
+                if (! empty($item['purchase_request_item_id'])) {
                     $prItem = \App\Models\PurchaseRequestItem::find($item['purchase_request_item_id']);
                     if ($prItem) {
                         $prItem->increment('ordered_quantity', $item['quantity']);
@@ -76,7 +75,7 @@ class PurchaseOrderService
                     'unit' => $item['unit'] ?? 'pcs',
                 ];
             })->toArray();
-            
+
             $po->items()->createMany($itemsData);
 
             // Update parent PR status if applicable
@@ -183,7 +182,7 @@ class PurchaseOrderService
      */
     public function findPurchaseRequest(?string $prId): ?PurchaseRequest
     {
-        if (!$prId) {
+        if (! $prId) {
             return null;
         }
 
@@ -202,7 +201,7 @@ class PurchaseOrderService
         $order->loadMissing(['requester', 'approver']);
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('print.purchase-order', [
-            'purchaseOrder' => $order
+            'purchaseOrder' => $order,
         ]);
 
         // Secure the PDF: Enforce printing only, prevent copy/paste, modification, and assembly

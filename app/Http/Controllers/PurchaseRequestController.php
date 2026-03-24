@@ -15,8 +15,7 @@ class PurchaseRequestController extends Controller
 {
     public function __construct(
         protected PurchaseRequestService $service
-    ) {
-    }
+    ) {}
 
     public function index(): Response
     {
@@ -63,17 +62,19 @@ class PurchaseRequestController extends Controller
             'purchaseRequest' => Inertia::lazy(fn () => PurchaseRequest::with('items')->find(request('prId'))),
             'inventoryMatches' => Inertia::lazy(function () {
                 $prId = request('prId');
-                if (!$prId) return [];
+                if (! $prId) {
+                    return [];
+                }
                 $pr = PurchaseRequest::with('items')->find($prId);
                 $inventoryMatches = [];
                 if ($pr && $pr->items) {
                     foreach ($pr->items as $item) {
                         $matches = \App\Models\InventoryItem::where('quantity', '>', 0)
                             ->whereNull('project_id')
-                            ->where('material_name', 'LIKE', '%' . $item->item_description . '%')
+                            ->where('material_name', 'LIKE', '%'.$item->item_description.'%')
                             ->get(['id', 'material_name', 'quantity', 'unit', 'project_id'])
                             ->toArray();
-        
+
                         if (count($matches) > 0) {
                             $inventoryMatches[$item->item_description] = [
                                 'requested_qty' => (float) $item->quantity,
@@ -83,6 +84,7 @@ class PurchaseRequestController extends Controller
                         }
                     }
                 }
+
                 return $inventoryMatches;
             }),
         ]);
@@ -122,6 +124,6 @@ class PurchaseRequestController extends Controller
         // Delegate PDF generation to the Service layer
         $pdf = $this->service->generatePdf($purchaseRequest);
 
-        return $pdf->stream('PR-' . str_pad($purchaseRequest->id, 5, '0', STR_PAD_LEFT) . '.pdf');
+        return $pdf->stream('PR-'.str_pad($purchaseRequest->id, 5, '0', STR_PAD_LEFT).'.pdf');
     }
 }

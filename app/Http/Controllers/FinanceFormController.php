@@ -8,8 +8,8 @@ use App\Models\PurchaseOrder;
 use App\Models\ReceivingReport;
 use App\Models\Supplier;
 use App\Services\FinanceService;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -17,8 +17,7 @@ class FinanceFormController extends Controller
 {
     public function __construct(
         protected FinanceService $service
-    ) {
-    }
+    ) {}
 
     public function createInvoice(): Response
     {
@@ -37,6 +36,7 @@ class FinanceFormController extends Controller
     {
         try {
             $this->service->recordInvoice($request->validated());
+
             return redirect()->route('finance.invoices')->with('success', 'Invoice recorded.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage())->withInput();
@@ -61,6 +61,7 @@ class FinanceFormController extends Controller
     {
         try {
             $this->service->processDisbursement($request->validated());
+
             return redirect()->route('finance.disbursements')->with('success', 'Payment processed.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage())->withInput();
@@ -86,6 +87,7 @@ class FinanceFormController extends Controller
 
         try {
             $this->service->liquidateDisbursement($disbursement, $validated);
+
             return redirect()->back()->with('success', 'Disbursement liquidated successfully.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
@@ -96,6 +98,7 @@ class FinanceFormController extends Controller
     {
         try {
             $this->service->validateInvoice($invoice);
+
             return redirect()->back()->with('success', 'Invoice validated successfully.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());

@@ -38,7 +38,6 @@ Route::middleware('guest')->group(function () {
         ->middleware('throttle:5,1');
 });
 
-
 Route::middleware('auth')->group(function () {
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');

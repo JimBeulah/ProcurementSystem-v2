@@ -20,8 +20,7 @@ class SupplierReturnController extends Controller
 
     public function __construct(
         protected SupplierReturnService $service
-    ) {
-    }
+    ) {}
 
     public function index(): Response
     {
@@ -93,6 +92,7 @@ class SupplierReturnController extends Controller
 
         try {
             $this->service->approve($supplierReturn);
+
             return redirect()->back()->with('success', 'Return approved.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
@@ -110,6 +110,7 @@ class SupplierReturnController extends Controller
 
         try {
             $this->service->markAsReturned($supplierReturn, $validated);
+
             return redirect()->back()->with('success', 'Items marked as returned to supplier.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
@@ -122,6 +123,7 @@ class SupplierReturnController extends Controller
 
         try {
             $this->service->cancel($supplierReturn);
+
             return redirect()->back()->with('success', 'Return cancelled and inventory restored.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());

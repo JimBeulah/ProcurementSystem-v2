@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Models\BoqItem;
-use App\Models\Project;
 use App\Models\BoqItemComponent;
+use App\Models\Project;
 use Illuminate\Support\Facades\DB;
 
 class BoqService
@@ -22,7 +22,7 @@ class BoqService
                 'is_carport' => $validated['is_carport'] ?? false,
             ]);
 
-            if (!empty($validated['components'])) {
+            if (! empty($validated['components'])) {
                 $componentsData = collect($validated['components'])->map(function ($comp) {
                     return [
                         'resource_type' => $comp['resourceType'],
@@ -59,7 +59,7 @@ class BoqService
                     'is_carport' => $itemData['isCarport'] ?? false,
                 ]);
 
-                if (!empty($itemData['components'])) {
+                if (! empty($itemData['components'])) {
                     $componentsData = collect($itemData['components'])->map(function ($comp) {
                         return [
                             'resource_type' => $comp['resourceType'],

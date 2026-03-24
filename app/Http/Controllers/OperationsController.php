@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PurchaseOrder;
 use App\Models\Project;
+use App\Models\PurchaseOrder;
 use App\Models\SiteRelease;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -27,10 +27,10 @@ class OperationsController extends Controller
             ->whereIn('status', ['IN_TRANSIT', 'PENDING'])
             ->latest()
             ->get()
-            ->map(fn($r) => [
+            ->map(fn ($r) => [
                 'id' => $r->id,
                 'type' => 'site_release',
-                'title' => 'Warehouse Dispatch #' . str_pad($r->id, 4, '0', STR_PAD_LEFT),
+                'title' => 'Warehouse Dispatch #'.str_pad($r->id, 4, '0', STR_PAD_LEFT),
                 'material_name' => $r->inventoryItem?->material_name ?? '—',
                 'project_name' => $r->inventoryItem?->project?->name ?? 'N/A',
                 'issued_to' => $r->issued_to,
@@ -54,15 +54,15 @@ class OperationsController extends Controller
         $supplierDeliveries = $poQuery
             ->latest()
             ->get()
-            ->map(fn($po) => [
+            ->map(fn ($po) => [
                 'id' => $po->id,
                 'type' => 'purchase_order',
-                'title' => 'PO-' . str_pad($po->id, 4, '0', STR_PAD_LEFT),
+                'title' => 'PO-'.str_pad($po->id, 4, '0', STR_PAD_LEFT),
                 'supplier' => $po->supplier?->name ?? '—',
                 'project_name' => $po->project?->name ?? 'N/A',
                 'status' => $po->status,
                 'created_at' => $po->updated_at->diffForHumans(),
-                'items' => $po->items->map(fn($item) => [
+                'items' => $po->items->map(fn ($item) => [
                     'id' => $item->id,
                     'material_name' => $item->material_name,
                     'quantity' => $item->quantity,

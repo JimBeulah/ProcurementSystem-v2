@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\PurchaseOrder;
 use App\Models\Project;
+use App\Models\PurchaseOrder;
 use App\Models\User;
 
 class DashboardService

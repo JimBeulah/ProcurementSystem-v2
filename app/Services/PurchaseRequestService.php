@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\PurchaseRequest;
-use App\Models\PurchaseRequestItem;
 use Illuminate\Support\Facades\Auth;
 
 class PurchaseRequestService
@@ -14,7 +13,7 @@ class PurchaseRequestService
     public function create(array $validated): PurchaseRequest
     {
         $totalCost = collect($validated['items'])
-            ->sum(fn($item) => $item['quantity'] * $item['estimated_unit_cost']);
+            ->sum(fn ($item) => $item['quantity'] * $item['estimated_unit_cost']);
 
         $pr = PurchaseRequest::create([
             'project_id' => $validated['project_id'],
@@ -88,7 +87,7 @@ class PurchaseRequestService
         $purchaseRequest->loadMissing(['requester', 'approver']);
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('print.purchase-request', [
-            'purchaseRequest' => $purchaseRequest
+            'purchaseRequest' => $purchaseRequest,
         ]);
 
         // Secure the PDF: Enforce printing only, prevent copy/paste, modification, and assembly

@@ -39,16 +39,16 @@ class SupplierReturnService
                     'notes' => $item['notes'] ?? null,
                 ]);
 
-                if (!$skipInventory) {
+                if (! $skipInventory) {
                     // 1. Find the exact inventory item at the site
                     $inventoryItem = InventoryItem::where('material_name', $item['material_name'])
                         ->where('project_id', $data['project_id'])
                         ->first();
 
                     // 2. Strict validation: cannot return what you don't have
-                    if (!$inventoryItem || $inventoryItem->quantity < $item['quantity']) {
+                    if (! $inventoryItem || $inventoryItem->quantity < $item['quantity']) {
                         throw ValidationException::withMessages([
-                            'items' => ["Insufficient quantity for '{$item['material_name']}' on site. Available: " . ($inventoryItem->quantity ?? 0)],
+                            'items' => ["Insufficient quantity for '{$item['material_name']}' on site. Available: ".($inventoryItem->quantity ?? 0)],
                         ]);
                     }
 

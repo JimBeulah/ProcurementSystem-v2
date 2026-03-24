@@ -27,7 +27,7 @@ class FinanceService
     {
         return \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
             // Check overpayment risk against Purchase Order
-            if (!empty($validated['purchase_order_id'])) {
+            if (! empty($validated['purchase_order_id'])) {
                 $po = \App\Models\PurchaseOrder::find($validated['purchase_order_id']);
                 if ($po) {
                     if ($po->status !== 'APPROVED') {
@@ -60,9 +60,9 @@ class FinanceService
                 'date' => now(),
                 'type' => 'DISBURSEMENT',
                 'category' => 'PAYABLE',
-                'description' => 'Disbursement released for PO: ' . $disbursement->purchase_order_id,
+                'description' => 'Disbursement released for PO: '.$disbursement->purchase_order_id,
                 'amount' => $disbursement->amount,
-                'reference' => 'DISB-' . $disbursement->id,
+                'reference' => 'DISB-'.$disbursement->id,
                 'metadata' => [
                     'disbursement_id' => $disbursement->id,
                     'purchase_order_id' => $disbursement->purchase_order_id,
@@ -72,6 +72,7 @@ class FinanceService
             return $disbursement;
         });
     }
+
     /**
      * Liquidate a disbursement with receipt details.
      */
@@ -84,7 +85,7 @@ class FinanceService
 
         \Illuminate\Support\Facades\DB::transaction(function () use ($disbursement, $data) {
             $actualAmount = $data['actual_amount'] ?? $disbursement->amount;
-            
+
             $disbursement->update(array_merge($data, [
                 'actual_amount' => $actualAmount,
                 'is_liquidated' => true,
@@ -122,9 +123,9 @@ class FinanceService
                     'date' => now(),
                     'type' => 'REFUND',
                     'category' => 'LIQUIDATION_RETURN',
-                    'description' => 'Change returned from disbursement liquidation (DISB-' . $disbursement->id . ')',
+                    'description' => 'Change returned from disbursement liquidation (DISB-'.$disbursement->id.')',
                     'amount' => $change,
-                    'reference' => 'DISB-REF-' . $disbursement->id,
+                    'reference' => 'DISB-REF-'.$disbursement->id,
                     'metadata' => [
                         'disbursement_id' => $disbursement->id,
                         'purchase_order_id' => $disbursement->purchase_order_id,

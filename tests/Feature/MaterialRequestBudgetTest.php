@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Project;
-use App\Models\Client;
 use App\Models\BoqItem;
 use App\Models\BoqItemComponent;
+use App\Models\Client;
+use App\Models\Project;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
@@ -15,17 +15,26 @@ class MaterialRequestBudgetTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class);
+    }
+
     private function makeProjectWithComponent(): array
     {
-        $user = User::factory()->create();
-        $client = Client::create(['name' => 'Test Client']);
-        $project = Project::create([
+        $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+        $user = User::factory()->create(['role' => 'site_engineer']);
+        $user->assignRole('site_engineer');
+
+        $client = Client::factory()->create(['name' => 'Test Client']);
+        $project = Project::factory()->create([
             'client_id' => $client->id,
             'name' => 'Test Project',
             'status' => 'ACTIVE',
             'location' => 'Test Loc',
-            'duration' => '10 months',
             'budget' => 100000,
+            'site_engineer_id' => $user->id,
         ]);
 
         $boqItem = BoqItem::create([
@@ -75,9 +84,13 @@ class MaterialRequestBudgetTest extends TestCase
                     'quantity' => 45,
                     'material_unit_price' => 20,
                     'labor_unit_price' => 0,
-                ]
+                ],
             ],
         ]);
+
+        if ($response->status() !== 302) {
+            $response->dump();
+        }
 
         $response->assertSessionHas('success');
         $response->assertSessionMissing('warning');
@@ -99,7 +112,7 @@ class MaterialRequestBudgetTest extends TestCase
                     'quantity' => 40,
                     'material_unit_price' => 20,
                     'labor_unit_price' => 0,
-                ]
+                ],
             ],
         ]);
 
@@ -114,7 +127,7 @@ class MaterialRequestBudgetTest extends TestCase
                     'quantity' => 15,
                     'material_unit_price' => 20,
                     'labor_unit_price' => 0,
-                ]
+                ],
             ],
         ]);
 

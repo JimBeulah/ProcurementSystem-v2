@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Supplier;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class SupplierController extends Controller
@@ -11,6 +11,7 @@ class SupplierController extends Controller
     public function index()
     {
         $suppliers = Supplier::orderBy('name', 'asc')->get();
+
         return Inertia::render('Purchasing/Suppliers/Index', ['suppliers' => $suppliers]);
     }
 
@@ -32,7 +33,7 @@ class SupplierController extends Controller
     public function update(Request $request, Supplier $supplier)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:suppliers,name,' . $supplier->id,
+            'name' => 'required|string|max:255|unique:suppliers,name,'.$supplier->id,
             'contact_person' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:255',
@@ -46,9 +47,10 @@ class SupplierController extends Controller
 
     public function toggleActive(Supplier $supplier)
     {
-        $supplier->update(['is_active' => !$supplier->is_active]);
-        
+        $supplier->update(['is_active' => ! $supplier->is_active]);
+
         $status = $supplier->is_active ? 'enabled' : 'disabled';
+
         return redirect()->back()->with('success', "Supplier {$status} successfully.");
     }
 }

@@ -82,7 +82,7 @@ class MaterialReturnController extends Controller
             ]);
 
             // 2. Merge back into inventory
-            $existing = InventoryItem::where('material_name', 'LIKE', '%' . $materialReturn->material_name . '%')
+            $existing = InventoryItem::where('material_name', 'LIKE', '%'.$materialReturn->material_name.'%')
                 ->whereNull('project_id') // General warehouse stock
                 ->first();
 

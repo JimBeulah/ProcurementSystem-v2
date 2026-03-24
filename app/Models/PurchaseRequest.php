@@ -18,6 +18,7 @@ class PurchaseRequest extends Model
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
+
     protected $fillable = [
         'request_date',
         'project_id',

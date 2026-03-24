@@ -32,14 +32,14 @@ class LoginRequest extends FormRequest
         // Check if user exists and is active before attempting auth
         $user = User::where('username', $this->string('username'))->first();
 
-        if ($user && !$user->is_active) {
+        if ($user && ! $user->is_active) {
             RateLimiter::hit($this->throttleKey());
             throw ValidationException::withMessages([
                 'username' => 'Your account has been deactivated. Please contact an administrator.',
             ]);
         }
 
-        if (!Auth::attempt(['username' => $this->string('username'), 'password' => $this->string('password')], $this->boolean('remember'))) {
+        if (! Auth::attempt(['username' => $this->string('username'), 'password' => $this->string('password')], $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
             throw ValidationException::withMessages([
                 'username' => trans('auth.failed'),
@@ -51,7 +51,7 @@ class LoginRequest extends FormRequest
 
     public function ensureIsNotRateLimited(): void
     {
-        if (!RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
             return;
         }
 
@@ -69,6 +69,6 @@ class LoginRequest extends FormRequest
 
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('username')) . '|' . $this->ip());
+        return Str::transliterate(Str::lower($this->string('username')).'|'.$this->ip());
     }
 }
