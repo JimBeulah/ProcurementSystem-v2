@@ -52,6 +52,7 @@ class PurchaseOrderController extends Controller
 
     public function show(PurchaseOrder $order): Response
     {
+        $this->authorize('view', $order);
         $order->load(['project', 'supplier', 'requester', 'approver', 'items']);
 
         return Inertia::render('Purchasing/Orders/Show', [
@@ -61,6 +62,7 @@ class PurchaseOrderController extends Controller
 
     public function create(Request $request): Response
     {
+        $this->authorize('create', PurchaseOrder::class);
         $projects = Project::where('status', 'ACTIVE')->orderBy('name')->get();
         $suppliers = Supplier::orderBy('name')->get();
         $materials = Material::orderBy('name')->get();
@@ -87,6 +89,7 @@ class PurchaseOrderController extends Controller
 
     public function store(StorePurchaseOrderRequest $request): RedirectResponse
     {
+        $this->authorize('create', PurchaseOrder::class);
         $po = $this->service->create($request->validated(), \Illuminate\Support\Facades\Auth::id());
 
         if (! $po) {
@@ -100,6 +103,7 @@ class PurchaseOrderController extends Controller
 
     public function approve(PurchaseOrder $order): RedirectResponse
     {
+        $this->authorize('update', $order);
         $this->service->approve($order, \Illuminate\Support\Facades\Auth::id());
 
         return redirect()->back()->with('success', 'Purchase order approved successfully.');
@@ -107,6 +111,7 @@ class PurchaseOrderController extends Controller
 
     public function decline(Request $request, PurchaseOrder $order): RedirectResponse
     {
+        $this->authorize('update', $order);
         $this->service->decline($order, $request->input('remarks'));
 
         return redirect()->back()->with('success', 'Purchase order declined.');
@@ -114,6 +119,7 @@ class PurchaseOrderController extends Controller
 
     public function cancel(Request $request, PurchaseOrder $order): RedirectResponse
     {
+        $this->authorize('update', $order);
         $request->validate([
             'remarks' => 'required|string|max:500',
         ]);
@@ -125,6 +131,7 @@ class PurchaseOrderController extends Controller
 
     public function print(PurchaseOrder $order)
     {
+        $this->authorize('view', $order);
         // Delegate PDF generation to the Service layer
         $pdf = $this->service->generatePdf($order);
 

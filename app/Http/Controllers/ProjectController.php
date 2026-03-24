@@ -74,6 +74,7 @@ class ProjectController extends Controller
 
     public function store(StoreProjectRequest $request)
     {
+        $this->authorize('create', Project::class);
         $this->service->create($request->validated());
 
         return redirect()->route('projects.index')->with('success', 'Project created successfully.');
@@ -81,6 +82,7 @@ class ProjectController extends Controller
 
     public function update(UpdateProjectRequest $request, Project $project)
     {
+        $this->authorize('update', $project);
         $this->service->update($project, $request->validated());
 
         return redirect()->route('projects.index')->with('success', 'Project updated successfully.');
@@ -88,6 +90,7 @@ class ProjectController extends Controller
 
     public function destroy(Project $project)
     {
+        $this->authorize('delete', $project);
         $this->service->delete($project);
 
         return redirect()->route('projects.index')->with('success', 'Project deleted successfully.');
