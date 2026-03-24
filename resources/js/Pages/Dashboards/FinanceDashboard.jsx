@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { Card } from '@/Components/UI/Card';
+import { WelcomeBanner } from '@/Components/UI/WelcomeBanner';
 import { FileText, PhilippinePeso, TrendingUp, PieChart, CreditCard } from 'lucide-react';
 
 export default function FinanceDashboard({ stats }) {
@@ -8,15 +9,11 @@ export default function FinanceDashboard({ stats }) {
         <AuthenticatedLayout>
             <Head title="Finance Dashboard" />
             <div className="space-y-6">
-                {/* Welcome Banner */}
-                <div className="rounded-3xl bg-gradient-to-br from-emerald-600 to-teal-700 p-6 text-white relative overflow-hidden">
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.15),_transparent_60%)]" />
-                    <div className="relative z-10">
-                        <p className="text-emerald-100 text-xs font-semibold uppercase tracking-widest mb-1">Finance & Accounting</p>
-                        <h2 className="text-2xl font-bold mb-1">Finance Overview 💰</h2>
-                        <p className="text-emerald-100 text-sm">You have <span className="font-bold text-white">{stats?.pendingInvoices || 0} invoices</span> and <span className="font-bold text-white">{stats?.pendingDisbursements || 0} disbursements</span> to process.</p>
-                    </div>
-                </div>
+                <WelcomeBanner 
+                    stats={{
+                        message: `You have ${stats?.pendingInvoices || 0} invoices and ${stats?.pendingDisbursements || 0} disbursements to process.`
+                    }} 
+                />
 
                 {/* Stat Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

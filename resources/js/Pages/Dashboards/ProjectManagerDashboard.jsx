@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import { Card } from '@/Components/UI/Card';
+import { WelcomeBanner } from '@/Components/UI/WelcomeBanner';
 import {
     FileText, ShoppingCart, Clock, Package, TrendingUp, CheckCircle, BarChart3, Activity
 } from 'lucide-react';
@@ -11,36 +12,11 @@ export default function ProjectManagerDashboard({ stats }) {
         <AuthenticatedLayout>
             <Head title="Project Manager Dashboard" />
             <div className="space-y-4 max-w-7xl mx-auto">
-                {/* Modern Welcome Banner */}
-                <div className="rounded-3xl bg-zinc-900 dark:bg-zinc-950 p-5 text-white relative overflow-hidden shadow-2xl border border-zinc-800/50">
-                    <div className="absolute top-0 right-0 p-8 opacity-30 pointer-events-none">
-                        <div className="w-64 h-64 bg-blue-500/30 rounded-full blur-3xl absolute -top-10 -right-10"></div>
-                        <div className="w-64 h-64 bg-purple-500/20 rounded-full blur-3xl absolute top-20 right-20"></div>
-                    </div>
-
-                    <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
-                        <div>
-                            <div className="flex items-center gap-3 mb-2">
-                                <div className="p-2 bg-blue-500/20 rounded-xl border border-blue-500/30 backdrop-blur-md">
-                                    <Activity className="text-blue-400" size={20} />
-                                </div>
-                                <div>
-                                    <h1 className="text-xl font-bold tracking-tight text-white mb-0.5">Good day, Manager! 👋</h1>
-                                    <p className="text-zinc-400 text-xs font-medium">Project Overview & Approvals</p>
-                                </div>
-                            </div>
-                            <p className="text-zinc-300 text-sm max-w-xl leading-relaxed">
-                                You have <span className="font-semibold text-orange-400">{stats?.pendingMRs || 0} pending</span> material requests awaiting your review.
-                            </p>
-                        </div>
-
-                        <div className="flex gap-3">
-                            <Link href="/purchasing/approvals" className="px-5 py-2.5 bg-white text-zinc-900 font-semibold rounded-xl hover:bg-zinc-100 transition-colors shadow-sm text-sm">
-                                Review Requests
-                            </Link>
-                        </div>
-                    </div>
-                </div>
+                <WelcomeBanner 
+                    stats={{
+                        message: `You have ${stats?.pendingMRs || 0} pending material requests awaiting your review.`
+                    }} 
+                />
 
                 {/* Primary Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

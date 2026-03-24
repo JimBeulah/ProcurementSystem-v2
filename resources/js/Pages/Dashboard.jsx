@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage } from '@inertiajs/react';
 import { Card } from '@/Components/UI/Card';
+import { WelcomeBanner } from '@/Components/UI/WelcomeBanner';
 import { StatCard } from '@/Components/UI/StatCard';
 import { BudgetRow } from '@/Components/UI/BudgetRow';
 import {
@@ -15,6 +16,7 @@ export default function Dashboard() {
             <Head title="Dashboard" />
 
             <div className="space-y-6">
+                <WelcomeBanner />
 
                 {/* Stat Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

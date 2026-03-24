@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import { Card } from '@/Components/UI/Card';
+import { WelcomeBanner } from '@/Components/UI/WelcomeBanner';
 import {
     Package, UserCog, ShoppingCart, AlertCircle, ClipboardList, CheckCircle, TrendingUp, ShieldCheck, Database
 } from 'lucide-react';
@@ -12,28 +13,11 @@ export default function AdminDashboard({ stats }) {
         <AuthenticatedLayout>
             <Head title="Admin Dashboard" />
             <div className="space-y-4 max-w-7xl mx-auto">
-                {/* Welcome Banner */}
-                <div className="rounded-3xl bg-zinc-900 dark:bg-zinc-950 p-5 text-white relative overflow-hidden shadow-2xl border border-zinc-800/50">
-                    <div className="absolute top-0 right-0 p-8 opacity-30 pointer-events-none">
-                        <div className="w-64 h-64 bg-indigo-500/30 rounded-full blur-3xl absolute -top-10 -right-10"></div>
-                        <div className="w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl absolute top-20 right-20"></div>
-                    </div>
-
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2 bg-indigo-500/20 rounded-xl border border-indigo-500/30 backdrop-blur-md">
-                                <ShieldCheck className="text-indigo-400" size={20} />
-                            </div>
-                            <div>
-                                <h1 className="text-xl font-bold tracking-tight text-white mb-0.5">System Administrator</h1>
-                                <p className="text-zinc-400 text-xs font-medium">Control Panel & Overview</p>
-                            </div>
-                        </div>
-                        <p className="text-zinc-300 text-sm max-w-xl leading-relaxed">
-                            Good metrics today! You have <span className="font-semibold text-emerald-400">{stats?.pendingPOs || 0} pending orders</span> and <span className={`font-semibold ${stats?.alerts > 0 ? 'text-red-400' : 'text-emerald-400'}`}>{stats?.alerts || 0} system alerts</span> requiring attention.
-                        </p>
-                    </div>
-                </div>
+                <WelcomeBanner 
+                    stats={{
+                        message: `Good metrics today! You have ${stats?.pendingPOs || 0} pending orders and ${stats?.alerts || 0} system alerts requiring attention.`
+                    }} 
+                />
 
                 {/* Primary Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { Card } from '@/Components/UI/Card';
+import { WelcomeBanner } from '@/Components/UI/WelcomeBanner';
 import {
     ShoppingCart, FileText, Clock, CheckCircle, TrendingUp, Truck
 } from 'lucide-react';
@@ -10,15 +11,11 @@ export default function ProcurementOfficerDashboard({ stats }) {
         <AuthenticatedLayout>
             <Head title="Procurement Dashboard" />
             <div className="space-y-6">
-                {/* Welcome Banner */}
-                <div className="rounded-3xl bg-gradient-to-br from-indigo-600 to-blue-700 p-6 text-white relative overflow-hidden">
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.15),_transparent_60%)]" />
-                    <div className="relative z-10">
-                        <p className="text-indigo-100 text-xs font-semibold uppercase tracking-widest mb-1">Procurement Hub</p>
-                        <h2 className="text-2xl font-bold mb-1">Ready to Procure! 📦</h2>
-                        <p className="text-indigo-100 text-sm">You have <span className="font-bold text-white">{stats?.pendingPRs || 0} purchase requests</span> to process.</p>
-                    </div>
-                </div>
+                <WelcomeBanner 
+                    stats={{
+                        message: `You have ${stats?.pendingPRs || 0} purchase requests to process.`
+                    }} 
+                />
 
                 {/* Stat Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -1,6 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import { Card } from '@/Components/UI/Card';
+import { WelcomeBanner } from '@/Components/UI/WelcomeBanner';
 import { Briefcase, FileText, Truck, TrendingUp, Package, ChevronRight } from 'lucide-react';
 
 export default function SiteEngineerDashboard({ stats }) {
@@ -9,15 +10,11 @@ export default function SiteEngineerDashboard({ stats }) {
         <AuthenticatedLayout>
             <Head title="Site Engineer Dashboard" />
             <div className="space-y-6">
-                {/* Welcome Banner */}
-                <div className="rounded-3xl bg-gradient-to-br from-amber-500 to-orange-600 p-6 text-white relative overflow-hidden">
-                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.15),_transparent_60%)]" />
-                    <div className="relative z-10">
-                        <p className="text-amber-100 text-xs font-semibold uppercase tracking-widest mb-1">Field Operations</p>
-                        <h2 className="text-2xl font-bold mb-1">Site Overview 🏗️</h2>
-                        <p className="text-amber-100 text-sm">You have <span className="font-bold text-white">{stats?.pendingMRs || 0} material requests</span> pending and <span className="font-bold text-white">{stats?.pendingSiteReleases || 0} releases</span> to confirm.</p>
-                    </div>
-                </div>
+                <WelcomeBanner 
+                    stats={{
+                        message: `You have ${stats?.pendingMRs || 0} material requests pending and ${stats?.pendingSiteReleases || 0} releases to confirm.`
+                    }} 
+                />
 
                 {/* Stat Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
