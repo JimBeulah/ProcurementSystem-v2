@@ -3,7 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, usePage, Link } from '@inertiajs/react';
 import { RotateCcw, Plus, X, CheckCircle, Clock, Inbox, Briefcase, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
-import Combobox from '@/Components/ui/Combobox';
+import Combobox from '@/Components/UI/Combobox.jsx';
 
 const STATUS_BADGE = {
     PENDING: { cls: 'bg-amber-500/10 text-amber-600 border-amber-500/20', label: 'Pending Arrival' },
@@ -17,7 +17,7 @@ export default function ProjectMaterialReturns() {
     return (
         <AuthenticatedLayout>
             <Head title={`Returns: ${project.name}`} />
-            
+
             <div className="max-w-7xl mx-auto space-y-6">
                 {/* 1. Page Header */}
                 <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -42,7 +42,7 @@ export default function ProjectMaterialReturns() {
 
                 {/* Returns Content Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                    
+
                     {/* Left Column (Main Table) */}
                     <div className="lg:col-span-2 space-y-6">
                         <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
@@ -54,7 +54,7 @@ export default function ProjectMaterialReturns() {
                                     <p className="text-xs text-muted-foreground mt-0.5">Leftover materials returned from this site to the warehouse</p>
                                 </div>
                             </div>
-                            
+
                             <table className="w-full text-sm text-left">
                                 <thead className="bg-muted/50 text-muted-foreground uppercase text-[10px] font-bold tracking-wider border-b border-border">
                                     <tr>
@@ -119,7 +119,7 @@ export default function ProjectMaterialReturns() {
                                     <p className="text-sm text-muted-foreground mb-6">
                                         Finished with a phase? Declare excess materials here to return them to the central warehouse.
                                     </p>
-                                    
+
                                     {!showForm ? (
                                         <button
                                             onClick={() => setShowForm(true)}
@@ -144,11 +144,11 @@ export default function ProjectMaterialReturns() {
 }
 
 function ReturnForm({ projectId, inventory, onClose }) {
-    const [form, setForm] = useState({ 
-        project_id: projectId, 
-        inventory_item_id: '', 
-        quantity: '', 
-        remarks: '' 
+    const [form, setForm] = useState({
+        project_id: projectId,
+        inventory_item_id: '',
+        quantity: '',
+        remarks: ''
     });
     const [submitting, setSubmitting] = useState(false);
 

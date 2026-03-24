@@ -3,7 +3,7 @@ import { Link, usePage, router } from '@inertiajs/react';
 import { Bell, Search, Menu, LogOut, ChevronDown, Settings, ChevronRight, LayoutDashboard, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from '@/Components/UI/ThemeToggle';
-import GlobalSearch from '@/Components/ui/GlobalSearch';
+import GlobalSearch from '@/Components/UI/GlobalSearch';
 
 export default function Header({ user, onMenuClick }) {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
