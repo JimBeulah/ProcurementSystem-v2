@@ -30,7 +30,7 @@ class LoginRequest extends FormRequest
         $this->ensureIsNotRateLimited();
 
         // Check if user exists and is active before attempting auth
-        $user = User::where('username', $this->string('username'))->first();
+        $user = User::where('username', (string) $this->input('username'))->first();
 
         if ($user && ! $user->is_active) {
             RateLimiter::hit($this->throttleKey());
