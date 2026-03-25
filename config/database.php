@@ -96,6 +96,9 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            'options' => extension_loaded('pdo_pgsql') && env('DB_NEON_ENDPOINT')
+                ? [PDO::PGSQL_ATTR_OPTIONS => 'endpoint=' . env('DB_NEON_ENDPOINT')]
+                : [],
         ],
 
         'sqlsrv' => [
