@@ -96,9 +96,13 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'require'),
-            'options' => (defined('PDO::PGSQL_ATTR_OPTIONS') && (env('DB_NEON_ENDPOINT') || env('DB_ENDPOINT_ID')))
-                ? [PDO::PGSQL_ATTR_OPTIONS => 'endpoint=' . (env('DB_NEON_ENDPOINT') ?: env('DB_ENDPOINT_ID'))]
-                : [],
+            'options' => array_filter([
+                (defined('PDO::PGSQL_ATTR_OPTIONS') ? PDO::PGSQL_ATTR_OPTIONS : 1000) =>
+                    env('DB_NEON_ENDPOINT') ?: env('DB_ENDPOINT_ID') ?:
+                    (($h = parse_url(env('DATABASE_URL', env('DB_URL', '')), PHP_URL_HOST)) && str_starts_with((string) $h, 'ep-')
+                        ? preg_replace('/-pooler$/', '', (string) strtok((string) $h, '.'))
+                        : null),
+            ]),
         ],
 
         'sqlsrv' => [
