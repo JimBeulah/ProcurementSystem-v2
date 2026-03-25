@@ -18,6 +18,11 @@ return new class extends Migration
             $table->string('unit');
             $table->text('purpose')->nullable();
             $table->timestamp('release_date')->useCurrent();
+            $table->enum('status', ['IN_TRANSIT', 'RECEIVED'])->default('IN_TRANSIT');
+            $table->foreignId('received_by_id')->nullable()->constrained('users');
+            $table->timestamp('received_date')->nullable();
+            $table->decimal('quantity_received', 10, 2)->nullable();
+            $table->text('receipt_remarks')->nullable();
             $table->timestamps();
         });
     }

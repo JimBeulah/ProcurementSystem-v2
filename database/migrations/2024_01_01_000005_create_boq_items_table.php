@@ -26,9 +26,12 @@ return new class extends Migration
             $table->foreignId('boq_item_id')->constrained('boq_items')->cascadeOnDelete();
             $table->enum('resource_type', ['MATERIAL', 'LABOR', 'EQUIPMENT']);
             $table->string('name');
+            $table->string('unit')->nullable();
             $table->decimal('quantity_factor', 10, 4);
             $table->decimal('unit_rate', 10, 2);
+            $table->decimal('altapil_unit_rate', 10, 2)->default(0);
             $table->decimal('total_component_cost', 15, 2);
+            $table->decimal('altapil_total_cost', 15, 2)->default(0);
             $table->decimal('no_of_persons', 10, 2)->nullable();
             $table->decimal('hours', 10, 2)->nullable();
             $table->timestamps();

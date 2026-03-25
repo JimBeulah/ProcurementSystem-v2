@@ -10,13 +10,14 @@ return new class extends Migration
     {
         Schema::create('supplier_invoices', function (Blueprint $table) {
             $table->id();
-            $table->string('invoice_number');
+            $table->string('invoice_number')->unique();
             $table->timestamp('invoice_date');
             $table->foreignId('supplier_id')->constrained('suppliers');
             $table->foreignId('purchase_order_id')->nullable()->constrained('purchase_orders');
             $table->foreignId('receiving_report_id')->nullable()->constrained('receiving_reports');
+            $table->foreignId('recorded_by_id')->nullable()->constrained('users')->nullOnDelete();
             $table->decimal('total_amount', 15, 2);
-            $table->string('status')->default('PENDING');
+            $table->string('status')->default('PENDING')->index();
             $table->timestamp('created_at')->useCurrent();
         });
 
@@ -25,10 +26,18 @@ return new class extends Migration
             $table->foreignId('purchase_order_id')->nullable()->constrained('purchase_orders');
             $table->foreignId('processed_by_id')->constrained('users');
             $table->decimal('amount', 15, 2);
+            $table->decimal('actual_amount', 15, 2)->nullable();
             $table->timestamp('payment_date')->useCurrent();
             $table->enum('method', ['CASH', 'CHECK', 'ONLINE']);
             $table->string('reference_number')->nullable();
-            $table->string('status')->default('RELEASED');
+            $table->string('status')->default('RELEASED')->index();
+            $table->foreignId('received_by_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->boolean('is_liquidated')->default(false);
+            $table->timestamp('liquidated_at')->nullable();
+            $table->string('receipt_number')->nullable();
+            $table->date('receipt_date')->nullable();
+            $table->string('receipt_path')->nullable();
+            $table->text('liquidation_remarks')->nullable();
         });
 
         Schema::create('financial_transactions', function (Blueprint $table) {

@@ -14,11 +14,12 @@ return new class extends Migration
             $table->foreignId('project_id')->constrained('projects')->cascadeOnDelete();
             $table->foreignId('requester_id')->constrained('users');
             $table->foreignId('approver_id')->nullable()->constrained('users');
-            $table->enum('status', ['PENDING', 'APPROVED', 'DECLINED', 'CANCELLED'])->default('PENDING');
+            $table->enum('status', ['PENDING', 'APPROVED', 'PARTIAL', 'COMPLETED', 'DECLINED', 'CANCELLED'])->default('PENDING');
             $table->text('purpose')->nullable();
             $table->text('remarks')->nullable();
             $table->decimal('total_estimated_cost', 15, 2)->default(0);
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('purchase_request_items', function (Blueprint $table) {
@@ -26,6 +27,7 @@ return new class extends Migration
             $table->foreignId('purchase_request_id')->constrained('purchase_requests')->cascadeOnDelete();
             $table->string('item_description');
             $table->decimal('quantity', 10, 2);
+            $table->decimal('ordered_quantity', 10, 2)->default(0);
             $table->string('unit');
             $table->decimal('estimated_unit_cost', 10, 2)->default(0);
             $table->decimal('estimated_total_cost', 10, 2)->default(0);

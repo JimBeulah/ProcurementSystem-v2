@@ -12,18 +12,21 @@ return new class extends Migration
             $table->id();
             $table->timestamp('order_date')->useCurrent();
             $table->foreignId('project_id')->constrained('projects')->cascadeOnDelete();
+            $table->foreignId('purchase_request_id')->nullable()->constrained('purchase_requests')->nullOnDelete();
             $table->foreignId('supplier_id')->nullable()->constrained('suppliers');
             $table->foreignId('requester_id')->constrained('users');
             $table->foreignId('approver_id')->nullable()->constrained('users');
-            $table->enum('status', ['PENDING', 'APPROVED', 'DECLINED', 'COMPLETED', 'CANCELLED'])->default('PENDING');
+            $table->enum('status', ['PENDING', 'APPROVED', 'DECLINED', 'COMPLETED', 'CANCELLED'])->default('PENDING')->index();
             $table->text('remarks')->nullable();
             $table->decimal('total_amount', 15, 2)->default(0);
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('purchase_order_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('purchase_order_id')->constrained('purchase_orders');
+            $table->foreignId('purchase_order_id')->constrained('purchase_orders')->cascadeOnDelete();
+            $table->foreignId('purchase_request_item_id')->nullable()->constrained('purchase_request_items')->nullOnDelete();
             $table->string('material_name');
             $table->string('description')->nullable();
             $table->decimal('quantity', 10, 2);
