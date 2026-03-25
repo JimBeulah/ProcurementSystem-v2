@@ -96,11 +96,9 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'require'),
-            'options' => array_filter([
-                PDO::PGSQL_ATTR_OPTIONS => (env('DB_NEON_ENDPOINT') || env('DB_ENDPOINT_ID'))
-                    ? 'endpoint=' . (env('DB_NEON_ENDPOINT') ?: env('DB_ENDPOINT_ID'))
-                    : null,
-            ]),
+            'options' => (defined('PDO::PGSQL_ATTR_OPTIONS') && (env('DB_NEON_ENDPOINT') || env('DB_ENDPOINT_ID')))
+                ? [PDO::PGSQL_ATTR_OPTIONS => 'endpoint=' . (env('DB_NEON_ENDPOINT') ?: env('DB_ENDPOINT_ID'))]
+                : [],
         ],
 
         'sqlsrv' => [
