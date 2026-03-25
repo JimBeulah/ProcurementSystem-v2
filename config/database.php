@@ -83,22 +83,46 @@ return [
             ]) : [],
         ],
 
-        'pgsql' => [
-            'driver' => 'pgsql',
-            'url' => env('DATABASE_URL', env('DB_URL')),
-            'host' => env('DB_HOST', '127.0.0.1'),
-            'port' => env('DB_PORT', '5432'),
-            'database' => env('DB_DATABASE', 'laravel') . (env('DB_ENDPOINT_ID') ? "' options='endpoint=" . env('DB_ENDPOINT_ID') : ''),
-            'username' => env('DB_USERNAME', 'root'),
-            'password' => env('DB_PASSWORD', ''),
-            'charset' => env('DB_CHARSET', 'utf8'),
-            'prefix' => '',
-            'prefix_indexes' => true,
-            'search_path' => 'public',
-            'sslmode' => env('DB_SSLMODE', 'require'),
-            'options' => [],
+        'pgsql' => (function () {
+            // Parse DATABASE_URL ourselves to prevent Laravel's URL parser from
+            // overwriting the database field (which breaks our Neon endpoint injection).
+            $rawUrl = env('DATABASE_URL', env('DB_URL'));
+            $parsed = $rawUrl ? parse_url($rawUrl) : [];
 
-        ],
+            $host     = $parsed['host']                        ?? env('DB_HOST', '127.0.0.1');
+            $port     = $parsed['port']                        ?? env('DB_PORT', '5432');
+            $database = isset($parsed['path']) ? ltrim($parsed['path'], '/') : env('DB_DATABASE', 'laravel');
+            $username = $parsed['user']                        ?? env('DB_USERNAME', 'root');
+            $password = $parsed['pass']                        ?? env('DB_PASSWORD', '');
+
+            // Parse sslmode from URL query string if present
+            $sslmode = env('DB_SSLMODE', 'require');
+            if (isset($parsed['query'])) {
+                parse_str($parsed['query'], $query);
+                $sslmode = $query['sslmode'] ?? $sslmode;
+            }
+
+            // Inject Neon endpoint ID using libpq key=value syntax (Workaround B)
+            $endpointId = env('DB_ENDPOINT_ID');
+            if ($endpointId) {
+                $database = $database . "' options='endpoint=" . $endpointId;
+            }
+
+            return [
+                'driver'         => 'pgsql',
+                'host'           => $host,
+                'port'           => $port,
+                'database'       => $database,
+                'username'       => $username,
+                'password'       => $password,
+                'charset'        => env('DB_CHARSET', 'utf8'),
+                'prefix'         => '',
+                'prefix_indexes' => true,
+                'search_path'    => 'public',
+                'sslmode'        => $sslmode,
+                'options'        => [],
+            ];
+        })(),
 
         'sqlsrv' => [
             'driver' => 'sqlsrv',
