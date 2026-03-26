@@ -14,8 +14,8 @@ export default function ProjectGrid({ projects, onEdit, onDelete, auth }) {
                         <div className={`p-2 rounded-lg ${project.project_type === 'BUILDING' ? 'bg-cyan-500/10 text-cyan-600' : 'bg-orange-500/10 text-orange-600'}`}><Briefcase size={20} /></div>
                         {(onEdit || onDelete) && (
                             <div className="flex items-center gap-1 relative z-20">
-                                {onEdit && <button onClick={(e) => onEdit(project, e)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-cyan-600 rounded"><Edit2 size={12} /></button>}
-                                {onDelete && <button onClick={(e) => onDelete(project, e)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-red-500 rounded"><Trash2 size={12} /></button>}
+                                {onEdit && <button onClick={(e) => onEdit(project, e)} className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-cyan-600 rounded active:scale-95" aria-label="Edit project"><Edit2 size={14} /></button>}
+                                {onDelete && <button onClick={(e) => onDelete(project, e)} className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-red-500 rounded active:scale-95" aria-label="Delete project"><Trash2 size={14} /></button>}
                             </div>
                         )}
                     </div>

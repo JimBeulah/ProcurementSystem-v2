@@ -61,10 +61,10 @@ export default function AdminDashboard({ stats }) {
                             <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Budget utilization versus actual spend and generated profit/savings.</p>
                         </div>
 
-                        <div className="h-[280px] w-full mt-2">
+                        <div className="h-[220px] md:h-[280px] w-full mt-2">
                             {stats?.spendAnalysis?.length > 0 ? (
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <ComposedChart data={stats.spendAnalysis} margin={{ top: 20, right: 20, bottom: 0, left: -20 }}>
+                                    <ComposedChart data={stats.spendAnalysis} margin={{ top: 20, right: 20, bottom: 0, left: 10 }}>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e4e4e7" className="dark:stroke-zinc-800" />
                                         <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#71717a', fontSize: 12 }} dy={10} />
                                         <YAxis
@@ -176,8 +176,8 @@ function ModernStatCard({ title, value, icon, trend, accentColor }) {
 
     return (
         <Card className={`relative overflow-hidden group bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-zinc-200/50 dark:border-zinc-800/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl p-4`}>
-            {/* Background Glow Effect */}
-            <div className={`absolute -right-10 -top-10 w-32 h-32 bg-gradient-to-br ${theme.split(' ')[0]} ${theme.split(' ')[1]} rounded-full blur-3xl opacity-40 group-hover:opacity-60 transition-opacity duration-500 pointer-events-none`} />
+            {/* Background Glow Effect — hidden on mobile to reduce GPU load */}
+            <div className={`hidden md:block absolute -right-10 -top-10 w-32 h-32 bg-gradient-to-br ${theme.split(' ')[0]} ${theme.split(' ')[1]} rounded-full blur-3xl opacity-40 group-hover:opacity-60 transition-opacity duration-500 pointer-events-none`} />
 
             <div className="relative z-10">
                 <div className="flex justify-between items-start mb-3">
@@ -210,7 +210,8 @@ function ModernQuickLink({ href, icon, label, brand }) {
     return (
         <Link
             href={href}
-            className={`group flex items-center gap-3 p-2.5 rounded-xl border border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-800/30 transition-all duration-200 ${brands[brand]}`}
+            aria-label={label}
+            className={`group flex items-center gap-3 p-3.5 min-h-[48px] rounded-xl border border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-800/30 transition-all duration-200 active:scale-95 ${brands[brand]}`}
         >
             <div className="text-zinc-400 dark:text-zinc-500 transition-colors duration-200">
                 {icon}

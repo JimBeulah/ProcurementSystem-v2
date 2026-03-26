@@ -50,7 +50,14 @@ export default function AuthenticatedLayout({ children }) {
             <motion.div
                 layout
                 initial={false}
-                animate={{ marginLeft: isCollapsed ? "5rem" : "14rem" }}
+                animate={{
+                    marginLeft:
+                        typeof window !== 'undefined' && window.innerWidth < 768
+                            ? '0rem'
+                            : isCollapsed
+                            ? '5rem'
+                            : '14rem',
+                }}
                 transition={SPRING_TRANSITION}
                 className="flex-1 flex flex-col h-screen overflow-hidden"
             >
@@ -66,8 +73,8 @@ export default function AuthenticatedLayout({ children }) {
                     {/* Page Content */}
                     <div className="pt-2 pb-8 px-2 md:pt-4 md:pb-8 md:px-4 flex-1 w-full relative">
                         {/* Ambient glows */}
-                        <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
-                        <div className="fixed bottom-0 right-[20%] w-[400px] h-[400px] bg-purple-500/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
+                        <div className="hidden md:block fixed top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
+                        <div className="hidden md:block fixed bottom-0 right-[20%] w-[400px] h-[400px] bg-purple-500/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
 
                         <motion.div
                             key={url}

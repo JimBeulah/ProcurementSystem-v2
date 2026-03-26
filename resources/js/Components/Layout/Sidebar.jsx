@@ -132,7 +132,7 @@ export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleColl
                         </motion.button>
 
                         {/* Mobile close */}
-                        <button onClick={onClose} className="md:hidden p-1 text-muted-foreground hover:text-foreground absolute right-4">
+                        <button onClick={onClose} className="md:hidden p-2.5 text-muted-foreground hover:text-foreground absolute right-3 rounded-lg hover:bg-muted/20 transition-colors" aria-label="Close menu">
                             <X size={20} />
                         </button>
                     </div>

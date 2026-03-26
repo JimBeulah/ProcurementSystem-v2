@@ -34,7 +34,7 @@ export function WelcomeBanner({ stats = {} }) {
 
     return (
         <div className="flex flex-col gap-1 py-2 mb-4">
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                     Dashboard
                 </h1>

@@ -127,7 +127,7 @@ export default function ProjectsIndex() {
 
                 {/* Create/Edit Modal */}
                 <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingProject(null); }} title={editingProject ? "Edit Project" : "Create New Project"}>
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-4 w-full">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="md:col-span-2">
                                 <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Project Name</label>
@@ -141,7 +141,7 @@ export default function ProjectsIndex() {
                                 <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Site Engineer (Optional)</label>
                                 <Select value={formData.site_engineer_id} onChange={val => setFormData({ ...formData, site_engineer_id: val })} options={(siteEngineers || []).map(u => ({ value: u.id.toString(), label: u.name }))} placeholder="Unassigned" icon={UserCog} />
                             </div>
-                            <div className="md:col-span-2 grid grid-cols-2 gap-4">
+                            <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Project Type</label>
                                     <Select value={formData.project_type} onChange={val => setFormData({ ...formData, project_type: val })} options={[{ value: "BUILDING", label: "BUILDING" }, { value: "INFRASTRUCTURE", label: "INFRASTRUCTURE" }, { value: "MAINTENANCE", label: "MAINTENANCE" }]} icon={Layers} />
@@ -245,9 +245,9 @@ export default function ProjectsIndex() {
                                 </div>
                             )}
                         </div>
-                        <div className="flex justify-end gap-3 pt-6 border-t border-slate-200 dark:border-slate-700">
-                            <button type="button" onClick={() => { setShowModal(false); setEditingProject(null); }} className="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors uppercase tracking-widest">Cancel</button>
-                            <button type="submit" disabled={submitting} className="bg-cyan-600 px-6 py-2.5 rounded-lg text-white font-black text-xs uppercase tracking-widest hover:bg-cyan-500 shadow-lg shadow-cyan-600/20 transition-all active:scale-95 disabled:opacity-50">
+                        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-6 border-t border-slate-200 dark:border-slate-700">
+                            <button type="button" onClick={() => { setShowModal(false); setEditingProject(null); }} className="min-h-[44px] px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors uppercase tracking-widest rounded-lg active:scale-95">Cancel</button>
+                            <button type="submit" disabled={submitting} className="min-h-[44px] bg-cyan-600 px-6 py-2.5 rounded-lg text-white font-black text-xs uppercase tracking-widest hover:bg-cyan-500 shadow-lg shadow-cyan-600/20 transition-all active:scale-95 disabled:opacity-50">
                                 {editingProject ? 'Apply Changes' : 'Establish Project'}
                             </button>
                         </div>
@@ -261,9 +261,9 @@ export default function ProjectsIndex() {
                             <p className="text-sm text-red-500 font-bold block mb-2">DELETE PROJECT: <span className="uppercase text-slate-900 dark:text-white">{projectToDelete?.name}</span></p>
                             <p className="text-xs text-red-400/80 uppercase font-black tracking-wide">Warning: This action is irreversible. All associated BOQ items, cost data, and documents will be permanently removed.</p>
                         </div>
-                        <div className="flex justify-end gap-3">
-                            <button onClick={() => { setShowDeleteModal(false); setProjectToDelete(null); }} className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors uppercase tracking-widest">Cancel</button>
-                            <button onClick={confirmDelete} className="bg-red-600 px-6 py-2 rounded-lg text-white font-black text-xs uppercase tracking-widest hover:bg-red-500 shadow-lg shadow-red-600/20 transition-all">Confirm Delete</button>
+                        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                            <button onClick={() => { setShowDeleteModal(false); setProjectToDelete(null); }} className="min-h-[44px] px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors uppercase tracking-widest rounded-lg active:scale-95">Cancel</button>
+                            <button onClick={confirmDelete} className="min-h-[44px] bg-red-600 px-6 py-2 rounded-lg text-white font-black text-xs uppercase tracking-widest hover:bg-red-500 shadow-lg shadow-red-600/20 transition-all active:scale-95">Confirm Delete</button>
                         </div>
                     </div>
                 </Modal>

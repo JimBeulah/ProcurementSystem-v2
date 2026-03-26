@@ -18,11 +18,11 @@ export default function ProjectTable({ projects, onEdit, onDelete, onCreate, aut
     }, [projects, statusFilter, typeFilter]);
 
     const leftToolbar = (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
             <select
                 value={statusFilter}
                 onChange={e => setStatusFilter(e.target.value)}
-                className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-600 dark:text-slate-300 focus:border-cyan-500 outline-none transition-all cursor-pointer font-medium h-9"
+                className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-600 dark:text-slate-300 focus:border-cyan-500 outline-none transition-all cursor-pointer font-medium min-h-[40px]"
             >
                 <option value="ALL">All Status</option>
                 <option value="ACTIVE">Active</option>
@@ -34,7 +34,7 @@ export default function ProjectTable({ projects, onEdit, onDelete, onCreate, aut
             <select
                 value={typeFilter}
                 onChange={e => setTypeFilter(e.target.value)}
-                className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-600 dark:text-slate-300 focus:border-cyan-500 outline-none transition-all cursor-pointer font-medium h-9"
+                className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-600 dark:text-slate-300 focus:border-cyan-500 outline-none transition-all cursor-pointer font-medium min-h-[40px]"
             >
                 <option value="ALL">All Types</option>
                 <option value="BUILDING">Building</option>
@@ -171,12 +171,12 @@ export default function ProjectTable({ projects, onEdit, onDelete, onCreate, aut
                     return (
                         <div className="flex items-center justify-center gap-1 w-full">
                             {onEdit && (
-                                <button onClick={(e) => onEdit(project, e)} className="p-1.5 text-slate-400 hover:text-cyan-600 hover:bg-cyan-500/10 rounded transition-colors" title="Edit">
+                                <button onClick={(e) => onEdit(project, e)} className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-400 hover:text-cyan-600 hover:bg-cyan-500/10 rounded transition-colors active:scale-95" title="Edit" aria-label="Edit project">
                                     <Edit2 size={14} />
                                 </button>
                             )}
                             {onDelete && (
-                                <button onClick={(e) => onDelete(project, e)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Delete">
+                                <button onClick={(e) => onDelete(project, e)} className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors active:scale-95" title="Delete" aria-label="Delete project">
                                     <Trash2 size={14} />
                                 </button>
                             )}
