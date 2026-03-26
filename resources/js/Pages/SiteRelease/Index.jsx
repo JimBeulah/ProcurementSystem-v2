@@ -11,6 +11,10 @@ export default function SiteReleaseIndex() {
     const releaseHistory = releases || [];
 
     const [search, setSearch] = useState('');
+    const filtered = items.filter(item => 
+        (item.material_name?.toLowerCase() || '').includes(search.toLowerCase()) ||
+        (item.project?.name?.toLowerCase() || '').includes(search.toLowerCase())
+    );
     const [releaseModal, setReleaseModal] = useState({ open: false, item: null });
     const [confirmModal, setConfirmModal] = useState({ open: false, release: null });
     const [qty, setQty] = useState('');

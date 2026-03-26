@@ -5,7 +5,7 @@ import GuestLayout from '@/Layouts/GuestLayout';
 
 const slides = [
     {
-        title: "Connect with every application.",
+        title: "Unified Access",
         description: "Everything you need in an easily customizable dashboard.",
         image: "nodes"
     },
