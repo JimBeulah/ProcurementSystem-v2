@@ -39,6 +39,7 @@ class BoqService
                 })->toArray();
 
                 $boqItem->components()->createMany($componentsData);
+                $boqItem->recalculateTotals();
             }
 
             return $boqItem;
@@ -76,6 +77,7 @@ class BoqService
                     })->toArray();
 
                     $boqItem->components()->createMany($componentsData);
+                    $boqItem->recalculateTotals();
                 }
             }
         });

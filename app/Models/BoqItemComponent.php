@@ -20,6 +20,20 @@ class BoqItemComponent extends Model
         'hours',
     ];
 
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::saved(function (BoqItemComponent $component) {
+            $component->boqItem?->recalculateTotals();
+        });
+
+        static::deleted(function (BoqItemComponent $component) {
+            $component->boqItem?->recalculateTotals();
+        });
+    }
+
     protected function casts(): array
     {
         return [

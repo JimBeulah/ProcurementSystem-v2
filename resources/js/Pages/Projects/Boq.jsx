@@ -12,7 +12,8 @@ import { useBoqCalculations } from '@/Hooks/useBoqCalculations';
 import { downloadBoqTemplate, parseBoqCsv } from '@/Utils/boqFileUtils';
 import {
     ClipboardList, Plus, RefreshCcw, Upload, FileDown, Search, Layers, 
-    Trash2, AlertTriangle, Pencil, Box, Hammer, Truck, Info, Car
+    Trash2, AlertTriangle, Pencil, Box, Hammer, Truck, Info, Car,
+    TrendingUp
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -405,7 +406,7 @@ export default function ProjectBoq() {
                 >
                     {drawerItem && (
                         <div className="space-y-6">
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-3 gap-3">
                                 <div className="p-4 rounded-xl border border-cyan-200/50 dark:border-cyan-900/30 bg-gradient-to-br from-cyan-50 to-white dark:from-cyan-950/20 dark:to-slate-900 shadow-sm relative overflow-hidden group">
                                     <div className="absolute top-0 right-0 p-3 opacity-[0.03] group-hover:opacity-10 transition-opacity"><Box size={40} /></div>
                                     <div className="text-[10px] font-bold text-cyan-600/70 dark:text-cyan-400/70 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><Box size={12} /> Material Total</div>
@@ -417,6 +418,20 @@ export default function ProjectBoq() {
                                     <div className="text-[10px] font-bold text-purple-600/70 dark:text-purple-400/70 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><Hammer size={12} /> Labor Total</div>
                                     <div className="text-xl font-black text-purple-700 dark:text-purple-400 font-mono tracking-tight tabular-nums">₱{Number(drawerItem.labor_unit_price || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
                                     <div className="text-[10px] text-slate-400 mt-1 font-medium">per unit</div>
+                                </div>
+                                <div className="p-4 rounded-xl border border-emerald-200/50 dark:border-emerald-900/30 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/20 dark:to-slate-900 shadow-sm relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 p-3 opacity-[0.03] group-hover:opacity-10 transition-opacity"><TrendingUp size={40} className="text-emerald-500" /></div>
+                                    <div className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400/70 uppercase tracking-widest mb-1.5 flex items-center gap-1.5"><TrendingUp size={12} /> Overall Profit</div>
+                                    <div className="text-xl font-black text-emerald-700 dark:text-emerald-400 font-mono tracking-tight tabular-nums">
+                                        ₱{drawerItem.components?.reduce((sum, comp) => {
+                                            const profitPerUnit = Number(comp.client_unit_rate || comp.unit_rate || 0) - Number(comp.altapil_unit_rate || 0);
+                                            const qtyFactor = comp.resource_type === 'MATERIAL' 
+                                                ? Number(comp.quantity_factor)
+                                                : ((Number(comp.no_of_persons) || 0) * (Number(comp.hours) || 0) / (Number(drawerItem?.quantity) || 1));
+                                            return sum + (profitPerUnit * qtyFactor * Number(drawerItem.quantity));
+                                        }, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                    </div>
+                                    <div className="text-[10px] text-slate-400 mt-1 font-medium">total amount</div>
                                 </div>
                             </div>
 
@@ -456,7 +471,7 @@ export default function ProjectBoq() {
                                                     </div>
                                                 )}
                                             </div>
-                                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 text-[11px]">
+                                            <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 text-[11px]">
                                                 <div className="bg-white dark:bg-slate-900/40 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
                                                     <span className="block text-slate-400 uppercase font-bold text-[9px] mb-1">Qty Factor</span>
                                                     <span className="font-mono text-slate-700 dark:text-slate-300 font-medium">
@@ -474,9 +489,19 @@ export default function ProjectBoq() {
                                                     <span className="block text-orange-500 uppercase font-bold text-[9px] mb-1">Altapil Rate</span>
                                                     <span className="font-mono text-orange-700 dark:text-orange-400 font-bold tabular-nums">₱{Number(comp.altapil_unit_rate || 0).toLocaleString()}</span>
                                                 </div>
-                                                <div className="bg-emerald-50/50 dark:bg-emerald-900/10 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-900/30">
+                                                <div className="bg-white dark:bg-slate-900/40 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
                                                     <span className="block text-emerald-600 uppercase font-bold text-[9px] mb-1">Profit/Unit</span>
-                                                    <span className="font-mono text-emerald-700 dark:text-emerald-400 font-black tabular-nums">₱{(Number(comp.client_unit_rate || comp.unit_rate || 0) - Number(comp.altapil_unit_rate || 0)).toLocaleString()}</span>
+                                                    <span className="font-mono text-emerald-700 dark:text-emerald-400 font-bold tabular-nums">₱{(Number(comp.client_unit_rate || comp.unit_rate || 0) - Number(comp.altapil_unit_rate || 0)).toLocaleString()}</span>
+                                                </div>
+                                                <div className="bg-emerald-50/50 dark:bg-emerald-900/10 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-900/30">
+                                                    <span className="block text-emerald-600 uppercase font-bold text-[9px] mb-1">Total Profit</span>
+                                                    <span className="font-mono text-emerald-700 dark:text-emerald-400 font-black tabular-nums">
+                                                        ₱{((Number(comp.client_unit_rate || comp.unit_rate || 0) - Number(comp.altapil_unit_rate || 0)) * 
+                                                          (comp.resource_type === 'MATERIAL' 
+                                                            ? Number(comp.quantity_factor)
+                                                            : ((Number(comp.no_of_persons) || 0) * (Number(comp.hours) || 0) / (Number(drawerItem?.quantity) || 1))) * 
+                                                          Number(drawerItem.quantity)).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
