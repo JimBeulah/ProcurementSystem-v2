@@ -111,7 +111,8 @@ export default function ProjectBoq() {
     const handleUpdateItem = (e) => {
         e.preventDefault();
         setLoading(true);
-        router.put(`/projects/${project.id}/boq/${editItem.id}`, editItem, {
+        const { components, ...payload } = editItem;
+        router.put(`/projects/${project.id}/boq/${editItem.id}`, payload, {
             onSuccess: () => {
                 setEditItem(null);
                 setLoading(false);
