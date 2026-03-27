@@ -53,26 +53,32 @@ class ReceivingController extends Controller
 
     public function store(StoreReceivingRequest $request): RedirectResponse
     {
-        $this->service->receive($request->validated());
+        try {
+            $this->service->receive($request->validated());
 
-        return redirect()->route('receiving.index')
-            ->with('success', 'Goods received and inventory updated successfully.');
+            return redirect()->route('receiving.index')
+                ->with('success', 'Goods received and inventory updated successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     public function autoReceive(Request $request, PurchaseOrder $purchaseOrder): RedirectResponse
     {
-        if ($purchaseOrder->status !== 'APPROVED' && $purchaseOrder->status !== 'PARTIALLY DELIVERED') {
-            return redirect()->back()->with('error', 'Only approved or partially delivered POs can be received.');
+        try {
+            if ($purchaseOrder->status !== 'APPROVED' && $purchaseOrder->status !== 'PARTIALLY DELIVERED') {
+                return redirect()->back()->with('error', 'Only approved or partially delivered POs can be received.');
+            }
+
+            $quantities = $request->input('quantities', []);
+            $rejections = $request->input('rejections', []);
+            $notes = $request->input('receipt_remarks');
+
+            $this->service->autoReceiveFullOrder($purchaseOrder, $quantities, $notes, $rejections);
+
+            return redirect()->back()->with('success', 'Delivery for PO-'.str_pad($purchaseOrder->id, 4, '0', STR_PAD_LEFT).' has been recorded.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
         }
-
-        // quantities is an optional map of { item_id: received_qty }
-        // rejections is an optional map of { item_id: boolean }
-        $quantities = $request->input('quantities', []);
-        $rejections = $request->input('rejections', []);
-        $notes = $request->input('receipt_remarks');
-
-        $this->service->autoReceiveFullOrder($purchaseOrder, $quantities, $notes, $rejections);
-
-        return redirect()->back()->with('success', 'Delivery for PO-'.str_pad($purchaseOrder->id, 4, '0', STR_PAD_LEFT).' has been recorded.');
     }
 }

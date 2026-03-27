@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
@@ -97,6 +98,16 @@ class PurchaseOrderService
      */
     public function approve(PurchaseOrder $order, int $approverId): void
     {
+        // Fix #5: Status Regression Guard
+        if ($order->status !== 'PENDING') {
+            throw new \Exception("Only PENDING orders can be approved. Current status: {$order->status}.");
+        }
+
+        // Fix #1: Four-eyes principle (PM restricted, Admin allowed)
+        if (Auth::user()->hasRole('project_manager') && $order->requester_id === $approverId) {
+            throw new \Exception('Project Managers cannot approve their own purchase orders. Please ask another manager or an admin.');
+        }
+
         $order->update([
             'status' => 'APPROVED',
             'approver_id' => $approverId,
@@ -112,6 +123,11 @@ class PurchaseOrderService
      */
     public function decline(PurchaseOrder $order, ?string $remarks = null): void
     {
+        // Fix #5: Status Regression Guard
+        if ($order->status !== 'PENDING') {
+            throw new \Exception("Only PENDING orders can be declined. Current status: {$order->status}.");
+        }
+
         $order->update([
             'status' => 'DECLINED',
             'remarks' => $remarks ?? $order->remarks,

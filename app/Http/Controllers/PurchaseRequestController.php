@@ -100,16 +100,29 @@ class PurchaseRequestController extends Controller
 
     public function approve(PurchaseRequest $purchaseRequest): RedirectResponse
     {
-        $this->service->approve($purchaseRequest);
+        try {
+            $warning = $this->service->approve($purchaseRequest);
 
-        return redirect()->back()->with('success', 'Purchase Request approved.');
+            if ($warning) {
+                return redirect()->back()
+                    ->with('success', 'Purchase Request approved.')
+                    ->with('warning', $warning);
+            }
+
+            return redirect()->back()->with('success', 'Purchase Request approved.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     public function decline(PurchaseRequest $purchaseRequest): RedirectResponse
     {
-        $this->service->decline($purchaseRequest);
-
-        return redirect()->back()->with('success', 'Purchase Request declined.');
+        try {
+            $this->service->decline($purchaseRequest);
+            return redirect()->back()->with('success', 'Purchase Request declined.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     public function destroy(PurchaseRequest $purchaseRequest): RedirectResponse

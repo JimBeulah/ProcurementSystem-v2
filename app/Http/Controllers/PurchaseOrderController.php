@@ -103,18 +103,26 @@ class PurchaseOrderController extends Controller
 
     public function approve(PurchaseOrder $order): RedirectResponse
     {
-        $this->authorize('update', $order);
-        $this->service->approve($order, \Illuminate\Support\Facades\Auth::id());
+        try {
+            $this->authorize('update', $order);
+            $this->service->approve($order, \Illuminate\Support\Facades\Auth::id());
 
-        return redirect()->back()->with('success', 'Purchase order approved successfully.');
+            return redirect()->back()->with('success', 'Purchase order approved successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     public function decline(Request $request, PurchaseOrder $order): RedirectResponse
     {
-        $this->authorize('update', $order);
-        $this->service->decline($order, $request->input('remarks'));
+        try {
+            $this->authorize('update', $order);
+            $this->service->decline($order, $request->input('remarks'));
 
-        return redirect()->back()->with('success', 'Purchase order declined.');
+            return redirect()->back()->with('success', 'Purchase order declined.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     public function cancel(Request $request, PurchaseOrder $order): RedirectResponse

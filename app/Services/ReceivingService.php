@@ -37,9 +37,27 @@ class ReceivingService
                 'status' => $itemData['status'] ?? 'ACCEPTED',
             ]);
 
-            // Only increment inventory if NOT rejected
+            // Fix #4: Uncapped Receiving Validation
             if (! $isRejected) {
                 $poItem = collect($po->items)->firstWhere('id', $itemData['id']);
+                
+                if ($poItem) {
+                    $alreadyReceived = ReceivingItem::whereHas('receivingReport', function ($q) use ($po) {
+                            $q->where('purchase_order_id', $po->id);
+                        })
+                        ->where('material_name', $poItem->material_name)
+                        ->where('status', '!=', 'REJECTED')
+                        ->sum('quantity_received');
+
+                    $remainingToReceive = (float) $poItem->quantity - (float) $alreadyReceived;
+
+                    if ((float) $itemData['quantity_received'] > $remainingToReceive) {
+                        throw new \Exception(
+                            "Cannot receive " . $itemData['quantity_received'] . " " . $poItem->unit . " of '" . $poItem->material_name . "'. " .
+                            "Only " . $remainingToReceive . " " . $poItem->unit . " remain on this PO."
+                        );
+                    }
+                }
 
                 $inventoryItem = InventoryItem::firstOrCreate(
                     [
@@ -80,7 +98,7 @@ class ReceivingService
             ], true); // skipInventory = true because they never entered stock
         }
 
-        $po->update(['status' => 'COMPLETED']);
+        $this->updatePoStatus($po);
 
         return $report;
     }
@@ -112,6 +130,25 @@ class ReceivingService
             $receivedQty = isset($quantities[$poItem->id]) && is_numeric($quantities[$poItem->id])
                 ? (float) $quantities[$poItem->id]
                 : (float) $poItem->quantity;
+
+            // Fix #4: Uncapped Receiving Validation (for custom quantities)
+            if (! $isRejected && isset($quantities[$poItem->id])) {
+                $alreadyReceived = ReceivingItem::whereHas('receivingReport', function ($q) use ($po) {
+                        $q->where('purchase_order_id', $po->id);
+                    })
+                    ->where('material_name', $poItem->material_name)
+                    ->where('status', '!=', 'REJECTED')
+                    ->sum('quantity_received');
+
+                $remainingToReceive = (float) $poItem->quantity - (float) $alreadyReceived;
+
+                if ($receivedQty > $remainingToReceive) {
+                    throw new \Exception(
+                        "Cannot receive " . $receivedQty . " " . $poItem->unit . " of '" . $poItem->material_name . "'. " .
+                        "Remaining on PO: " . $remainingToReceive
+                    );
+                }
+            }
 
             ReceivingItem::create([
                 'receiving_report_id' => $report->id,
@@ -160,8 +197,43 @@ class ReceivingService
             ], true); // skipInventory = true because they never entered stock
         }
 
-        $po->update(['status' => 'COMPLETED']);
+        $this->updatePoStatus($po);
 
         return $report;
+    }
+
+    /**
+     * Fix #3: Determine and update PO status based on total items received across all GRNs.
+     */
+    private function updatePoStatus(PurchaseOrder $po): void
+    {
+        $po->load('items');
+        $allComplete = true;
+        $anyReceived = false;
+
+        foreach ($po->items as $poItem) {
+            $totalReceived = ReceivingItem::whereHas('receivingReport', function ($q) use ($po) {
+                    $q->where('purchase_order_id', $po->id);
+                })
+                ->where('material_name', $poItem->material_name)
+                ->where('status', '!=', 'REJECTED')
+                ->sum('quantity_received');
+
+            if ((float) $totalReceived < (float) $poItem->quantity) {
+                $allComplete = false;
+            }
+            if ((float) $totalReceived > 0) {
+                $anyReceived = true;
+            }
+        }
+
+        $newStatus = 'APPROVED'; // Default
+        if ($allComplete) {
+            $newStatus = 'COMPLETED';
+        } elseif ($anyReceived) {
+            $newStatus = 'PARTIALLY DELIVERED';
+        }
+
+        $po->update(['status' => $newStatus]);
     }
 }

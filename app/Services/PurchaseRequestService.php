@@ -46,8 +46,39 @@ class PurchaseRequestService
     /**
      * Approve a purchase request.
      */
-    public function approve(PurchaseRequest $purchaseRequest): void
+    public function approve(PurchaseRequest $purchaseRequest): ?string
     {
+        // Fix #5: Status Regression Guard
+        if ($purchaseRequest->status !== 'PENDING') {
+            throw new \Exception("Only PENDING requests can be approved. Current status: {$purchaseRequest->status}.");
+        }
+
+        // Fix #1: Four-eyes principle (PM only, per user instruction)
+        if (Auth::user()->hasRole('project_manager') && $purchaseRequest->requester_id === Auth::id()) {
+            throw new \Exception('Project Managers cannot approve their own requests. Please ask another manager or an admin.');
+        }
+
+        // Fix #2: Soft Budget Warning Logic
+        $warning = null;
+        $project = $purchaseRequest->project;
+        if ($project && $project->budget > 0) {
+            $totalCommitted = \App\Models\PurchaseOrder::where('project_id', $project->id)
+                ->whereNotIn('status', ['DECLINED', 'CANCELLED'])
+                ->sum('total_amount');
+
+            $totalPending = \App\Models\PurchaseRequest::where('project_id', $project->id)
+                ->where('status', 'APPROVED')
+                ->sum('total_estimated_cost');
+
+            $remaining = (float) $project->budget - (float) $totalCommitted - (float) $totalPending;
+
+            if ($purchaseRequest->total_estimated_cost > $remaining) {
+                $overAmount = (float) $purchaseRequest->total_estimated_cost - $remaining;
+                $warning = "Budget Warning: This PR (₱" . number_format((float) $purchaseRequest->total_estimated_cost, 2) . ") " .
+                           "is ₱" . number_format($overAmount, 2) . " over the remaining budget.";
+            }
+        }
+
         $purchaseRequest->update([
             'status' => 'APPROVED',
             'approver_id' => Auth::id(),
@@ -61,6 +92,8 @@ class PurchaseRequestService
         if ($procurementOfficers->isNotEmpty()) {
             \Illuminate\Support\Facades\Notification::send($procurementOfficers, new \App\Notifications\PurchaseRequestReadyForSourcing($purchaseRequest));
         }
+
+        return $warning;
     }
 
     /**
@@ -68,6 +101,11 @@ class PurchaseRequestService
      */
     public function decline(PurchaseRequest $purchaseRequest): void
     {
+        // Fix #5: Status Regression Guard
+        if ($purchaseRequest->status !== 'PENDING') {
+            throw new \Exception("Only PENDING requests can be declined. Current status: {$purchaseRequest->status}.");
+        }
+
         $purchaseRequest->update([
             'status' => 'DECLINED',
             'approver_id' => Auth::id(),
