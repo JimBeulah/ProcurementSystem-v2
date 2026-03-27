@@ -13,7 +13,7 @@ class MaterialRequestPolicy
      */
     public function before(User $user, string $ability): ?bool
     {
-        if ($user->hasAnyRole(['admin', 'project_manager'])) {
+        if ($user->hasRole('admin')) {
             return true;
         }
 

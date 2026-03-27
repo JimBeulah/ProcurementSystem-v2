@@ -51,7 +51,7 @@ class PurchaseRequestController extends Controller
 
         $requests = $query->paginate(15)->withQueryString();
 
-        $projects = Project::orderBy('name')->get(['id', 'name']);
+        $projects = Project::where('status', 'ACTIVE')->orderBy('name')->get(['id', 'name']);
 
         return Inertia::render('Purchasing/Requests/Index', [
             'requests' => $requests,
@@ -92,6 +92,9 @@ class PurchaseRequestController extends Controller
 
     public function store(StorePurchaseRequestRequest $request): RedirectResponse
     {
+        $project = Project::findOrFail($request->project_id);
+        $this->authorize('create', [PurchaseRequest::class, $project]);
+
         $this->service->create($request->validated());
 
         return redirect()->route('purchasing.requests.index')
