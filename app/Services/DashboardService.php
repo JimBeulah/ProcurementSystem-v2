@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Project;
 use App\Models\PurchaseOrder;
 use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DashboardService
 {
@@ -14,14 +16,30 @@ class DashboardService
             ->groupBy('status')
             ->get();
 
-        $spendAnalysis = [
-            ['month' => 'Sep', 'budget' => 1200000, 'spend' => 1100000, 'profit' => 100000],
-            ['month' => 'Oct', 'budget' => 1200000, 'spend' => 1150000, 'profit' => 50000],
-            ['month' => 'Nov', 'budget' => 1200000, 'spend' => 900000, 'profit' => 300000],
-            ['month' => 'Dec', 'budget' => 1500000, 'spend' => 1600000, 'profit' => -100000],
-            ['month' => 'Jan', 'budget' => 1500000, 'spend' => 1350000, 'profit' => 150000],
-            ['month' => 'Feb', 'budget' => 1500000, 'spend' => 1200000, 'profit' => 300000],
-        ];
+        $months = collect(range(5, 0))->map(function ($i) {
+            return Carbon::now()->subMonths($i);
+        });
+
+        $spendAnalysis = $months->map(function ($date) {
+            $monthName = $date->format('M');
+            $startOfMonth = $date->copy()->startOfMonth();
+            $endOfMonth = $date->copy()->endOfMonth();
+
+            // Total budget of projects created in this month
+            $budget = Project::whereBetween('created_at', [$startOfMonth, $endOfMonth])->sum('budget') ?: 0;
+            
+            // Total spend of approved or delivered POs in this month
+            $spend = PurchaseOrder::whereIn('status', ['APPROVED', 'DELIVERED', 'PARTIALLY DELIVERED'])
+                ->whereBetween('order_date', [$startOfMonth, $endOfMonth])
+                ->sum('total_amount') ?: 0;
+
+            return [
+                'month' => $monthName,
+                'budget' => (float)$budget,
+                'spend' => (float)$spend,
+                'profit' => (float)($budget - $spend),
+            ];
+        })->toArray();
 
         return [
             'pendingPOs' => PurchaseOrder::where('status', 'PENDING')->count(),
@@ -30,7 +48,7 @@ class DashboardService
             'alerts' => PurchaseOrder::where('status', 'DECLINED')->count(),
             'totalUsers' => User::count(),
             'pendingPRs' => \App\Models\PurchaseRequest::where('status', 'PENDING')->count(),
-            'totalInvoices' => class_exists(\App\Models\Invoice::class) ? \App\Models\Invoice::count() : 0,
+            'totalInvoices' => \App\Models\SupplierInvoice::count(),
             'ordersByStatus' => $ordersByStatus,
             'spendAnalysis' => $spendAnalysis,
         ];
@@ -38,23 +56,37 @@ class DashboardService
 
     public function getProjectManagerDashboardStats(): array
     {
-        $materialRequestsOverTime = [
-            ['name' => 'Oct', 'requests' => 12],
-            ['name' => 'Nov', 'requests' => 19],
-            ['name' => 'Dec', 'requests' => 15],
-            ['name' => 'Jan', 'requests' => 22],
-            ['name' => 'Feb', 'requests' => 28],
-            ['name' => 'Mar', 'requests' => \App\Models\MaterialRequest::where('status', 'PENDING')->count()],
-        ];
+        $months = collect(range(5, 0))->map(function ($i) {
+            return Carbon::now()->subMonths($i);
+        });
 
-        $spendAnalysis = [
-            ['month' => 'Sep', 'budget' => 800000, 'spend' => 750000, 'profit' => 50000],
-            ['month' => 'Oct', 'budget' => 800000, 'spend' => 820000, 'profit' => -20000],
-            ['month' => 'Nov', 'budget' => 800000, 'spend' => 600000, 'profit' => 200000],
-            ['month' => 'Dec', 'budget' => 1000000, 'spend' => 950000, 'profit' => 50000],
-            ['month' => 'Jan', 'budget' => 1000000, 'spend' => 900000, 'profit' => 100000],
-            ['month' => 'Feb', 'budget' => 1000000, 'spend' => 780000, 'profit' => 220000],
-        ];
+        $materialRequestsOverTime = $months->map(function ($date) {
+            return [
+                'name' => $date->format('M'),
+                'requests' => \App\Models\MaterialRequest::whereBetween('created_at', [
+                    $date->copy()->startOfMonth(),
+                    $date->copy()->endOfMonth()
+                ])->count()
+            ];
+        })->toArray();
+
+        $spendAnalysis = $months->map(function ($date) {
+            $monthName = $date->format('M');
+            $startOfMonth = $date->copy()->startOfMonth();
+            $endOfMonth = $date->copy()->endOfMonth();
+
+            $budget = Project::whereBetween('created_at', [$startOfMonth, $endOfMonth])->sum('budget') ?: 0;
+            $spend = PurchaseOrder::whereIn('status', ['APPROVED', 'DELIVERED', 'PARTIALLY DELIVERED'])
+                ->whereBetween('order_date', [$startOfMonth, $endOfMonth])
+                ->sum('total_amount') ?: 0;
+
+            return [
+                'month' => $monthName,
+                'budget' => (float)$budget,
+                'spend' => (float)$spend,
+                'profit' => (float)($budget - $spend),
+            ];
+        })->toArray();
 
         return [
             'activeProjects' => Project::where('status', 'ACTIVE')->count(),
@@ -80,19 +112,19 @@ class DashboardService
     {
         return [
             'inventoryItems' => \App\Models\InventoryItem::count(),
-            'pendingReceiving' => PurchaseOrder::where('status', 'APPROVED')->count(),
+            'pendingReceiving' => PurchaseOrder::whereIn('status', ['APPROVED', 'PARTIALLY DELIVERED'])->count(),
             'siteReleases' => \App\Models\SiteRelease::count(),
-            'lowStockAlerts' => 0,
+            'lowStockAlerts' => \App\Models\InventoryItem::where('current_stock', '<=', DB::raw('minimum_stock'))->count(),
         ];
     }
 
     public function getFinanceDashboardStats(): array
     {
         return [
-            'pendingInvoices' => 0,
-            'pendingDisbursements' => 0,
-            'totalInvoicedAmount' => '0',
-            'reportsCount' => 0,
+            'pendingInvoices' => \App\Models\SupplierInvoice::where('status', 'PENDING')->count(),
+            'pendingDisbursements' => \App\Models\Disbursement::where('status', 'PENDING')->count(),
+            'totalInvoicedAmount' => (float)\App\Models\SupplierInvoice::sum('total_amount'),
+            'reportsCount' => \App\Models\FinancialTransaction::count(),
         ];
     }
 
