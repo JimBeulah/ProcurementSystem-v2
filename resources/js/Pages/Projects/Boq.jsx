@@ -314,19 +314,19 @@ export default function ProjectBoq() {
 
                 <div className="bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl border border-white/20 dark:border-slate-700/30 rounded-3xl overflow-hidden shadow-2xl shadow-black/5 flex-grow relative flex flex-col">
                     <div className="overflow-auto custom-scrollbar flex-grow">
-                        <table className="w-full text-left border-collapse">
+                        <table className="w-full text-left border-collapse table-fixed">
                             <thead className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10 shadow-sm">
                                 <tr className="border-b border-slate-200/60 dark:border-slate-700/60 text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">
-                                    <th className="p-4 w-12 text-center text-slate-400">#</th>
-                                    <th className="p-4 min-w-[300px]">Description</th>
-                                    <th className="p-4 w-20 text-center text-slate-400">Unit</th>
-                                    <th className="p-4 w-24 text-center">Qty</th>
-                                    <th className="p-4 w-32 text-right text-slate-500">Mat. Rate</th>
-                                    <th className="p-4 w-36 text-right text-cyan-600 dark:text-cyan-400">Total Material</th>
-                                    <th className="p-4 w-32 text-right text-slate-500">Lab. Rate</th>
-                                    <th className="p-4 w-36 text-right text-purple-600 dark:text-purple-400">Total Labor</th>
-                                    <th className="p-4 w-40 text-right text-emerald-600 dark:text-emerald-400 bg-emerald-50/5 dark:bg-emerald-500/10">Line Total</th>
-                                    <th className="p-4 w-16 text-center text-slate-400">Action</th>
+                                    <th className="p-3 w-10 text-center text-slate-400">#</th>
+                                    <th className="p-3">Description</th>
+                                    <th className="p-3 w-16 text-center text-slate-400">Unit</th>
+                                    <th className="p-3 w-16 text-center">Qty</th>
+                                    <th className="p-3 w-28 text-right text-slate-500">Mat. Rate</th>
+                                    <th className="p-3 w-28 text-right text-cyan-600 dark:text-cyan-400">Total Material</th>
+                                    <th className="p-3 w-28 text-right text-slate-500">Lab. Rate</th>
+                                    <th className="p-3 w-28 text-right text-purple-600 dark:text-purple-400">Total Labor</th>
+                                    <th className="p-3 w-28 text-right text-emerald-600 dark:text-emerald-400 bg-emerald-50/5 dark:bg-emerald-500/10">Line Total</th>
+                                    <th className="p-3 w-20 text-center text-slate-400">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 text-sm text-slate-700 dark:text-slate-200">
@@ -341,14 +341,14 @@ export default function ProjectBoq() {
                                             className={`group hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all duration-200 cursor-pointer ${drawerItem?.id === item.id ? 'bg-white/80 dark:bg-slate-700/30' : ''}`}
                                             onClick={() => setDrawerItem(item)}
                                         >
-                                            <td className="py-3 px-4 text-center text-slate-400 font-mono text-xs border-l-4 border-transparent group-hover:border-purple-500/50 transition-all">{idx + 1}</td>
-                                            <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white">
-                                                <div className="flex items-center gap-3">
-                                                    <button className={`p-1 rounded-md transition-all ${drawerItem?.id === item.id ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                                            <td className="py-3 px-3 text-center text-slate-400 font-mono text-xs border-l-4 border-transparent group-hover:border-purple-500/50 transition-all">{idx + 1}</td>
+                                            <td className="py-3 px-3 font-semibold text-slate-900 dark:text-white truncate">
+                                                <div className="flex items-center gap-2">
+                                                    <button className={`p-1 rounded-md transition-all shrink-0 ${drawerItem?.id === item.id ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
                                                         <Layers size={14} />
                                                     </button>
-                                                    <div>
-                                                        <div className="group-hover:text-purple-600 transition-colors">{highlightMatch(item.item_description)}</div>
+                                                    <div className="min-w-0">
+                                                        <div className="group-hover:text-purple-600 transition-colors truncate">{highlightMatch(item.item_description)}</div>
                                                         {item.is_carport && (
                                                             <span className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full inline-flex items-center gap-1 uppercase font-bold tracking-wider mt-1">
                                                                 <Car size={10} /> Carport
@@ -357,18 +357,30 @@ export default function ProjectBoq() {
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="py-3 px-4 text-center text-slate-500 text-xs font-medium uppercase bg-slate-50/50 dark:bg-slate-800/50 rounded-lg mx-2">{item.unit}</td>
-                                            <td className="py-3 px-4 text-center font-bold font-mono text-slate-800 dark:text-slate-200">{item.quantity}</td>
-                                            <td className="py-3 px-4 text-right font-mono text-slate-500 tabular-nums">₱{Number(item.material_unit_price).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                            <td className="py-3 px-4 text-right font-mono font-medium text-cyan-700 dark:text-cyan-400 tabular-nums">₱{matTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                            <td className="py-3 px-4 text-right font-mono text-slate-500 tabular-nums">₱{Number(item.labor_unit_price || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                            <td className="py-3 px-4 text-right font-mono font-medium text-purple-700 dark:text-purple-400 tabular-nums">₱{laborTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                            <td className="py-3 px-4 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 tabular-nums bg-emerald-50/5 dark:bg-emerald-500/10">₱{rowTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                            <td className="py-3 px-4 text-center" onClick={e => e.stopPropagation()}>
+                                            <td className="py-3 px-3 text-center text-slate-500 text-xs font-medium uppercase">{item.unit}</td>
+                                            <td className="py-3 px-3 text-center font-bold font-mono text-slate-800 dark:text-slate-200">{item.quantity}</td>
+                                            <td className="py-3 px-3 text-right font-mono text-slate-500 tabular-nums text-xs">₱{Number(item.material_unit_price).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                            <td className="py-3 px-3 text-right font-mono font-medium text-cyan-700 dark:text-cyan-400 tabular-nums text-xs">₱{matTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                            <td className="py-3 px-3 text-right font-mono text-slate-500 tabular-nums text-xs">₱{Number(item.labor_unit_price || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                            <td className="py-3 px-3 text-right font-mono font-medium text-purple-700 dark:text-purple-400 tabular-nums text-xs">₱{laborTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                            <td className="py-3 px-3 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 tabular-nums text-xs bg-emerald-50/5 dark:bg-emerald-500/10">₱{rowTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                            <td className="py-3 px-2 text-center" onClick={e => e.stopPropagation()}>
                                                 {!isApproved && (
-                                                    <div className="flex items-center justify-center gap-1">
-                                                        <button onClick={() => setEditItem(item)} className="p-1.5 text-slate-400 hover:text-cyan-500 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 rounded-lg transition-colors"><Pencil size={14} /></button>
-                                                        <button onClick={() => setDeleteTarget(item)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"><Trash2 size={14} /></button>
+                                                    <div className="flex items-center justify-center gap-1.5">
+                                                        <button
+                                                            onClick={() => setEditItem(item)}
+                                                            title="Edit Item"
+                                                            className="p-1.5 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-100 dark:hover:bg-cyan-800/30 hover:text-cyan-700 dark:hover:text-cyan-300 rounded-lg transition-all border border-cyan-200/50 dark:border-cyan-700/30 shadow-sm hover:shadow active:scale-95"
+                                                        >
+                                                            <Pencil size={14} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setDeleteTarget(item)}
+                                                            title="Delete Item"
+                                                            className="p-1.5 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-800/30 hover:text-red-700 dark:hover:text-red-300 rounded-lg transition-all border border-red-200/50 dark:border-red-700/30 shadow-sm hover:shadow active:scale-95"
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
                                                     </div>
                                                 )}
                                             </td>
@@ -378,12 +390,12 @@ export default function ProjectBoq() {
                             </tbody>
                             <tfoot className="bg-slate-50 dark:bg-slate-900/90 border-t border-slate-200 dark:border-slate-700 sticky bottom-0 z-10 shadow-inner backdrop-blur-sm">
                                 <tr className="text-xs font-bold text-slate-900 dark:text-white">
-                                    <td colSpan={4} className="p-4 text-right text-slate-500 uppercase tracking-widest">Grand Totals</td>
-                                    <td className="p-4 text-right text-slate-300 font-mono">---</td>
-                                    <td className="p-4 text-right font-mono text-cyan-700 dark:text-cyan-400 bg-cyan-50/30 dark:bg-cyan-900/20">{calculations.totalMaterialCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                    <td className="p-4 text-right text-slate-300 font-mono">---</td>
-                                    <td className="p-4 text-right font-mono text-purple-700 dark:text-purple-400 bg-purple-50/30 dark:bg-purple-900/20">{calculations.totalLaborCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                    <td className="p-4 text-right font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-50/30 dark:bg-emerald-900/20">{calculations.totalConstructionCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                    <td colSpan={4} className="p-3 text-right text-slate-500 uppercase tracking-widest">Grand Totals</td>
+                                    <td className="p-3 text-right text-slate-300 font-mono">---</td>
+                                    <td className="p-3 text-right font-mono text-cyan-700 dark:text-cyan-400 bg-cyan-50/30 dark:bg-cyan-900/20">{calculations.totalMaterialCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                    <td className="p-3 text-right text-slate-300 font-mono">---</td>
+                                    <td className="p-3 text-right font-mono text-purple-700 dark:text-purple-400 bg-purple-50/30 dark:bg-purple-900/20">{calculations.totalLaborCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                    <td className="p-3 text-right font-mono text-emerald-700 dark:text-emerald-400 bg-emerald-50/30 dark:bg-emerald-900/20">{calculations.totalConstructionCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                                     <td></td>
                                 </tr>
                             </tfoot>
