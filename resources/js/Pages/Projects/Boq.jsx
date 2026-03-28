@@ -6,7 +6,6 @@ import AddBoqItemWizard from '@/Components/Boq/AddBoqItemWizard';
 import BoqMetricsModal from '@/Components/Boq/BoqMetricsModal';
 import EditBoqItemModal from '@/Components/Boq/EditBoqItemModal';
 import ResourceModal from '@/Components/Boq/ResourceModal';
-import DeleteBoqItemModal from '@/Components/Boq/DeleteBoqItemModal';
 import ConfirmationModal from '@/Components/UI/ConfirmationModal';
 import { useBoqCalculations } from '@/Hooks/useBoqCalculations';
 import { downloadBoqTemplate, parseBoqCsv } from '@/Utils/boqFileUtils';
@@ -562,11 +561,14 @@ export default function ProjectBoq() {
                     units={units || []}
                 />
 
-                <DeleteBoqItemModal 
-                    isOpen={!!deleteTarget} 
-                    onClose={() => setDeleteTarget(null)} 
-                    item={deleteTarget} 
-                    onConfirm={handleDelete} 
+                <ConfirmationModal
+                    isOpen={!!deleteTarget}
+                    onClose={() => setDeleteTarget(null)}
+                    onConfirm={handleDelete}
+                    title="Delete BOQ Item"
+                    message={`Are you sure you want to delete "${deleteTarget?.item_description}"? This action is permanent and cannot be undone.`}
+                    confirmText="Delete Item"
+                    type="danger"
                 />
 
                 <EditBoqItemModal 

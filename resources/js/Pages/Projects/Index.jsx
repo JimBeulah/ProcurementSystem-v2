@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, usePage } from '@inertiajs/react';
 import { usePermissions } from '@/Hooks/usePermissions';
 import Modal from '@/Components/UI/Modal';
+import ConfirmationModal from '@/Components/UI/ConfirmationModal';
 import Select from '@/Components/UI/Select';
 import ProjectMetrics from '@/Components/Projects/ProjectMetrics';
 import ProjectTable from '@/Components/Projects/ProjectTable';
@@ -254,19 +255,16 @@ export default function ProjectsIndex() {
                     </form>
                 </Modal>
 
-                {/* Delete Modal */}
-                <Modal isOpen={showDeleteModal} onClose={() => { setShowDeleteModal(false); setProjectToDelete(null); }} title="Confirm Deletion">
-                    <div className="space-y-6">
-                        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-                            <p className="text-sm text-red-500 font-bold block mb-2">DELETE PROJECT: <span className="uppercase text-slate-900 dark:text-white">{projectToDelete?.name}</span></p>
-                            <p className="text-xs text-red-400/80 uppercase font-black tracking-wide">Warning: This action is irreversible. All associated BOQ items, cost data, and documents will be permanently removed.</p>
-                        </div>
-                        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
-                            <button onClick={() => { setShowDeleteModal(false); setProjectToDelete(null); }} className="min-h-[44px] px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors uppercase tracking-widest rounded-lg active:scale-95">Cancel</button>
-                            <button onClick={confirmDelete} className="min-h-[44px] bg-red-600 px-6 py-2 rounded-lg text-white font-black text-xs uppercase tracking-widest hover:bg-red-500 shadow-lg shadow-red-600/20 transition-all active:scale-95">Confirm Delete</button>
-                        </div>
-                    </div>
-                </Modal>
+                {/* Delete Confirmation Modal */}
+                <ConfirmationModal
+                    isOpen={showDeleteModal}
+                    onClose={() => { setShowDeleteModal(false); setProjectToDelete(null); }}
+                    onConfirm={confirmDelete}
+                    title="Confirm Deletion"
+                    message={`Are you sure you want to delete the project "${projectToDelete?.name}"? All associated BOQ items, cost data, and documents will be permanently removed.`}
+                    confirmText="Delete Project"
+                    type="danger"
+                />
             </div>
         </AuthenticatedLayout>
     );

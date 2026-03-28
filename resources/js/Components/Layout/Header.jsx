@@ -4,11 +4,13 @@ import { Bell, Search, Menu, LogOut, ChevronDown, Settings, ChevronRight, Layout
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from '@/Components/UI/ThemeToggle';
 import GlobalSearch from '@/Components/UI/GlobalSearch';
+import ConfirmationModal from '@/Components/UI/ConfirmationModal';
 
 export default function Header({ user, onMenuClick }) {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
     const { url } = usePage();
     const { auth } = usePage().props;
 
@@ -77,6 +79,11 @@ export default function Header({ user, onMenuClick }) {
 
     const handleLogout = (e) => {
         e.preventDefault();
+        setIsLogoutConfirmOpen(true);
+    };
+
+    const confirmLogout = () => {
+        setIsLogoutConfirmOpen(false);
         router.post('/logout');
     };
 
@@ -268,6 +275,16 @@ export default function Header({ user, onMenuClick }) {
             </div>
 
             <GlobalSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+
+            <ConfirmationModal
+                isOpen={isLogoutConfirmOpen}
+                onClose={() => setIsLogoutConfirmOpen(false)}
+                onConfirm={confirmLogout}
+                title="Sign Out"
+                message="Are you sure you want to sign out of your account?"
+                confirmText="Sign Out"
+                type="danger"
+            />
         </header>
     );
 }

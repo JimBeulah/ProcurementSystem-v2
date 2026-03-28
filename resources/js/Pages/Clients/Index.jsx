@@ -4,6 +4,7 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { usePermissions } from '@/Hooks/usePermissions';
 import { Card } from '@/Components/UI/Card';
 import Modal from '@/Components/UI/Modal';
+import ConfirmationModal from '@/Components/UI/ConfirmationModal';
 import { DataTable } from '@/Components/UI/DataTable';
 import Dropdown from '@/Components/Dropdown';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -315,37 +316,15 @@ export default function ClientsIndex() {
                 </Modal>
 
                 {/* Delete Confirmation Modal */}
-                <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)} title="Delete Client" maxWidth="max-w-md">
-                    <div className="space-y-4">
-                        <div className="p-4 rounded-xl bg-red-50 dark:bg-red-500/10 flex items-start gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-500/20 text-red-600 flex items-center justify-center shrink-0">
-                                <Trash2 size={18} />
-                            </div>
-                            <div>
-                                <p className="text-[13px] font-semibold text-red-700 dark:text-red-400">
-                                    Are you sure you want to delete <span className="font-bold">{clientToDelete?.name}</span>?
-                                </p>
-                                <p className="text-[12px] text-red-600/70 dark:text-red-400/70 mt-1">
-                                    This action cannot be undone. Deletion will fail if the client has linked projects.
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex gap-2.5 pt-1">
-                            <button
-                                onClick={() => setShowDeleteModal(false)}
-                                className="flex-1 py-2.5 bg-black/[0.04] dark:bg-white/[0.04] hover:bg-black/[0.06] dark:hover:bg-white/[0.08] text-foreground font-medium rounded-xl transition-all text-[13px] cursor-pointer"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleDelete}
-                                className="flex-1 py-2.5 bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-semibold rounded-xl transition-all text-[13px] shadow-sm cursor-pointer"
-                            >
-                                Delete
-                            </button>
-                        </div>
-                    </div>
-                </Modal>
+                <ConfirmationModal
+                    isOpen={showDeleteModal}
+                    onClose={() => { setShowDeleteModal(false); setClientToDelete(null); }}
+                    onConfirm={handleDelete}
+                    title="Delete Client"
+                    message={`Are you sure you want to delete the client "${clientToDelete?.name}"? This action cannot be undone and will fail if the client has linked projects.`}
+                    confirmText="Delete Client"
+                    type="danger"
+                />
             </div>
         </AuthenticatedLayout>
     );

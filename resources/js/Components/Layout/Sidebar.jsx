@@ -5,6 +5,8 @@ import { usePermissions } from '@/Hooks/usePermissions';
 import { Hexagon, X, ChevronLeft, ChevronRight, LayoutDashboard, Menu, Settings, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NAVIGATION_CONFIG } from '@/Config/Navigation';
+import ConfirmationModal from '@/Components/UI/ConfirmationModal';
+import { router } from '@inertiajs/react';
 
 export const SPRING_TRANSITION = {
     type: "spring",
@@ -19,6 +21,7 @@ export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleColl
     const { sidebar_badges = {} } = props;
     const { can, hasRole } = usePermissions();
     const [activeTooltip, setActiveTooltip] = useState(null);
+    const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
 
     const handleLinkClick = () => {
         if (typeof window !== 'undefined' && window.innerWidth < 768) onClose();
@@ -191,12 +194,9 @@ export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleColl
                         onClick={handleLinkClick}
                         onHover={setActiveTooltip}
                     />
-                    <Link
-                        href="/logout"
-                        method="post"
-                        as="button"
+                    <button
                         className="block group/item relative w-full text-left"
-                        onClick={handleLinkClick}
+                        onClick={() => setIsLogoutConfirmOpen(true)}
                         onMouseEnter={(e) => {
                             if (isCollapsed) {
                                 const rect = e.currentTarget.getBoundingClientRect();
@@ -231,9 +231,22 @@ export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleColl
                                 )}
                             </AnimatePresence>
                         </motion.div>
-                    </Link>
+                    </button>
                 </div>
             </motion.div>
+
+            <ConfirmationModal
+                isOpen={isLogoutConfirmOpen}
+                onClose={() => setIsLogoutConfirmOpen(false)}
+                onConfirm={() => {
+                    setIsLogoutConfirmOpen(false);
+                    router.post('/logout');
+                }}
+                title="Sign Out"
+                message="Are you sure you want to sign out of your account?"
+                confirmText="Sign Out"
+                type="danger"
+            />
         </>
     );
 }

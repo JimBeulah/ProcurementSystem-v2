@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { usePermissions } from '@/Hooks/usePermissions';
 import Modal from '@/Components/UI/Modal';
+import ConfirmationModal from '@/Components/UI/ConfirmationModal';
 import Drawer from '@/Components/UI/Drawer';
 import PdfPreviewModal from '@/Components/UI/PdfPreviewModal';
 import CreatePurchaseOrder from '@/Pages/Purchasing/Orders/Create';
@@ -294,23 +295,15 @@ export default function PurchaseRequestsIndex() {
                 </div>
 
                 {/* Delete Confirmation Modal */}
-                <Modal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Confirm Delete">
-                    <div className="space-y-6">
-                        <div className="flex items-start gap-4 p-4 bg-red-500/5 border border-red-500/10 rounded-xl">
-                            <div className="p-3 bg-white dark:bg-slate-800 rounded-full text-red-500 shadow-sm shrink-0"><AlertTriangle size={24} /></div>
-                            <div className="space-y-1">
-                                <h4 className="text-sm font-bold text-slate-900 dark:text-white">Delete Purchase Request?</h4>
-                                <p className="text-sm text-slate-500 dark:text-slate-400">
-                                    PR-{deleteTarget?.id.toString().padStart(5, '0')} will be permanently deleted.
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex justify-end gap-3">
-                            <button onClick={() => setDeleteTarget(null)} className="px-5 py-2.5 text-xs font-bold uppercase text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">Cancel</button>
-                            <button onClick={handleDelete} className="px-5 py-2.5 text-xs font-bold uppercase text-white bg-red-500 hover:bg-red-600 rounded-xl shadow-lg shadow-red-500/20 transition-colors flex items-center gap-2"><Trash2 size={14} /> Delete</button>
-                        </div>
-                    </div>
-                </Modal>
+                <ConfirmationModal
+                    isOpen={!!deleteTarget}
+                    onClose={() => setDeleteTarget(null)}
+                    onConfirm={handleDelete}
+                    title="Confirm Delete"
+                    message={`Are you sure you want to delete Purchase Request PR-${deleteTarget?.id.toString().padStart(5, '0')}? This action is permanent and cannot be undone.`}
+                    confirmText="Delete Request"
+                    type="danger"
+                />
 
                 {/* Create PR Modal */}
                 <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title="New Purchase Request">
