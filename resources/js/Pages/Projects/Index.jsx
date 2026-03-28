@@ -24,7 +24,7 @@ export default function ProjectsIndex() {
 
     const initialFormData = {
         name: '', client_id: '', location: '', budget: '', target_start_date: '', target_end_date: '', duration_days: '',
-        total_floor_area: '', carport_area: '', status: 'ACTIVE',
+        total_floor_area: '', carport_area: '', status: 'PLANNING',
         project_type: 'BUILDING', appropriation: '', source_of_fund: '',
         contract_id: '', project_component_id: '', net_length: '', site_engineer_id: '',
         contract_type: 'Lump Sum', payment_terms: '30 Days'
