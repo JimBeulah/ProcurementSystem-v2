@@ -101,7 +101,7 @@ export default function ProjectBoq() {
             inputPlaceholder: 'Reason for revision...',
             onConfirm: (reason) => {
                 if (reason && reason.length >= 5) {
-                    router.post(`/projects/${project.id}/boq/unlock`, { reason });
+                    router.post(`/projects/${project.id}/boq/revise`, { reason });
                 } else if (reason) {
                     toast.error('Reason must be at least 5 characters.');
                 }
@@ -224,23 +224,24 @@ export default function ProjectBoq() {
 
                 {/* Header Section */}
                 <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl p-5 rounded-3xl border border-white/20 shadow-lg shadow-black/5 shrink-0 z-20">
-                    <div>
-                        <div className="flex items-center gap-2 mb-1">
-                            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                                <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl text-white shadow-lg shadow-indigo-500/30">
-                                    <ClipboardList size={20} className="text-white" />
-                                </div>
-                                <span className="opacity-90">Bill of Quantities</span>
-                            </h1>
-                            {isApproved && (
-                                <span className="ml-2 text-[10px] bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 px-2.5 py-1 rounded-full uppercase font-bold tracking-wider flex items-center gap-1">
-                                    Approved
-                                </span>
-                            )}
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl text-white shadow-lg shadow-indigo-500/30 shrink-0">
+                            <ClipboardList size={24} className="text-white" />
                         </div>
-                        <p className="text-sm text-slate-500 font-medium ml-1">
-                            Project: <span className="text-slate-800 dark:text-slate-200 font-bold">{project.name}</span> <span className="text-slate-400 mx-1">•</span> <span className="font-mono text-slate-400">#{project.id}</span>
-                        </p>
+                        <div className="min-w-0">
+                            <div className="flex items-center gap-3 mb-0.5 flex-wrap">
+                                <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight truncate opacity-95">Bill of Quantities</h1>
+                                {isApproved && (
+                                    <span className="shrink-0 text-[10px] bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 px-2.5 py-1 rounded-full uppercase font-bold tracking-wider flex items-center gap-1.5 shadow-sm">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                        Approved
+                                    </span>
+                                )}
+                            </div>
+                            <p className="text-sm text-slate-500 font-medium truncate">
+                                Project: <span className="text-slate-800 dark:text-slate-200 font-bold">{project.name}</span> <span className="text-slate-400 mx-1">•</span> <span className="font-mono text-slate-400">#{project.id}</span>
+                            </p>
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -365,24 +366,30 @@ export default function ProjectBoq() {
                                             <td className="py-3 px-3 text-right font-mono font-medium text-purple-700 dark:text-purple-400 tabular-nums text-xs">₱{laborTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                                             <td className="py-3 px-3 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 tabular-nums text-xs bg-emerald-50/5 dark:bg-emerald-500/10">₱{rowTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                                             <td className="py-3 px-2 text-center" onClick={e => e.stopPropagation()}>
-                                                {!isApproved && (
-                                                    <div className="flex items-center justify-center gap-1.5">
-                                                        <button
-                                                            onClick={() => setEditItem(item)}
-                                                            title="Edit Item"
-                                                            className="p-1.5 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-100 dark:hover:bg-cyan-800/30 hover:text-cyan-700 dark:hover:text-cyan-300 rounded-lg transition-all border border-cyan-200/50 dark:border-cyan-700/30 shadow-sm hover:shadow active:scale-95"
-                                                        >
-                                                            <Pencil size={14} />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => setDeleteTarget(item)}
-                                                            title="Delete Item"
-                                                            className="p-1.5 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-800/30 hover:text-red-700 dark:hover:text-red-300 rounded-lg transition-all border border-red-200/50 dark:border-red-700/30 shadow-sm hover:shadow active:scale-95"
-                                                        >
-                                                            <Trash2 size={14} />
-                                                        </button>
-                                                    </div>
-                                                )}
+                                                <div className="flex items-center justify-center gap-1.5">
+                                                    <button
+                                                        onClick={() => isApproved ? toast.info('BOQ is approved and locked. Request revision to edit.') : setEditItem(item)}
+                                                        title={isApproved ? "BOQ Locked" : "Edit Item"}
+                                                        className={`p-1.5 rounded-lg transition-all border shadow-sm hover:shadow active:scale-95 ${
+                                                            isApproved 
+                                                                ? 'bg-slate-50 dark:bg-slate-900/10 text-slate-400 border-slate-200/50 dark:border-slate-800/30 cursor-default' 
+                                                                : 'bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-100 dark:hover:bg-cyan-800/30 hover:text-cyan-700 dark:hover:text-cyan-300 border-cyan-200/50 dark:border-cyan-700/30'
+                                                        }`}
+                                                    >
+                                                        <Pencil size={14} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => isApproved ? toast.info('BOQ is approved and locked. Request revision to delete.') : setDeleteTarget(item)}
+                                                        title={isApproved ? "BOQ Locked" : "Delete Item"}
+                                                        className={`p-1.5 rounded-lg transition-all border shadow-sm hover:shadow active:scale-95 ${
+                                                            isApproved 
+                                                                ? 'bg-slate-50 dark:bg-slate-900/10 text-slate-400 border-slate-200/50 dark:border-slate-800/30 cursor-default' 
+                                                                : 'bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-800/30 hover:text-red-700 dark:hover:text-red-300 border-red-200/50 dark:border-red-700/30'
+                                                        }`}
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     );
@@ -476,12 +483,30 @@ export default function ProjectBoq() {
                                                     </div>
                                                     {comp.resource_type !== 'MATERIAL' && <div className="text-[10px] text-slate-400 font-mono mt-1">{comp.no_of_persons} Persons × {comp.hours} Hours</div>}
                                                 </div>
-                                                {!isApproved && (
-                                                    <div className="flex items-center gap-1 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <button onClick={() => setResourceModal({ open: true, mode: 'edit', data: comp })} className="p-1.5 text-slate-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 hover:text-cyan-600 rounded-md transition-colors"><Pencil size={12} /></button>
-                                                        <button onClick={() => handleDeleteResource(comp)} className="p-1.5 text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 rounded-md transition-colors"><Trash2 size={12} /></button>
-                                                    </div>
-                                                )}
+                                                <div className="flex items-center gap-1 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button 
+                                                        onClick={() => isApproved ? toast.info('BOQ is approved and locked. Request revision to edit.') : setResourceModal({ open: true, mode: 'edit', data: comp })} 
+                                                        className={`p-1.5 rounded-md transition-all ${
+                                                            isApproved 
+                                                                ? 'text-slate-300 dark:text-slate-600 cursor-default' 
+                                                                : 'text-slate-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 hover:text-cyan-600'
+                                                        }`}
+                                                        title={isApproved ? "Locked" : "Edit Resource"}
+                                                    >
+                                                        <Pencil size={12} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => isApproved ? toast.info('BOQ is approved and locked. Request revision to delete.') : handleDeleteResource(comp)} 
+                                                        className={`p-1.5 rounded-md transition-all ${
+                                                            isApproved 
+                                                                ? 'text-slate-300 dark:text-slate-600 cursor-default' 
+                                                                : 'text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500'
+                                                        }`}
+                                                        title={isApproved ? "Locked" : "Delete Resource"}
+                                                    >
+                                                        <Trash2 size={12} />
+                                                    </button>
+                                                </div>
                                             </div>
                                             <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 text-[11px]">
                                                 <div className="bg-white dark:bg-slate-900/40 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
