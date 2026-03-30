@@ -10,7 +10,7 @@ class ApprovalController extends Controller
 {
     public function index()
     {
-        $pendingPos = PurchaseOrder::with(['project', 'requester'])
+        $pendingPos = PurchaseOrder::with(['project', 'requester', 'items'])
             ->where('status', 'PENDING')
             ->orderBy('created_at', 'asc')
             ->get();
