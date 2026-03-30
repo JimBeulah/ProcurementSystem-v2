@@ -11,6 +11,13 @@ class PurchaseOrder extends Model
 {
     use LogsActivity, SoftDeletes;
 
+    const STATUS_PENDING = 'PENDING';
+    const STATUS_APPROVED = 'APPROVED';
+    const STATUS_DECLINED = 'DECLINED';
+    const STATUS_COMPLETED = 'COMPLETED';
+    const STATUS_CANCELLED = 'CANCELLED';
+    const STATUS_PARTIALLY_DELIVERED = 'PARTIALLY DELIVERED';
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

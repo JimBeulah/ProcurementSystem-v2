@@ -36,7 +36,7 @@ class ReceivingController extends Controller
     public function create(Request $request): Response
     {
         $query = PurchaseOrder::with(['supplier', 'items'])
-            ->whereIn('status', ['APPROVED', 'PARTIALLY DELIVERED']);
+            ->whereIn('status', [PurchaseOrder::STATUS_APPROVED, PurchaseOrder::STATUS_PARTIALLY_DELIVERED]);
 
         if (auth()->user()->hasRole('site_engineer')) {
             $projectIds = \App\Models\Project::where('site_engineer_id', auth()->id())->pluck('id');
@@ -66,7 +66,7 @@ class ReceivingController extends Controller
     public function autoReceive(Request $request, PurchaseOrder $purchaseOrder): RedirectResponse
     {
         try {
-            if ($purchaseOrder->status !== 'APPROVED' && $purchaseOrder->status !== 'PARTIALLY DELIVERED') {
+            if ($purchaseOrder->status !== PurchaseOrder::STATUS_APPROVED && $purchaseOrder->status !== PurchaseOrder::STATUS_PARTIALLY_DELIVERED) {
                 return redirect()->back()->with('error', 'Only approved or partially delivered POs can be received.');
             }
 
