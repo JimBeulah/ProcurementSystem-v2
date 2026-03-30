@@ -1,13 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
-import { Save, Search, Plus, X, Package, AlertTriangle, CheckCircle, Warehouse } from 'lucide-react';
+import { Save, X, CheckCircle, Warehouse, TrendingUp } from 'lucide-react';
+
+// Threshold (%) above which a price variance warning is shown
+const VARIANCE_THRESHOLD = 5;
+
+function getPriceVariance(actualPrice, estimatedPrice) {
+    if (!estimatedPrice || estimatedPrice <= 0) return null;
+    return ((actualPrice - estimatedPrice) / estimatedPrice) * 100;
+}
 
 export default function CreatePurchaseOrder({ onSuccess, supplierReturn: propSupplierReturn }) {
-    const { projects, suppliers, materials, purchaseRequest, supplierReturn: pageSupplierReturn, inventoryMatches = {} } = usePage().props;
+    const { projects, suppliers, purchaseRequest, supplierReturn: pageSupplierReturn, inventoryMatches = {} } = usePage().props;
     const supplierReturn = propSupplierReturn || pageSupplierReturn;
     const hasInventoryMatches = Object.keys(inventoryMatches).length > 0;
     const [dismissedMatches, setDismissedMatches] = useState({});
-
 
     const [formData, setFormData] = useState({
         project_id: purchaseRequest?.project_id || supplierReturn?.project_id || '',
@@ -19,7 +26,7 @@ export default function CreatePurchaseOrder({ onSuccess, supplierReturn: propSup
         supplier_return_id: supplierReturn?.id || null
     });
 
-    // Auto-fill items if PR exists
+    // Auto-fill items if PR exists — also store estimated_unit_cost for variance display
     const [items, setItems] = useState(() => {
         if (purchaseRequest?.items) {
             return purchaseRequest.items
@@ -30,7 +37,8 @@ export default function CreatePurchaseOrder({ onSuccess, supplierReturn: propSup
                     description: 'From PR',
                     quantity: item.quantity - (item.ordered_quantity || 0),
                     unit: item.unit,
-                    unit_price: item.estimated_unit_cost || 0
+                    unit_price: item.estimated_unit_cost || 0,
+                    estimated_unit_cost: item.estimated_unit_cost || 0, // kept for variance display only
                 }));
         }
         if (supplierReturn?.items) {
@@ -39,7 +47,8 @@ export default function CreatePurchaseOrder({ onSuccess, supplierReturn: propSup
                 description: `Replacement for Return SR-${supplierReturn.id}`,
                 quantity: item.quantity,
                 unit: item.unit,
-                unit_price: item.unit_price || 0
+                unit_price: item.unit_price || 0,
+                estimated_unit_cost: item.unit_price || 0,
             }));
         }
         return [];
@@ -47,48 +56,31 @@ export default function CreatePurchaseOrder({ onSuccess, supplierReturn: propSup
 
     const [submitting, setSubmitting] = useState(false);
 
-    // Item Entry
-    const [searchTerm, setSearchTerm] = useState('');
-    const [showResults, setShowResults] = useState(false);
-    const searchRef = useRef(null);
-    const [newItem, setNewItem] = useState({ material_name: '', description: '', quantity: 0, unit_price: 0, unit: 'pcs' });
-
-    const filteredMaterials = searchTerm
-        ? (materials || []).filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase()) || (m.code && m.code.toLowerCase().includes(searchTerm.toLowerCase()))).slice(0, 10)
-        : [];
-
-    useEffect(() => {
-        function handler(e) {
-            if (searchRef.current && !searchRef.current.contains(e.target)) setShowResults(false);
-        }
-        document.addEventListener("mousedown", handler);
-        return () => document.removeEventListener("mousedown", handler);
-    }, []);
-
-    const handleSelectMaterial = (mat) => {
-        setNewItem({ ...newItem, material_name: mat.name, unit: mat.unit || 'pcs', description: mat.description || '' });
-        setSearchTerm(mat.name);
-        setShowResults(false);
-    };
-
-    const handleAddItem = () => {
-        if (!newItem.material_name || newItem.quantity <= 0) return;
-        setItems([...items, newItem]);
-        setNewItem({ material_name: '', description: '', quantity: 0, unit_price: 0, unit: 'pcs' });
-        setSearchTerm('');
+    // Update a single field on an existing item row
+    const handleItemChange = (idx, field, value) => {
+        setItems(prev => prev.map((item, i) => i === idx ? { ...item, [field]: value } : item));
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
         if (items.length === 0) return;
         setSubmitting(true);
-        router.post('/purchasing/orders', { ...formData, items }, {
+        // Strip estimated_unit_cost before sending — backend doesn't need it
+        const payload = items.map(({ estimated_unit_cost, ...rest }) => rest);
+        router.post('/purchasing/orders', { ...formData, items: payload }, {
             onFinish: () => setSubmitting(false),
             onSuccess: () => {
                 if (onSuccess) onSuccess();
             }
         });
     };
+
+    // Summarize items that have a price variance above the threshold
+    const overBudgetItems = items.filter(item => {
+        if (item.description === 'Sourced from Warehouse') return false;
+        const variance = getPriceVariance(parseFloat(item.unit_price), parseFloat(item.estimated_unit_cost));
+        return variance !== null && variance > VARIANCE_THRESHOLD;
+    });
 
     return (
         <div className="space-y-6">
@@ -132,6 +124,7 @@ export default function CreatePurchaseOrder({ onSuccess, supplierReturn: propSup
                                                                 ...it,
                                                                 quantity: useQty,
                                                                 unit_price: 0,
+                                                                estimated_unit_cost: 0,
                                                                 description: `Sourced from Warehouse`
                                                             });
                                                         } else {
@@ -157,6 +150,45 @@ export default function CreatePurchaseOrder({ onSuccess, supplierReturn: propSup
                                 </div>
                             );
                         })}
+                    </div>
+                )}
+
+                {/* Price Variance Warning Banner */}
+                {overBudgetItems.length > 0 && (
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-500/30 rounded-xl p-4 space-y-2">
+                        <div className="flex items-center gap-2 text-red-700 dark:text-red-400">
+                            <TrendingUp size={18} />
+                            <span className="font-bold text-sm">Price Variance Detected</span>
+                            <span className="text-xs font-normal opacity-70 ml-1">
+                                — {overBudgetItems.length} item{overBudgetItems.length > 1 ? 's are' : ' is'} above the estimated budget by more than {VARIANCE_THRESHOLD}%.
+                            </span>
+                        </div>
+                        <div className="space-y-1">
+                            {overBudgetItems.map((item, i) => {
+                                const variance = getPriceVariance(parseFloat(item.unit_price), parseFloat(item.estimated_unit_cost));
+                                const diff = parseFloat(item.unit_price) - parseFloat(item.estimated_unit_cost);
+                                return (
+                                    <div key={i} className="flex items-center justify-between bg-white dark:bg-slate-800 border border-red-200 dark:border-red-500/20 rounded-lg px-4 py-2 text-sm">
+                                        <span className="font-medium text-slate-900 dark:text-white">{item.material_name}</span>
+                                        <div className="flex items-center gap-3 text-xs">
+                                            <span className="text-slate-400">
+                                                Estimated: <span className="font-bold text-slate-600 dark:text-slate-300">₱{parseFloat(item.estimated_unit_cost).toLocaleString()}</span>
+                                            </span>
+                                            <span className="text-slate-400">→</span>
+                                            <span className="text-slate-400">
+                                                Actual: <span className="font-bold text-red-600">₱{parseFloat(item.unit_price).toLocaleString()}</span>
+                                            </span>
+                                            <span className="font-bold text-red-600 bg-red-100 dark:bg-red-500/20 px-2 py-0.5 rounded-md">
+                                                +₱{diff.toLocaleString()} (+{variance.toFixed(1)}%)
+                                            </span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <p className="text-xs text-red-600 dark:text-red-400 opacity-70 pt-1">
+                            You may still proceed. The procurement head will review pricing during PO approval.
+                        </p>
                     </div>
                 )}
 
@@ -187,42 +219,87 @@ export default function CreatePurchaseOrder({ onSuccess, supplierReturn: propSup
                 </div>
 
                 <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-xl">
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Order Items</h2>
-
-
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">Order Items</h2>
+                        {purchaseRequest && (
+                            <span className="text-xs text-slate-400 dark:text-slate-500 italic">
+                                Unit prices pre-filled from PR estimates — update with canvassed supplier prices.
+                            </span>
+                        )}
+                    </div>
 
                     <table className="w-full text-left text-sm text-slate-500">
                         <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-400 uppercase text-xs tracking-wider">
                             <tr>
                                 <th className="p-3">Material</th>
-                                <th className="p-3 text-right">Qty</th>
-                                <th className="p-3 text-right">Unit Price</th>
-                                <th className="p-3 text-right">Total</th>
+                                <th className="p-3 text-right w-24">Qty</th>
+                                <th className="p-3 text-right w-52">Unit Price (Canvassed)</th>
+                                <th className="p-3 text-right w-36">Total</th>
                                 <th className="p-3 w-10"></th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
                             {items.map((item, idx) => {
                                 const isWarehouse = item.description === 'Sourced from Warehouse';
+                                const variance = !isWarehouse
+                                    ? getPriceVariance(parseFloat(item.unit_price || 0), parseFloat(item.estimated_unit_cost || 0))
+                                    : null;
+                                const hasVariance = variance !== null && variance > VARIANCE_THRESHOLD;
+                                const hasDiscount = variance !== null && variance < -VARIANCE_THRESHOLD;
+
                                 return (
-                                    <tr key={idx} className={`hover:bg-slate-50 dark:hover:bg-slate-700/30 ${isWarehouse ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''}`}>
+                                    <tr key={idx} className={`hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors ${isWarehouse ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''} ${hasVariance ? 'bg-red-50/40 dark:bg-red-900/10' : ''}`}>
                                         <td className="p-3">
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2 flex-wrap">
                                                 <div className="text-slate-900 dark:text-white font-medium">{item.material_name}</div>
                                                 {isWarehouse && (
                                                     <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 px-2 py-0.5 rounded-md">
                                                         <Warehouse size={10} /> Internal
                                                     </span>
                                                 )}
+                                                {hasVariance && (
+                                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400 px-2 py-0.5 rounded-md">
+                                                        <TrendingUp size={10} /> +{variance.toFixed(0)}% over
+                                                    </span>
+                                                )}
+                                                {hasDiscount && (
+                                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 px-2 py-0.5 rounded-md">
+                                                        ↓ {Math.abs(variance).toFixed(0)}% under
+                                                    </span>
+                                                )}
                                             </div>
                                             <div className="text-xs text-slate-400">{item.description}</div>
                                         </td>
                                         <td className="p-3 text-right font-mono">{item.quantity}</td>
-                                        <td className="p-3 text-right font-mono text-slate-400">
-                                            {isWarehouse ? '—' : item.unit_price.toLocaleString()}
+                                        <td className="p-3 text-right">
+                                            {isWarehouse ? (
+                                                <span className="text-slate-400 font-mono">—</span>
+                                            ) : (
+                                                <div className="flex flex-col items-end gap-0.5">
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        step="0.01"
+                                                        value={item.unit_price}
+                                                        onChange={e => handleItemChange(idx, 'unit_price', parseFloat(e.target.value) || 0)}
+                                                        className={`w-36 text-right font-mono bg-slate-50 dark:bg-slate-900/50 border rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white focus:outline-none transition-colors ${
+                                                            hasVariance
+                                                                ? 'border-red-400 focus:border-red-500 bg-red-50 dark:bg-red-900/10'
+                                                                : hasDiscount
+                                                                ? 'border-emerald-400 focus:border-emerald-500'
+                                                                : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'
+                                                        }`}
+                                                    />
+                                                    {item.estimated_unit_cost > 0 && (
+                                                        <span className="text-[10px] text-slate-400">
+                                                            Est. ₱{parseFloat(item.estimated_unit_cost).toLocaleString()}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )}
                                         </td>
-                                        <td className={`p-3 text-right font-mono font-bold ${isWarehouse ? 'text-slate-400' : 'text-emerald-600'}`}>
-                                            {isWarehouse ? '—' : (item.quantity * item.unit_price).toLocaleString()}
+                                        <td className={`p-3 text-right font-mono font-bold ${isWarehouse ? 'text-slate-400' : hasVariance ? 'text-red-600' : 'text-emerald-600'}`}>
+                                            {isWarehouse ? '—' : (item.quantity * parseFloat(item.unit_price || 0)).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })}
                                         </td>
                                         <td className="p-3 text-right">
                                             <button type="button" onClick={() => setItems(items.filter((_, i) => i !== idx))} className="text-slate-400 hover:text-red-500 transition-colors">
@@ -233,14 +310,14 @@ export default function CreatePurchaseOrder({ onSuccess, supplierReturn: propSup
                                 );
                             })}
                             {items.length === 0 && (
-                                <tr><td colSpan={5} className="p-8 text-center text-slate-400 text-sm">No items added yet. Search products above to add.</td></tr>
+                                <tr><td colSpan={5} className="p-8 text-center text-slate-400 text-sm">No items added yet.</td></tr>
                             )}
                         </tbody>
                         <tfoot className="bg-slate-50 dark:bg-slate-800/80 font-bold text-slate-900 dark:text-white">
                             <tr>
                                 <td colSpan={3} className="p-3 text-right uppercase text-xs tracking-widest">Grand Total</td>
                                 <td className="p-3 text-right text-emerald-600 text-lg font-mono">
-                                    {items.filter(i => i.description !== 'Sourced from Warehouse').reduce((sum, i) => sum + (i.quantity * i.unit_price), 0).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })}
+                                    {items.filter(i => i.description !== 'Sourced from Warehouse').reduce((sum, i) => sum + (i.quantity * parseFloat(i.unit_price || 0)), 0).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })}
                                 </td>
                                 <td></td>
                             </tr>

@@ -1,11 +1,18 @@
 import React, { useState, useMemo } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage, router } from '@inertiajs/react';
-import { ShieldCheck, CheckCircle, XCircle, Clock, FileText, User, Building2, Calendar, ClipboardList } from 'lucide-react';
+import { ShieldCheck, CheckCircle, XCircle, Clock, FileText, User, Building2, Calendar, ClipboardList, TrendingUp } from 'lucide-react';
 import { usePermissions } from '@/Hooks/usePermissions';
 import ConfirmationModal from '@/Components/UI/ConfirmationModal';
 import DataTable from '@/Components/UI/DataTable';
-import Drawer from '@/Components/UI/Drawer';
+
+// Threshold (%) above which a price variance warning is shown
+const VARIANCE_THRESHOLD = 5;
+
+function getPriceVariance(actualPrice, estimatedPrice) {
+    if (!estimatedPrice || estimatedPrice <= 0) return null;
+    return ((actualPrice - estimatedPrice) / estimatedPrice) * 100;
+}
 
 export default function ApprovalsIndex() {
     const { pendingPos, pendingMrs } = usePage().props;
@@ -295,8 +302,24 @@ export default function ApprovalsIndex() {
                                                     {Number(item.quantity).toLocaleString()} <span className="text-[10px] text-slate-400 uppercase font-black tracking-tighter ml-0.5">{item.unit}</span>
                                                 </div>
                                                 {drawerType === 'po' && (
-                                                    <div className="text-[10px] text-blue-500/70 font-mono">
-                                                        @ ₱{Number(item.unit_price).toLocaleString()}
+                                                    <div className="flex flex-col items-end gap-0.5 pt-1">
+                                                        <div className={`text-[10px] font-mono font-bold ${
+                                                            getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost) > VARIANCE_THRESHOLD 
+                                                                ? 'text-red-500' 
+                                                                : 'text-blue-500/70'
+                                                        }`}>
+                                                            @ ₱{Number(item.unit_price).toLocaleString()}
+                                                        </div>
+                                                        {item.purchase_request_item?.estimated_unit_cost && (
+                                                            <div className="flex items-center gap-1.5 justify-end">
+                                                                <span className="text-[9px] text-slate-400">Est. ₱{Number(item.purchase_request_item.estimated_unit_cost).toLocaleString()}</span>
+                                                                {getPriceVariance(item.unit_price, item.purchase_request_item.estimated_unit_cost) > VARIANCE_THRESHOLD && (
+                                                                    <span className="inline-flex items-center gap-0.5 text-[8px] font-bold uppercase tracking-tighter bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400 px-1 py-0.5 rounded leading-none">
+                                                                        <TrendingUp size={8} /> +{getPriceVariance(item.unit_price, item.purchase_request_item.estimated_unit_cost).toFixed(0)}%
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
