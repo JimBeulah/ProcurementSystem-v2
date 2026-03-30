@@ -3,13 +3,10 @@
 namespace App\Notifications;
 
 use App\Models\PurchaseRequest;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class PurchaseRequestReadyForSourcing extends Notification implements ShouldQueue
+class PurchaseRequestReadyForSourcing extends Notification
 {
-    use Queueable;
 
     public $purchaseRequest;
 

@@ -2,12 +2,10 @@
 
 namespace App\Notifications;
 
-use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
 class ProjectDeadlineNotification extends Notification
 {
-    use Queueable;
 
     protected $project;
 

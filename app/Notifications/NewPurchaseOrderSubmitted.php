@@ -3,13 +3,10 @@
 namespace App\Notifications;
 
 use App\Models\PurchaseOrder;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class NewPurchaseOrderSubmitted extends Notification implements ShouldQueue
+class NewPurchaseOrderSubmitted extends Notification
 {
-    use Queueable;
 
     public $purchaseOrder;
 
