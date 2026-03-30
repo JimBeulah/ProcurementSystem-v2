@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, usePage } from '@inertiajs/react';
-import Modal from '@/Components/UI/Modal';
+import Drawer from '@/Components/UI/Drawer';
+import DataTable from '@/Components/UI/DataTable';
 import {
     Truck, Package, CheckCircle, AlertTriangle, ShoppingBag,
-    Warehouse, LayoutList, ChevronRight, Clock, Calendar
+    Warehouse, LayoutList, Clock, Calendar
 } from 'lucide-react';
-import { toast } from 'sonner';
 
 const TABS = [
     { id: 'all', label: 'All Deliveries', icon: LayoutList },
@@ -15,7 +15,7 @@ const TABS = [
 ];
 
 export default function Deliveries() {
-    const { allDeliveries = [], supplierDeliveries = [], warehouseDeliveries = [], flash } = usePage().props;
+    const { allDeliveries = [], supplierDeliveries = [], warehouseDeliveries = [] } = usePage().props;
 
     const [activeTab, setActiveTab] = useState('all');
     const [confirming, setConfirming] = useState(null);
@@ -29,8 +29,8 @@ export default function Deliveries() {
         if (item.type === 'purchase_order' && item.items?.length) {
             const init = {};
             const initRej = {};
-            item.items.forEach(i => { 
-                init[i.id] = String(i.quantity); 
+            item.items.forEach(i => {
+                init[i.id] = String(i.quantity);
                 initRej[i.id] = false;
             });
             setItemQuantities(init);
@@ -42,7 +42,7 @@ export default function Deliveries() {
         setSelectedDelivery(item);
     };
 
-    const closeModal = () => {
+    const closeDrawer = () => {
         if (confirming) return;
         setSelectedDelivery(null);
         setItemQuantities({});
@@ -79,9 +79,170 @@ export default function Deliveries() {
         });
     };
 
-    const rows = activeTab === 'all' ? allDeliveries
-        : activeTab === 'supplier' ? supplierDeliveries
-            : warehouseDeliveries;
+    const rows = useMemo(() => {
+        if (activeTab === 'all') return allDeliveries;
+        if (activeTab === 'supplier') return supplierDeliveries;
+        return warehouseDeliveries;
+    }, [activeTab, allDeliveries, supplierDeliveries, warehouseDeliveries]);
+
+    const columns = useMemo(() => {
+        const baseAction = {
+            id: 'action',
+            header: 'Action',
+            cell: ({ row }) => (
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        openDelivery(row.original);
+                    }}
+                    disabled={confirming === row.original.id}
+                    className={`
+                        shrink-0 text-white px-3 py-1.5 rounded-xl text-[10px] font-bold
+                        flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-60 shadow-sm
+                        ${row.original.type === 'purchase_order'
+                            ? 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-500/20'
+                            : 'bg-violet-600 hover:bg-violet-500 shadow-violet-500/20'
+                        }
+                    `}
+                >
+                    <CheckCircle size={12} />
+                    {confirming === row.original.id ? 'Loading…' : row.original.type === 'purchase_order' ? 'Receive' : 'Confirm'}
+                </button>
+            )
+        };
+
+        if (activeTab === 'all') {
+            return [
+                {
+                    accessorKey: 'type',
+                    header: 'Type',
+                    cell: ({ row }) => <TypeBadge type={row.original.type} />
+                },
+                {
+                    accessorKey: 'title',
+                    header: 'Reference',
+                    cell: ({ row }) => <span className="font-semibold text-zinc-900 dark:text-zinc-100">{row.original.title}</span>
+                },
+                {
+                    accessorKey: 'project_name',
+                    header: 'Project',
+                    cell: ({ row }) => <span className="text-slate-500 text-xs">{row.original.project_name}</span>
+                },
+                {
+                    id: 'info',
+                    header: 'Info',
+                    cell: ({ row }) => (
+                        <span className="text-slate-500 text-xs">
+                            {row.original.type === 'purchase_order'
+                                ? <span>{row.original.supplier} · {row.original.items?.length} item{row.original.items?.length !== 1 ? 's' : ''}</span>
+                                : <span>{row.original.material_name} · {Number(row.original.quantity).toLocaleString()} {row.original.unit}</span>
+                            }
+                        </span>
+                    )
+                },
+                {
+                    accessorKey: 'created_at',
+                    header: 'Date',
+                    cell: ({ row }) => (
+                        <span className="text-slate-400 text-xs flex items-center gap-1">
+                            <Clock size={12} /> {row.original.created_at}
+                        </span>
+                    )
+                },
+                baseAction
+            ];
+        }
+
+        if (activeTab === 'supplier') {
+            return [
+                {
+                    accessorKey: 'title',
+                    header: 'PO Reference',
+                    cell: ({ row }) => (
+                        <span className="font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                            <Package size={14} className="text-indigo-500" /> {row.original.title}
+                        </span>
+                    )
+                },
+                {
+                    accessorKey: 'supplier',
+                    header: 'Supplier',
+                    cell: ({ row }) => <span className="text-slate-600 dark:text-slate-300">{row.original.supplier}</span>
+                },
+                {
+                    accessorKey: 'project_name',
+                    header: 'Project',
+                    cell: ({ row }) => <span className="text-slate-500 text-xs">{row.original.project_name}</span>
+                },
+                {
+                    id: 'items_count',
+                    header: 'Items',
+                    cell: ({ row }) => <span className="text-slate-500 text-xs">{row.original.items?.length} item{row.original.items?.length !== 1 ? 's' : ''}</span>
+                },
+                {
+                    accessorKey: 'status',
+                    header: 'Status',
+                    cell: ({ row }) => <StatusBadge status={row.original.status} />
+                },
+                {
+                    accessorKey: 'created_at',
+                    header: 'Updated',
+                    cell: ({ row }) => (
+                        <span className="text-slate-400 text-xs flex items-center gap-1">
+                            <Calendar size={12} /> {row.original.created_at}
+                        </span>
+                    )
+                },
+                baseAction
+            ];
+        }
+
+        return [
+            {
+                accessorKey: 'title',
+                header: 'Reference',
+                cell: ({ row }) => (
+                    <span className="font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                        <Truck size={14} className="text-violet-500" /> {row.original.title}
+                    </span>
+                )
+            },
+            {
+                accessorKey: 'material_name',
+                header: 'Material',
+                cell: ({ row }) => <span className="text-slate-600 dark:text-slate-300">{row.original.material_name}</span>
+            },
+            {
+                accessorKey: 'project_name',
+                header: 'Project',
+                cell: ({ row }) => <span className="text-slate-500 text-xs">{row.original.project_name}</span>
+            },
+            {
+                accessorKey: 'issued_to',
+                header: 'Issued To',
+                cell: ({ row }) => <span className="text-slate-500 text-xs">{row.original.issued_to}</span>
+            },
+            {
+                id: 'qty',
+                header: 'Qty',
+                cell: ({ row }) => (
+                    <span className="font-mono font-bold text-violet-600 dark:text-violet-400 text-xs">
+                        {Number(row.original.quantity).toLocaleString()} <span className="font-normal text-slate-400 uppercase">{row.original.unit}</span>
+                    </span>
+                )
+            },
+            {
+                accessorKey: 'created_at',
+                header: 'Released',
+                cell: ({ row }) => (
+                    <span className="text-slate-400 text-xs flex items-center gap-1">
+                        <Clock size={12} /> {row.original.created_at}
+                    </span>
+                )
+            },
+            baseAction
+        ];
+    }, [activeTab, confirming]);
 
     return (
         <AuthenticatedLayout>
@@ -89,12 +250,12 @@ export default function Deliveries() {
 
             <div className="space-y-6">
                 {/* Page Header */}
-                <div className="rounded-3xl bg-gradient-to-br from-indigo-500 to-violet-600 p-6 text-white relative overflow-hidden">
+                <div className="rounded-3xl bg-gradient-to-br from-indigo-500 to-violet-600 p-6 text-white relative overflow-hidden shadow-xl shadow-indigo-500/20">
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.15),_transparent_60%)]" />
                     <div className="relative z-10">
                         <p className="text-indigo-100 text-xs font-semibold uppercase tracking-widest mb-1">Operations</p>
                         <h2 className="text-2xl font-bold mb-1 flex items-center gap-2">
-                            <Truck size={22} /> Pending Deliveries
+                            <Truck size={22} className="text-white" /> Pending Deliveries
                         </h2>
                         <p className="text-indigo-100 text-sm">
                             <span className="font-bold text-white">{allDeliveries.length}</span> deliveries awaiting confirmation
@@ -106,184 +267,195 @@ export default function Deliveries() {
                     </div>
                 </div>
 
-                {/* Tab Switcher */}
-                <div className="flex gap-2 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-2xl border border-white/20 dark:border-white/5 rounded-2xl p-1.5 w-fit shadow-sm">
-                    {TABS.map(({ id, label, icon: Icon }) => (
-                        <button
-                            key={id}
-                            onClick={() => setActiveTab(id)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200
-                                ${activeTab === id
-                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
-                                    : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-white/50 dark:hover:bg-zinc-800/50'
-                                }`}
-                        >
-                            <Icon size={14} />
-                            {label}
-                            {id === 'all' && allDeliveries.length > 0 && <Badge n={allDeliveries.length} />}
-                            {id === 'supplier' && supplierDeliveries.length > 0 && <Badge n={supplierDeliveries.length} />}
-                            {id === 'warehouse' && warehouseDeliveries.length > 0 && <Badge n={warehouseDeliveries.length} />}
-                        </button>
-                    ))}
-                </div>
-
-                {/* Table Card */}
-                <div className="bg-white/40 dark:bg-zinc-900/40 backdrop-blur-2xl border border-white/20 dark:border-white/5 rounded-3xl overflow-hidden shadow-sm">
-                    {rows.length === 0 ? (
-                        <EmptyState tab={activeTab} />
-                    ) : (
-                        <div className="overflow-x-auto">
-                            {activeTab === 'all' && <AllTable rows={rows} confirming={confirming} onOpen={openDelivery} />}
-                            {activeTab === 'supplier' && <SupplierTable rows={rows} confirming={confirming} onOpen={openDelivery} />}
-                            {activeTab === 'warehouse' && <WarehouseTable rows={rows} confirming={confirming} onOpen={openDelivery} />}
+                {/* Tab Switcher & Table */}
+                <div className="bg-white/40 dark:bg-zinc-900/40 backdrop-blur-2xl border border-white/20 dark:border-white/5 rounded-3xl p-6 shadow-sm">
+                    <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                        <div className="flex gap-2 bg-slate-100/50 dark:bg-zinc-800/50 rounded-2xl p-1 w-fit">
+                            {TABS.map(({ id, label, icon: Icon }) => (
+                                <button
+                                    key={id}
+                                    onClick={() => setActiveTab(id)}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300
+                                        ${activeTab === id
+                                            ? 'bg-white dark:bg-zinc-700 text-indigo-600 dark:text-indigo-400 shadow-sm ring-1 ring-black/5 dark:ring-white/5'
+                                            : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100'
+                                        }`}
+                                >
+                                    <Icon size={14} />
+                                    {label}
+                                    <Badge n={id === 'all' ? allDeliveries.length : id === 'supplier' ? supplierDeliveries.length : warehouseDeliveries.length} active={activeTab === id} />
+                                </button>
+                            ))}
                         </div>
-                    )}
+                    </div>
+
+                    <DataTable
+                        columns={columns}
+                        data={rows}
+                        onRowClick={openDelivery}
+                    />
                 </div>
             </div>
 
-            {/* Confirm Modal */}
-            <Modal
+            {/* Confirm Drawer */}
+            <Drawer
                 isOpen={!!selectedDelivery}
-                onClose={closeModal}
-                title={selectedDelivery?.type === 'purchase_order' ? 'Confirm PO Delivery' : 'Confirm Warehouse Release'}
-                maxWidth="max-w-2xl"
+                onClose={closeDrawer}
+                title={selectedDelivery?.type === 'purchase_order' ? 'Confirm Purchase Receipt' : 'Confirm Warehouse Release'}
             >
-                <div className="space-y-4">
-                    {selectedDelivery?.type === 'purchase_order' ? (
-                        <div className="space-y-4">
-                            <div className="bg-blue-50 dark:bg-blue-500/10 text-blue-800 dark:text-blue-300 p-3 rounded-xl text-xs border border-blue-200 dark:border-blue-500/20">
-                                <p className="font-semibold">Enter the actual quantity received for each item.</p>
-                                <p className="opacity-70 mt-0.5">Mark items as <strong>Rejected</strong> if they are incorrect or damaged. Rejected items will not be added to stock.</p>
-                            </div>
-
-                            {selectedDelivery.items?.length > 0 ? (
-                                <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                                    <table className="w-full text-sm">
-                                        <thead className="bg-slate-50 dark:bg-slate-800 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                                            <tr>
-                                                <th className="px-3 py-2 text-left">Material</th>
-                                                <th className="px-3 py-2 text-center w-16">Unit</th>
-                                                <th className="px-3 py-2 text-right w-20">Ordered</th>
-                                                <th className="px-3 py-2 text-right w-24">Received</th>
-                                                <th className="px-3 py-2 text-center w-20">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
-                                            {selectedDelivery.items.map(item => {
-                                                const entered = parseFloat(itemQuantities[item.id] || 0);
-                                                const ordered = parseFloat(item.quantity);
-                                                const isShort = entered < ordered && entered > 0;
-                                                const isRejected = itemRejections[item.id];
-                                                
-                                                return (
-                                                    <tr key={item.id} className={`transition-colors ${isRejected ? 'bg-rose-50/50 dark:bg-rose-950/10' : 'bg-white dark:bg-slate-900/50'}`}>
-                                                        <td className={`px-3 py-2.5 font-medium transition-all ${isRejected ? 'text-rose-500 line-through opacity-60' : 'text-slate-800 dark:text-slate-200'}`}>
-                                                            {item.material_name}
-                                                        </td>
-                                                        <td className="px-3 py-2.5 text-center text-[10px] text-slate-500 uppercase">{item.unit}</td>
-                                                        <td className="px-3 py-2.5 text-right font-mono text-slate-500 text-[10px]">{Number(item.quantity).toLocaleString()}</td>
-                                                        <td className="px-3 py-1.5 text-right">
-                                                            <input
-                                                                type="number"
-                                                                step="0.01"
-                                                                min="0"
-                                                                max={item.quantity}
-                                                                value={itemQuantities[item.id] ?? item.quantity}
-                                                                onChange={e => setItemQuantities(prev => ({ ...prev, [item.id]: e.target.value }))}
-                                                                disabled={isRejected}
-                                                                className={`w-20 text-right font-mono text-sm px-2 py-1 rounded-lg border focus:outline-none transition-colors disabled:opacity-30
-                                                                    ${isShort
-                                                                        ? 'border-amber-400 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 focus:border-amber-500'
-                                                                        : 'border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:border-blue-500'
-                                                                    }`}
-                                                            />
-                                                        </td>
-                                                        <td className="px-3 py-1.5 text-center">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => setItemRejections(prev => ({ ...prev, [item.id]: !isRejected }))}
-                                                                className={`px-2 py-1 rounded-md text-[10px] font-bold border transition-all
-                                                                    ${isRejected
-                                                                        ? 'bg-rose-600 border-rose-600 text-white'
-                                                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-500 hover:border-rose-200'
-                                                                    }`}
-                                                            >
-                                                                {isRejected ? 'REJECTED' : 'REJECT'}
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            ) : (
-                                <p className="text-slate-400 text-xs text-center py-4">No line items found.</p>
-                            )}
-
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Remarks (Optional)</label>
-                                <textarea
-                                    value={receiptRemarks}
-                                    onChange={e => setReceiptRemarks(e.target.value)}
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-blue-500 transition-all resize-none"
-                                    rows={2}
-                                    placeholder="e.g. Received in good condition"
-                                />
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            <div className="bg-violet-50 dark:bg-violet-500/10 text-violet-800 dark:text-violet-300 p-4 rounded-xl text-sm border border-violet-200 dark:border-violet-500/20">
-                                <p className="font-semibold mb-1">Confirming {selectedDelivery?.title}.</p>
-                                <p className="opacity-80 text-sm">
-                                    <span className="font-bold">{selectedDelivery?.material_name}</span> — qty{' '}
-                                    <span className="font-mono font-bold">{selectedDelivery?.quantity}</span>{' '}
-                                    {selectedDelivery?.unit} issued to{' '}
-                                    <span className="font-bold">{selectedDelivery?.issued_to}</span>.
-                                </p>
-                            </div>
-
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Quantity Actually Received *</label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        value={itemQuantities[selectedDelivery?.id] || ''}
-                                        onChange={e => setItemQuantities(prev => ({ ...prev, [selectedDelivery.id]: e.target.value }))}
-                                        max={selectedDelivery?.quantity}
-                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-violet-500 transition-all font-mono"
-                                        placeholder="0.00"
-                                    />
-                                    {Number(itemQuantities[selectedDelivery?.id]) < Number(selectedDelivery?.quantity) && Number(itemQuantities[selectedDelivery?.id]) > 0 && (
-                                        <p className="text-amber-500 text-[10px] font-bold flex items-center gap-1 mt-1">
-                                            <AlertTriangle size={12} /> Partial receipt — {(Number(selectedDelivery?.quantity) - Number(itemQuantities[selectedDelivery?.id])).toLocaleString()} {selectedDelivery?.unit} short
-                                        </p>
-                                    )}
+                <div className="flex flex-col h-full">
+                    <div className="flex-1 space-y-6">
+                        {selectedDelivery?.type === 'purchase_order' ? (
+                            <div className="space-y-6">
+                                <div className="bg-indigo-50 dark:bg-indigo-500/10 text-indigo-800 dark:text-indigo-300 p-4 rounded-2xl text-xs border border-indigo-200 dark:border-indigo-500/20 leading-relaxed">
+                                    <p className="font-bold flex items-center gap-2 mb-1 text-indigo-700 dark:text-indigo-200">
+                                        <AlertTriangle size={14} /> Receipt Instructions
+                                    </p>
+                                    <p>Enter the actual quantity received for each item. Mark incorrect or damaged items as <strong>Rejected</strong>.</p>
                                 </div>
 
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Remarks (Optional)</label>
+                                {selectedDelivery.items?.length > 0 ? (
+                                    <div className="bg-white dark:bg-zinc-900/50 rounded-2xl border border-slate-200 dark:border-white/[0.08] overflow-hidden shadow-sm">
+                                        <table className="w-full text-xs">
+                                            <thead className="bg-slate-50 dark:bg-zinc-800/80 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-slate-200 dark:border-white/[0.08]">
+                                                <tr>
+                                                    <th className="px-4 py-3 text-left">Material</th>
+                                                    <th className="px-3 py-3 text-right">Ordered</th>
+                                                    <th className="px-3 py-3 text-right w-24">Received</th>
+                                                    <th className="px-3 py-3 text-center">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
+                                                {selectedDelivery.items.map(item => {
+                                                    const entered = parseFloat(itemQuantities[item.id] || 0);
+                                                    const ordered = parseFloat(item.quantity);
+                                                    const isShort = entered < ordered && entered > 0;
+                                                    const isRejected = itemRejections[item.id];
+
+                                                    return (
+                                                        <tr key={item.id} className={`transition-all ${isRejected ? 'bg-rose-50/50 dark:bg-rose-950/10 opacity-70' : ''}`}>
+                                                            <td className="px-4 py-4">
+                                                                <div className={`font-semibold transition-all ${isRejected ? 'text-rose-500 line-through' : 'text-slate-800 dark:text-zinc-200'}`}>
+                                                                    {item.material_name}
+                                                                </div>
+                                                                <div className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wider">{item.unit}</div>
+                                                            </td>
+                                                            <td className="px-3 py-4 text-right font-mono text-slate-500">{Number(item.quantity).toLocaleString()}</td>
+                                                            <td className="px-3 py-4 text-right">
+                                                                <input
+                                                                    type="number"
+                                                                    step="0.01"
+                                                                    min="0"
+                                                                    max={item.quantity}
+                                                                    value={itemQuantities[item.id] ?? item.quantity}
+                                                                    onChange={e => setItemQuantities(prev => ({ ...prev, [item.id]: e.target.value }))}
+                                                                    disabled={isRejected}
+                                                                    className={`w-full text-right font-mono text-xs px-3 py-2 rounded-xl border focus:outline-none transition-all disabled:opacity-30
+                                                                        ${isShort
+                                                                            ? 'border-amber-400 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300'
+                                                                            : 'border-slate-200 dark:border-white/[0.08] bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-white'
+                                                                        }`}
+                                                                />
+                                                            </td>
+                                                            <td className="px-3 py-4 text-center">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setItemRejections(prev => ({ ...prev, [item.id]: !isRejected }))}
+                                                                    className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all active:scale-95
+                                                                        ${isRejected
+                                                                            ? 'bg-rose-600 border-rose-600 text-white shadow-sm'
+                                                                            : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-white/[0.08] text-slate-400 hover:text-rose-500 hover:border-rose-200 dark:hover:text-rose-400'
+                                                                        }`}
+                                                                >
+                                                                    {isRejected ? 'REJECTED' : 'REJECT'}
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-10 bg-slate-50 dark:bg-zinc-900/50 rounded-2xl border border-dashed border-slate-200 dark:border-white/[0.08]">
+                                        <Package className="mx-auto mb-3 text-slate-300 opacity-50" size={32} />
+                                        <p className="text-slate-400 text-xs font-medium">No line items found for this delivery.</p>
+                                    </div>
+                                )}
+
+                                <div className="space-y-3">
+                                    <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">General Remarks</label>
                                     <textarea
                                         value={receiptRemarks}
                                         onChange={e => setReceiptRemarks(e.target.value)}
-                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-violet-500 transition-all resize-none"
-                                        rows={2}
-                                        placeholder="e.g. Received in good condition"
+                                        className="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-none shadow-inner"
+                                        rows={3}
+                                        placeholder="e.g., All items arrived in good condition..."
                                     />
                                 </div>
                             </div>
+                        ) : (
+                            <div className="space-y-6">
+                                <div className="bg-violet-50 dark:bg-violet-500/10 text-violet-800 dark:text-violet-300 p-5 rounded-2xl text-sm border border-violet-200 dark:border-violet-500/20 shadow-sm shadow-violet-500/5">
+                                    <p className="font-bold text-base text-violet-700 dark:text-violet-200 mb-2">Internal Logistics Acknowledgement</p>
+                                    <div className="space-y-2 opacity-90 text-sm">
+                                        <p>Confirming arrival of <span className="font-bold">{selectedDelivery?.material_name}</span> at site.</p>
+                                        <div className="flex items-center gap-4 py-2 border-y border-violet-200/30 dark:border-violet-500/20 my-2 font-mono text-xs">
+                                            <div>Released: <span className="font-bold text-violet-600 dark:text-violet-400">{Number(selectedDelivery?.quantity).toLocaleString()} {selectedDelivery?.unit}</span></div>
+                                            <div>Issued To: <span className="font-bold text-violet-600 dark:text-violet-400">{selectedDelivery?.issued_to}</span></div>
+                                        </div>
+                                    </div>
+                                </div>
 
-                            <p className="opacity-60 text-xs mt-1">This acknowledges that materials dispatched from the warehouse have physically arrived at the site.</p>
-                        </div>
-                    )}
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">Quantity Actually Received *</label>
+                                        <div className="relative">
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                value={itemQuantities[selectedDelivery?.id] || ''}
+                                                onChange={e => setItemQuantities(prev => ({ ...prev, [selectedDelivery.id]: e.target.value }))}
+                                                max={selectedDelivery?.quantity}
+                                                className="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl px-5 py-4 text-lg font-mono text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all shadow-inner"
+                                                placeholder="0.00"
+                                            />
+                                            <div className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold uppercase pointer-events-none">
+                                                {selectedDelivery?.unit}
+                                            </div>
+                                        </div>
+                                        {Number(itemQuantities[selectedDelivery?.id]) < Number(selectedDelivery?.quantity) && Number(itemQuantities[selectedDelivery?.id]) > 0 && (
+                                            <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl">
+                                                <p className="text-amber-600 dark:text-amber-400 text-[11px] font-bold flex items-center gap-2">
+                                                    <AlertTriangle size={14} /> Partial Receipt Detected
+                                                </p>
+                                                <p className="text-amber-600/70 dark:text-amber-400/70 text-[10px] mt-1 ml-5">
+                                                    You are confirming {(Number(selectedDelivery?.quantity) - Number(itemQuantities[selectedDelivery?.id])).toLocaleString()} {selectedDelivery?.unit} short.
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
 
-                    <div className="flex justify-end gap-3 mt-6">
+                                    <div className="space-y-3">
+                                        <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Remarks (Optional)</label>
+                                        <textarea
+                                            value={receiptRemarks}
+                                            onChange={e => setReceiptRemarks(e.target.value)}
+                                            className="w-full bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all resize-none shadow-inner"
+                                            rows={3}
+                                            placeholder="e.g., Materials delivered and verified by site engineer..."
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="pt-8 mt-auto flex items-center justify-between border-t border-slate-100 dark:border-white/[0.08]">
                         <button
-                            onClick={closeModal}
+                            onClick={closeDrawer}
                             disabled={!!confirming}
-                            className="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-xl transition-colors disabled:opacity-50"
+                            className="px-6 py-3 text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 transition-colors disabled:opacity-50"
                         >
                             Cancel
                         </button>
@@ -292,156 +464,35 @@ export default function Deliveries() {
                             disabled={!!confirming || (selectedDelivery?.type === 'site_release' && !itemQuantities[selectedDelivery?.id])}
                             className={`
                                 ${selectedDelivery?.type === 'purchase_order'
-                                    ? 'bg-blue-600 hover:bg-blue-500 shadow-blue-500/20'
+                                    ? 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-500/20'
                                     : 'bg-violet-600 hover:bg-violet-500 shadow-violet-500/20'
                                 }
-                                text-white px-5 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all active:scale-95 disabled:opacity-60 shadow-md
+                                text-white px-8 py-3 rounded-2xl text-sm font-bold flex items-center gap-2 transition-all active:scale-95 disabled:opacity-60 shadow-lg
                             `}
                         >
                             {confirming === selectedDelivery?.id ? (
-                                'Processing...'
+                                <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    Processing...
+                                </div>
                             ) : (
-                                <><CheckCircle size={16} /> Confirm Receipt</>
+                                <><CheckCircle size={18} /> Confirm Receipt</>
                             )}
                         </button>
                     </div>
                 </div>
-            </Modal>
+            </Drawer>
         </AuthenticatedLayout>
-    );
-}
-
-/* ─── Sub-tables ─────────────────────────────────────────────────────────── */
-
-function AllTable({ rows, confirming, onOpen }) {
-    return (
-        <table className="w-full text-sm">
-            <THead cols={['Type', 'Reference', 'Project', 'Info', 'Date', 'Action']} />
-            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/50">
-                {rows.map(row => (
-                    <tr key={`${row.type}-${row.id}`} className="hover:bg-white/60 dark:hover:bg-zinc-800/30 transition-colors">
-                        <td className="px-5 py-3">
-                            <TypeBadge type={row.type} />
-                        </td>
-                        <td className="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-100">{row.title}</td>
-                        <td className="px-4 py-3 text-slate-500 text-xs">{row.project_name}</td>
-                        <td className="px-4 py-3 text-slate-500 text-xs">
-                            {row.type === 'purchase_order'
-                                ? <span>{row.supplier} · {row.items?.length} item{row.items?.length !== 1 ? 's' : ''}</span>
-                                : <span>{row.material_name} · {Number(row.quantity).toLocaleString()} {row.unit}</span>
-                            }
-                        </td>
-                        <td className="px-4 py-3 text-slate-400 text-xs flex items-center gap-1">
-                            <Clock size={12} /> {row.created_at}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                            <ActionButton row={row} confirming={confirming} onOpen={onOpen} />
-                        </td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-    );
-}
-
-function SupplierTable({ rows, confirming, onOpen }) {
-    return (
-        <table className="w-full text-sm">
-            <THead cols={['PO Reference', 'Supplier', 'Project', 'Items', 'Status', 'Updated', 'Action']} />
-            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/50">
-                {rows.map(row => (
-                    <tr key={row.id} className="hover:bg-white/60 dark:hover:bg-zinc-800/30 transition-colors">
-                        <td className="px-5 py-3 font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                            <Package size={14} className="text-blue-500" /> {row.title}
-                        </td>
-                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{row.supplier}</td>
-                        <td className="px-4 py-3 text-slate-500 text-xs">{row.project_name}</td>
-                        <td className="px-4 py-3 text-slate-500 text-xs">{row.items?.length} line item{row.items?.length !== 1 ? 's' : ''}</td>
-                        <td className="px-4 py-3">
-                            <StatusBadge status={row.status} />
-                        </td>
-                        <td className="px-4 py-3 text-slate-400 text-xs">
-                            <span className="flex items-center gap-1"><Calendar size={12} /> {row.created_at}</span>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                            <ActionButton row={row} confirming={confirming} onOpen={onOpen} />
-                        </td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-    );
-}
-
-function WarehouseTable({ rows, confirming, onOpen }) {
-    return (
-        <table className="w-full text-sm">
-            <THead cols={['Reference', 'Material', 'Project', 'Issued To', 'Qty', 'Released', 'Action']} />
-            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/50">
-                {rows.map(row => (
-                    <tr key={row.id} className="hover:bg-white/60 dark:hover:bg-zinc-800/30 transition-colors">
-                        <td className="px-5 py-3 font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                            <Truck size={14} className="text-violet-500" /> {row.title}
-                        </td>
-                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{row.material_name}</td>
-                        <td className="px-4 py-3 text-slate-500 text-xs">{row.project_name}</td>
-                        <td className="px-4 py-3 text-slate-500 text-xs">{row.issued_to}</td>
-                        <td className="px-4 py-3 font-mono font-bold text-violet-600 dark:text-violet-400 text-xs">
-                            {Number(row.quantity).toLocaleString()} <span className="font-normal text-slate-400 uppercase">{row.unit}</span>
-                        </td>
-                        <td className="px-4 py-3 text-slate-400 text-xs">
-                            <span className="flex items-center gap-1"><Clock size={12} /> {row.created_at}</span>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                            <ActionButton row={row} confirming={confirming} onOpen={onOpen} />
-                        </td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-    );
-}
-
-/* ─── Shared helpers ─────────────────────────────────────────────────────── */
-
-function THead({ cols }) {
-    return (
-        <thead className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md sticky top-0 z-10 border-b border-slate-200/60 dark:border-zinc-700/60">
-            <tr className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                {cols.map(c => <th key={c} className="px-4 py-3 text-left first:pl-5">{c}</th>)}
-            </tr>
-        </thead>
-    );
-}
-
-function ActionButton({ row, confirming, onOpen }) {
-    const isPO = row.type === 'purchase_order';
-    return (
-        <button
-            onClick={() => onOpen(row)}
-            disabled={confirming === row.id}
-            className={`
-                shrink-0 text-white px-3 py-1.5 rounded-xl text-xs font-bold
-                flex items-center gap-1.5 mx-auto transition-all active:scale-95 disabled:opacity-60 shadow-sm
-                ${isPO
-                    ? 'bg-blue-600 hover:bg-blue-500 shadow-blue-500/20'
-                    : 'bg-violet-600 hover:bg-violet-500 shadow-violet-500/20'
-                }
-            `}
-        >
-            <CheckCircle size={13} />
-            {confirming === row.id ? 'Loading…' : isPO ? 'Receive' : 'Confirm'}
-        </button>
     );
 }
 
 function TypeBadge({ type }) {
     return type === 'purchase_order' ? (
-        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20">
+        <span className="inline-flex items-center gap-1.5 text-[10px] font-bold px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20">
             <Package size={10} /> Supplier
         </span>
     ) : (
-        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300 border border-violet-200 dark:border-violet-500/20">
+        <span className="inline-flex items-center gap-1.5 text-[10px] font-bold px-3 py-1 rounded-full bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 border border-violet-100 dark:border-violet-500/20">
             <Warehouse size={10} /> Warehouse
         </span>
     );
@@ -449,36 +500,24 @@ function TypeBadge({ type }) {
 
 function StatusBadge({ status }) {
     const map = {
-        'APPROVED': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/20',
-        'PARTIALLY DELIVERED': 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300 border-amber-200 dark:border-amber-500/20',
+        'APPROVED': 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/20',
+        'PARTIALLY DELIVERED': 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 border-amber-100 dark:border-amber-500/20',
     };
     return (
-        <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border ${map[status] ?? 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+        <span className={`inline-flex items-center text-[10px] font-bold px-3 py-1 rounded-full border shadow-sm ${map[status] ?? 'bg-slate-50 text-slate-600 border-slate-100'}`}>
             {status}
         </span>
     );
 }
 
-function Badge({ n }) {
+function Badge({ n, active }) {
+    if (n === 0) return null;
     return (
-        <span className="ml-1 bg-white/30 text-current text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+        <span className={`ml-2 px-1.5 py-0.5 rounded-lg text-[10px] font-bold font-mono transition-colors
+            ${active ? 'bg-indigo-600 text-white' : 'bg-slate-200 dark:bg-zinc-700 text-slate-500'}
+        `}>
             {n}
         </span>
     );
 }
 
-function EmptyState({ tab }) {
-    const msgs = {
-        all: { title: 'No pending deliveries', sub: 'All deliveries have been confirmed.' },
-        supplier: { title: 'No supplier deliveries', sub: 'No approved POs awaiting receipt at site.' },
-        warehouse: { title: 'No warehouse dispatches', sub: 'No in-transit site releases to confirm.' },
-    };
-    const { title, sub } = msgs[tab];
-    return (
-        <div className="text-center py-20 text-slate-400">
-            <Truck size={40} className="mx-auto mb-3 opacity-20" />
-            <p className="text-xs font-bold uppercase tracking-widest opacity-50">{title}</p>
-            <p className="text-xs opacity-40 mt-1">{sub}</p>
-        </div>
-    );
-}
