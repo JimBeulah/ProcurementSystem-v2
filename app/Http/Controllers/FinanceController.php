@@ -25,7 +25,9 @@ class FinanceController extends Controller
             ->get();
 
         $suppliers = \App\Models\Supplier::orderBy('name')->get();
-        $orders = \App\Models\PurchaseOrder::with('supplier')->get();
+        $orders = \App\Models\PurchaseOrder::with('supplier')
+            ->whereDoesntHave('invoices')
+            ->get();
         $grns = \App\Models\ReceivingReport::with('purchaseOrder')->get();
 
         return Inertia::render('Finance/Invoices/Index', [
@@ -44,6 +46,7 @@ class FinanceController extends Controller
 
         $orders = \App\Models\PurchaseOrder::with('supplier')
             ->where('status', 'APPROVED')
+            ->whereDoesntHave('disbursements')
             ->get();
 
         $users = \App\Models\User::where('role', 'procurement_officer')
