@@ -16,6 +16,14 @@ import {
     MoreVertical, Printer, Eye, Search
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { TrendingUp, TrendingDown } from 'lucide-react';
+
+const VARIANCE_THRESHOLD = 5;
+
+function getPriceVariance(actualPrice, estimatedPrice) {
+    if (!estimatedPrice || estimatedPrice <= 0) return null;
+    return ((actualPrice - estimatedPrice) / estimatedPrice) * 100;
+}
 
 function StatusBadge({ status }) {
     const styles = {
@@ -511,18 +519,51 @@ export default function PurchaseRequestsIndex() {
                                             {selectedPr.items.map(item => {
                                                 const rem = item.quantity - (item.ordered_quantity || 0);
                                                 return (
-                                                    <div key={item.id} className="grid grid-cols-[1fr_60px_60px_90px_90px] gap-2 px-3 py-2.5 items-center text-[11px] hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors bg-white dark:bg-slate-900">
+                                                    <div key={item.id} className="grid grid-cols-[1fr_60px_60px_90px_90px] gap-2 px-3 py-2.5 items-center text-[11px] hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors bg-white dark:bg-slate-900 border-b last:border-0 border-slate-100 dark:border-slate-800/50">
                                                         <div>
                                                             <div className="font-medium text-slate-800 dark:text-slate-200">{item.item_description}</div>
                                                             {item.ordered_quantity > 0 && (
-                                                                <div className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold tracking-wider mt-0.5 uppercase">
-                                                                    {item.ordered_quantity} Ordered • {rem > 0 ? `${rem} Remaining` : 'Fully Ordered'}
+                                                                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-0.5">
+                                                                    <div className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold tracking-wider uppercase">
+                                                                        {Number(item.ordered_quantity).toFixed(0)} Ordered • {rem > 0 ? `${Number(rem).toFixed(0)} Remaining` : 'Fully Ordered'}
+                                                                    </div>
+                                                                    {item.purchase_order_items?.length > 0 && (() => {
+                                                                        const avgActualPrice = item.purchase_order_items.reduce((sum, poi) => sum + Number(poi.unit_price), 0) / item.purchase_order_items.length;
+                                                                        const variance = getPriceVariance(avgActualPrice, Number(item.estimated_unit_cost));
+                                                                        
+                                                                        if (variance === null) return null;
+                                                                        
+                                                                        if (variance > VARIANCE_THRESHOLD) {
+                                                                            return (
+                                                                                <span className="inline-flex items-center gap-1 text-[8px] font-bold uppercase tracking-tighter bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400 px-1.5 py-0.5 rounded">
+                                                                                    <TrendingUp size={10} /> +{variance.toFixed(0)}% Overage
+                                                                                </span>
+                                                                            );
+                                                                        }
+                                                                        if (variance < -VARIANCE_THRESHOLD) {
+                                                                            return (
+                                                                                <span className="inline-flex items-center gap-1 text-[8px] font-bold uppercase tracking-tighter bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 px-1.5 py-0.5 rounded">
+                                                                                    <TrendingDown size={10} /> {Math.abs(variance).toFixed(0)}% Savings
+                                                                                </span>
+                                                                            );
+                                                                        }
+                                                                        return null;
+                                                                    })()}
                                                                 </div>
                                                             )}
                                                         </div>
-                                                        <div className="text-center font-mono text-blue-600 dark:text-blue-400">{Number(item.quantity).toFixed(2)}</div>
+                                                        <div className="text-center font-mono text-blue-600 dark:text-blue-400">{Number(item.quantity).toFixed(0)}</div>
                                                         <div className="text-center text-slate-500 uppercase">{item.unit}</div>
-                                                        <div className="text-right font-mono text-slate-500">₱{Number(item.estimated_unit_cost).toLocaleString()}</div>
+                                                        <div className="text-right font-mono text-slate-500">
+                                                            <div>₱{Number(item.estimated_unit_cost).toLocaleString()}</div>
+                                                            {item.purchase_order_items?.length > 0 && (() => {
+                                                                const avgActualPrice = item.purchase_order_items.reduce((sum, poi) => sum + Number(poi.unit_price), 0) / item.purchase_order_items.length;
+                                                                if (Math.abs(avgActualPrice - Number(item.estimated_unit_cost)) > 0.01) {
+                                                                    return <div className="text-[9px] text-slate-400 italic">Actual: ₱{avgActualPrice.toLocaleString()}</div>;
+                                                                }
+                                                                return null;
+                                                            })()}
+                                                        </div>
                                                         <div className="text-right font-mono font-bold text-slate-800 dark:text-slate-200">₱{Number(item.estimated_total_cost).toLocaleString()}</div>
                                                     </div>
                                                 );

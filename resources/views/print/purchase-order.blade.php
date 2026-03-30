@@ -47,6 +47,18 @@
                     <td>
                         <strong>{{ $item->material_name ?? 'N/A' }}</strong><br>
                         <span style="font-size: 10px; color: #555;">{{ $item->description ?? '' }}</span>
+                        @if($item->purchaseRequestItem && $item->purchaseRequestItem->estimated_unit_cost > 0)
+                            @php
+                                $est = (float)$item->purchaseRequestItem->estimated_unit_cost;
+                                $actual = (float)$item->unit_price;
+                                $variance = (($actual - $est) / $est) * 100;
+                            @endphp
+                            <br>
+                            <span style="font-size: 9px; color: {{ $variance > 5 ? '#dc2626' : ($variance < -5 ? '#16a34a' : '#666') }};">
+                                Est: ₱{{ number_format($est, 0) }} 
+                                ({{ $variance > 0 ? '+' : '' }}{{ number_format($variance, 0) }}%)
+                            </span>
+                        @endif
                     </td>
                     <td style="text-align: center;">{{ $item->quantity ?? 0 }} {{ $item->unit ?? 'pcs' }}</td>
                     <td style="text-align: right;">{{ number_format($item->unit_price, 2) }}</td>

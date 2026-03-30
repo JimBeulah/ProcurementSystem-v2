@@ -20,6 +20,14 @@ class PurchaseOrderPolicy
     }
 
     /**
+     * Determine if the user can view the list of purchase orders.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->hasPermissionTo('view purchase orders');
+    }
+
+    /**
      * Determine if the user can view the purchase order.
      */
     public function view(User $user, PurchaseOrder $order): bool
@@ -29,8 +37,16 @@ class PurchaseOrderPolicy
             return $order->project->site_engineer_id === $user->id;
         }
 
-        // Other roles rely on the 'view purchase orders' permission (already checked by route middleware)
+        // Other roles rely on the 'view purchase orders' permission
         return $user->hasPermissionTo('view purchase orders');
+    }
+
+    /**
+     * Determine if the user can create a purchase order.
+     */
+    public function create(User $user): bool
+    {
+        return $user->hasPermissionTo('create purchase orders');
     }
 
     /**

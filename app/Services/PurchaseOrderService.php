@@ -211,7 +211,7 @@ class PurchaseOrderService
     public function generatePdf(PurchaseOrder $order)
     {
         // Load relationships needed for the PDF
-        $order->load(['project', 'supplier', 'items']);
+        $order->load(['project', 'supplier', 'items.purchaseRequestItem']);
 
         // Lazy load requester and approver
         $order->loadMissing(['requester', 'approver']);

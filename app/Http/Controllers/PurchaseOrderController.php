@@ -23,7 +23,8 @@ class PurchaseOrderController extends Controller
 
     public function index(Request $request): Response
     {
-        $orders = PurchaseOrder::with(['project', 'supplier', 'requester', 'approver', 'items'])
+        $this->authorize('viewAny', PurchaseOrder::class);
+        $orders = PurchaseOrder::with(['project', 'supplier', 'requester', 'approver', 'items.purchaseRequestItem'])
             ->orderBy('created_at', 'desc')
             ->paginate(10)
             ->withQueryString();
@@ -53,7 +54,7 @@ class PurchaseOrderController extends Controller
     public function show(PurchaseOrder $order): Response
     {
         $this->authorize('view', $order);
-        $order->load(['project', 'supplier', 'requester', 'approver', 'items']);
+        $order->load(['project', 'supplier', 'requester', 'approver', 'items.purchaseRequestItem']);
 
         return Inertia::render('Purchasing/Orders/Show', [
             'order' => $order,

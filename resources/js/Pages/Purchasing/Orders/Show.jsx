@@ -5,6 +5,14 @@ import { ArrowLeft, CheckCircle, Printer } from 'lucide-react';
 import { usePermissions } from '@/Hooks/usePermissions';
 import PdfPreviewModal from '@/Components/UI/PdfPreviewModal';
 import ConfirmationModal from '@/Components/UI/ConfirmationModal';
+import { TrendingUp } from 'lucide-react';
+
+const VARIANCE_THRESHOLD = 5;
+
+function getPriceVariance(actualPrice, estimatedPrice) {
+    if (!estimatedPrice || estimatedPrice <= 0) return null;
+    return ((actualPrice - estimatedPrice) / estimatedPrice) * 100;
+}
 
 export default function PurchaseOrderShow() {
     const { order: po } = usePage().props;
@@ -109,19 +117,47 @@ export default function PurchaseOrderShow() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
-                            {(po.items || []).map(item => (
-                                <tr key={item.id}>
-                                    <td className="p-4">
-                                        <div className="text-slate-900 dark:text-white font-medium">{item.material_name}</div>
-                                        <div className="text-xs text-slate-400">{item.description}</div>
-                                    </td>
-                                    <td className="p-4 text-center font-mono">{item.quantity}</td>
-                                    <td className="p-4 text-right font-mono">{Number(item.unit_price).toLocaleString()}</td>
-                                    <td className="p-4 text-right font-mono text-slate-900 dark:text-white font-bold">
-                                        {(Number(item.quantity) * Number(item.unit_price)).toLocaleString()}
-                                    </td>
-                                </tr>
-                            ))}
+                            {(po.items || []).map(item => {
+                                const estimatedPrice = item.purchase_request_item?.estimated_unit_cost || 0;
+                                const variance = getPriceVariance(parseFloat(item.unit_price), parseFloat(estimatedPrice));
+                                const hasVariance = variance !== null && variance > VARIANCE_THRESHOLD;
+                                const hasSavings = variance !== null && variance < -VARIANCE_THRESHOLD;
+
+                                return (
+                                    <tr key={item.id} className={hasVariance ? 'bg-red-50/30 dark:bg-red-900/10' : ''}>
+                                        <td className="p-4">
+                                            <div className="flex items-center gap-2">
+                                                <div className="text-slate-900 dark:text-white font-medium">{item.material_name}</div>
+                                                {hasVariance && (
+                                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400 px-2 py-0.5 rounded-md">
+                                                        <TrendingUp size={10} /> +{variance.toFixed(0)}% OVER
+                                                    </span>
+                                                )}
+                                                {hasSavings && (
+                                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 px-2 py-0.5 rounded-md">
+                                                        ↓ {Math.abs(variance).toFixed(0)}% UNDER
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="text-xs text-slate-400">{item.description}</div>
+                                        </td>
+                                        <td className="p-4 text-center font-mono">{item.quantity}</td>
+                                        <td className="p-4 text-right">
+                                            <div className="flex flex-col items-end">
+                                                <span className="font-mono text-slate-900 dark:text-white">₱{Number(item.unit_price).toLocaleString()}</span>
+                                                {estimatedPrice > 0 && (
+                                                    <span className="text-[10px] text-slate-400">
+                                                        Est. ₱{Number(estimatedPrice).toLocaleString()}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="p-4 text-right font-mono text-slate-900 dark:text-white font-bold">
+                                            {(Number(item.quantity) * Number(item.unit_price)).toLocaleString()}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                         <tfoot className="bg-slate-50 dark:bg-slate-800/80 font-bold text-slate-900 dark:text-white">
                             <tr>

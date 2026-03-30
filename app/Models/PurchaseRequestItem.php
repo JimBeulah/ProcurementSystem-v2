@@ -37,4 +37,9 @@ class PurchaseRequestItem extends Model
     {
         return $this->belongsTo(PurchaseRequest::class);
     }
+
+    public function purchaseOrderItems()
+    {
+        return $this->hasMany(PurchaseOrderItem::class);
+    }
 }

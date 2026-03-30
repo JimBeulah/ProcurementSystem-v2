@@ -19,7 +19,7 @@ class PurchaseRequestController extends Controller
 
     public function index(): Response
     {
-        $query = PurchaseRequest::with(['project', 'requester', 'approver', 'items'])
+        $query = PurchaseRequest::with(['project', 'requester', 'approver', 'items.purchaseOrderItems'])
             ->orderBy('created_at', 'desc');
 
         if (request('search')) {
@@ -59,7 +59,7 @@ class PurchaseRequestController extends Controller
             'filters' => request()->only(['search', 'date', 'status']),
             'suppliers' => Inertia::lazy(fn () => \App\Models\Supplier::orderBy('name')->get()),
             'materials' => Inertia::lazy(fn () => \App\Models\Material::orderBy('name')->get()),
-            'purchaseRequest' => Inertia::lazy(fn () => PurchaseRequest::with('items')->find(request('prId'))),
+            'purchaseRequest' => Inertia::lazy(fn () => PurchaseRequest::with('items.purchaseOrderItems')->find(request('prId'))),
             'inventoryMatches' => Inertia::lazy(function () {
                 $prId = request('prId');
                 if (! $prId) {

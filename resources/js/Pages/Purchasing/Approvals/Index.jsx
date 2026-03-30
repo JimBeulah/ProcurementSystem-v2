@@ -5,6 +5,7 @@ import { ShieldCheck, CheckCircle, XCircle, Clock, FileText, User, Building2, Ca
 import { usePermissions } from '@/Hooks/usePermissions';
 import ConfirmationModal from '@/Components/UI/ConfirmationModal';
 import DataTable from '@/Components/UI/DataTable';
+import Drawer from '@/Components/UI/Drawer';
 
 // Threshold (%) above which a price variance warning is shown
 const VARIANCE_THRESHOLD = 5;
@@ -36,11 +37,11 @@ export default function ApprovalsIndex() {
         if (processing) return;
         setProcessing(id);
         if (type === 'po') {
-            router.post(route('purchasing.orders.approve', id), {}, {
+            router.post(`/purchasing/orders/${id}/approve`, {}, {
                 onFinish: () => setProcessing(null),
             });
         } else if (type === 'mr') {
-            router.post(route('material-requests.approve', id), {}, {
+            router.post(`/material-requests/${id}/approve`, {}, {
                 onFinish: () => setProcessing(null),
             });
         }
@@ -58,11 +59,11 @@ export default function ApprovalsIndex() {
                 setProcessing(id);
                 setIsDrawerOpen(false);
                 if (type === 'po') {
-                    router.post(route('purchasing.orders.decline', id), { remarks }, {
+                    router.post(`/purchasing/orders/${id}/decline`, { remarks }, {
                         onFinish: () => setProcessing(null),
                     });
                 } else if (type === 'mr') {
-                    router.post(route('material-requests.reject', id), { remarks }, {
+                    router.post(`/material-requests/${id}/reject`, { remarks }, {
                         onFinish: () => setProcessing(null),
                     });
                 }
@@ -303,21 +304,28 @@ export default function ApprovalsIndex() {
                                                 </div>
                                                 {drawerType === 'po' && (
                                                     <div className="flex flex-col items-end gap-0.5 pt-1">
-                                                        <div className={`text-[10px] font-mono font-bold ${
-                                                            getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost) > VARIANCE_THRESHOLD 
-                                                                ? 'text-red-500' 
-                                                                : 'text-blue-500/70'
-                                                        }`}>
-                                                            @ ₱{Number(item.unit_price).toLocaleString()}
+                                                        <div className="flex items-center gap-1.5 justify-end mb-0.5">
+                                                            <div className={`text-[10px] font-mono font-bold ${
+                                                                getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost) > VARIANCE_THRESHOLD 
+                                                                    ? 'text-red-500' 
+                                                                    : (getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost) < -VARIANCE_THRESHOLD ? 'text-emerald-500' : 'text-slate-900 dark:text-white')
+                                                            }`}>
+                                                                @ ₱{Number(item.unit_price).toLocaleString()}
+                                                            </div>
+                                                            {getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost) > VARIANCE_THRESHOLD && (
+                                                                <span className="inline-flex items-center gap-0.5 text-[8px] font-bold uppercase tracking-tighter bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400 px-1 py-0.5 rounded leading-none">
+                                                                    <TrendingUp size={8} /> +{getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost)?.toFixed(0)}% OVER
+                                                                </span>
+                                                            )}
+                                                            {getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost) < -VARIANCE_THRESHOLD && (
+                                                                <span className="inline-flex items-center gap-0.5 text-[8px] font-bold uppercase tracking-tighter bg-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 px-1 py-0.5 rounded leading-none">
+                                                                    ↓ {Math.abs(getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost)).toFixed(0)}% UNDER
+                                                                </span>
+                                                            )}
                                                         </div>
                                                         {item.purchase_request_item?.estimated_unit_cost && (
-                                                            <div className="flex items-center gap-1.5 justify-end">
-                                                                <span className="text-[9px] text-slate-400">Est. ₱{Number(item.purchase_request_item.estimated_unit_cost).toLocaleString()}</span>
-                                                                {getPriceVariance(item.unit_price, item.purchase_request_item.estimated_unit_cost) > VARIANCE_THRESHOLD && (
-                                                                    <span className="inline-flex items-center gap-0.5 text-[8px] font-bold uppercase tracking-tighter bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400 px-1 py-0.5 rounded leading-none">
-                                                                        <TrendingUp size={8} /> +{getPriceVariance(item.unit_price, item.purchase_request_item.estimated_unit_cost).toFixed(0)}%
-                                                                    </span>
-                                                                )}
+                                                            <div className="text-[9px] text-slate-400">
+                                                                Est. ₱{Number(item.purchase_request_item.estimated_unit_cost).toLocaleString()}
                                                             </div>
                                                         )}
                                                     </div>
