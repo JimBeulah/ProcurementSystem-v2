@@ -30,7 +30,7 @@ export default function Deliveries() {
             const init = {};
             const initRej = {};
             item.items.forEach(i => {
-                init[i.id] = String(i.quantity);
+                init[i.id] = String(i.remaining_quantity ?? i.quantity);
                 initRej[i.id] = false;
             });
             setItemQuantities(init);
@@ -127,6 +127,11 @@ export default function Deliveries() {
                     accessorKey: 'project_name',
                     header: 'Project',
                     cell: ({ row }) => <span className="text-slate-500 text-xs">{row.original.project_name}</span>
+                },
+                {
+                    accessorKey: 'status',
+                    header: 'Status',
+                    cell: ({ row }) => <StatusBadge status={row.original.status} />
                 },
                 {
                     id: 'info',
@@ -321,6 +326,7 @@ export default function Deliveries() {
                                                 <tr>
                                                     <th className="px-4 py-3 text-left">Material</th>
                                                     <th className="px-3 py-3 text-right">Ordered</th>
+                                                    <th className="px-3 py-3 text-right">Remaining</th>
                                                     <th className="px-3 py-3 text-right w-24">Received</th>
                                                     <th className="px-3 py-3 text-center">Action</th>
                                                 </tr>
@@ -340,14 +346,15 @@ export default function Deliveries() {
                                                                 </div>
                                                                 <div className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wider">{item.unit}</div>
                                                             </td>
-                                                            <td className="px-3 py-4 text-right font-mono text-slate-500">{Number(item.quantity).toLocaleString()}</td>
+                                                            <td className="px-3 py-4 text-right font-mono text-slate-400">{Number(item.quantity).toLocaleString()}</td>
+                                                            <td className="px-3 py-4 text-right font-mono text-indigo-600 dark:text-indigo-400 font-bold">{Number(item.remaining_quantity ?? item.quantity).toLocaleString()}</td>
                                                             <td className="px-3 py-4 text-right">
                                                                 <input
                                                                     type="number"
                                                                     step="0.01"
                                                                     min="0"
-                                                                    max={item.quantity}
-                                                                    value={itemQuantities[item.id] ?? item.quantity}
+                                                                    max={item.remaining_quantity ?? item.quantity}
+                                                                    value={itemQuantities[item.id] ?? (item.remaining_quantity ?? item.quantity)}
                                                                     onChange={e => setItemQuantities(prev => ({ ...prev, [item.id]: e.target.value }))}
                                                                     disabled={isRejected}
                                                                     className={`w-full text-right font-mono text-xs px-3 py-2 rounded-xl border focus:outline-none transition-all disabled:opacity-30

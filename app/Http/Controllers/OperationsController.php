@@ -62,12 +62,23 @@ class OperationsController extends Controller
                 'project_name' => $po->project?->name ?? 'N/A',
                 'status' => $po->status,
                 'created_at' => $po->updated_at->diffForHumans(),
-                'items' => $po->items->map(fn ($item) => [
-                    'id' => $item->id,
-                    'material_name' => $item->material_name,
-                    'quantity' => $item->quantity,
-                    'unit' => $item->unit,
-                ])->values()->all(),
+                'items' => $po->items->map(function ($item) use ($po) {
+                    $received = \App\Models\ReceivingItem::whereHas('receivingReport', function ($q) use ($po) {
+                            $q->where('purchase_order_id', $po->id);
+                        })
+                        ->where('material_name', $item->material_name)
+                        ->where('status', '!=', 'REJECTED')
+                        ->sum('quantity_received');
+
+                    return [
+                        'id' => $item->id,
+                        'material_name' => $item->material_name,
+                        'quantity' => (float) $item->quantity,
+                        'received_quantity' => (float) $received,
+                        'remaining_quantity' => max(0, (float) $item->quantity - (float) $received),
+                        'unit' => $item->unit,
+                    ];
+                })->values()->all(),
             ]);
 
         // --- Merged for the "All" tab ---

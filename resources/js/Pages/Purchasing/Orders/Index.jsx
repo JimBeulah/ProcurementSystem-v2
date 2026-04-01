@@ -90,9 +90,12 @@ export default function PurchaseOrdersIndex() {
                 const po = row.original;
                 const status = String(po.status || '').toUpperCase();
                 return (
-                    <div className={`px-3 py-1 rounded-full text-xs font-bold border max-w-max ${status === 'APPROVED' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
-                        status === 'COMPLETED' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
-                            status === 'PENDING' ? 'bg-orange-500/10 text-orange-600 border-orange-500/20' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 border-slate-300 dark:border-slate-600'
+                    <div className={`px-3 py-1 rounded-full text-xs font-bold border max-w-max 
+                        ${status === 'APPROVED' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
+                          status === 'PARTIALLY DELIVERED' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
+                          status === 'COMPLETED' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
+                          status === 'PENDING' ? 'bg-orange-500/10 text-orange-600 border-orange-500/20' : 
+                          'bg-slate-100 dark:bg-slate-700 text-slate-500 border-slate-300 dark:border-slate-600'
                         }`}>
                         {po.status}
                     </div>
@@ -166,9 +169,11 @@ export default function PurchaseOrdersIndex() {
                         <div>
                             <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
                                 PO-{po.id.toString().padStart(4, '0')}
-                                <span className={`text-sm px-2 py-1 rounded border ${String(po.status).toUpperCase() === 'APPROVED' ? 'border-emerald-500 text-emerald-500' :
-                                    String(po.status).toUpperCase() === 'COMPLETED' ? 'border-blue-500 text-blue-500' :
-                                        'border-orange-500 text-orange-500'
+                                <span className={`text-sm px-2 py-1 rounded border 
+                                    ${String(po.status).toUpperCase() === 'APPROVED' ? 'border-emerald-500 text-emerald-500' :
+                                      String(po.status).toUpperCase() === 'PARTIALLY DELIVERED' ? 'border-amber-500 text-amber-500' :
+                                      String(po.status).toUpperCase() === 'COMPLETED' ? 'border-blue-500 text-blue-500' :
+                                      'border-orange-500 text-orange-500'
                                     }`}>{po.status}</span>
                             </h1>
                             <p className="text-slate-500">Issued on {new Date(po.order_date).toLocaleDateString()}</p>
