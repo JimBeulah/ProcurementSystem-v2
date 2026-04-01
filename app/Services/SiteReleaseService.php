@@ -24,7 +24,7 @@ class SiteReleaseService
             'unit' => $item->unit,
             'purpose' => $validated['purpose'] ?? null,
             'release_date' => now(),
-            'status' => 'IN_TRANSIT',
+            'status' => SiteRelease::STATUS_RECEIVED, // If issued to workers, it's immediately "received" by them
         ]);
 
         $item->decrement('quantity', $validated['quantity_released']);
@@ -42,7 +42,7 @@ class SiteReleaseService
         $userId = $userId ?? Auth::id();
 
         $siteRelease->update([
-            'status' => 'RECEIVED',
+            'status' => SiteRelease::STATUS_RECEIVED,
             'received_by_id' => $userId,
             'received_date' => now(),
             'quantity_received' => $qtyReceived,
@@ -84,23 +84,36 @@ class SiteReleaseService
                 ->first();
 
             if ($inventory) {
+                // Determine how much to release (limited by stock)
                 $qtyToRelease = min($wItem['quantity'], $inventory->quantity);
 
                 SiteRelease::create([
                     'inventory_item_id' => $inventory->id,
                     'project_id' => $projectId,
-                    'released_by_id' => $requesterId,
+                    'released_by_id' => $requesterId, // Initial requestor/preparer
                     'issued_to' => 'Site Engineer',
                     'quantity_released' => $qtyToRelease,
                     'unit' => $wItem['unit'] ?? 'pcs',
-                    'purpose' => 'Auto-sourced during PR fulfillment',
+                    'purpose' => 'Auto-sourced from warehouse stock',
                     'release_date' => now(),
-                    'status' => 'IN_TRANSIT', // IN_TRANSIT so the Site Engineer can confirm receipt
+                    'status' => SiteRelease::STATUS_PENDING, // Wait for warehouse officer dispatch
                 ]);
 
-                // Deduct from warehouse stock
+                // Deduct from warehouse stock immediately to reserve it
                 $inventory->decrement('quantity', $qtyToRelease);
             }
         }
+    }
+
+    /**
+     * Manually dispatch a pending warehouse release.
+     */
+    public function dispatch(SiteRelease $siteRelease, int $userId): void
+    {
+        $siteRelease->update([
+            'status' => SiteRelease::STATUS_IN_TRANSIT,
+            'released_by_id' => $userId, // The officer who dispatched it
+            'release_date' => now(),
+        ]);
     }
 }

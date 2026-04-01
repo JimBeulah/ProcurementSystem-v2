@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class SiteRelease extends Model
 {
+    const STATUS_PENDING = 'PENDING';
+    const STATUS_IN_TRANSIT = 'IN_TRANSIT';
+    const STATUS_RECEIVED = 'RECEIVED';
+
     protected $fillable = [
         'inventory_item_id',
         'project_id',

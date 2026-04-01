@@ -509,6 +509,7 @@ function StatusBadge({ status }) {
     const map = {
         'APPROVED': 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/20',
         'PARTIALLY DELIVERED': 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 border-amber-100 dark:border-amber-500/20',
+        'IN_TRANSIT': 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 border-violet-100 dark:border-violet-500/20 font-black',
     };
     return (
         <span className={`inline-flex items-center text-[10px] font-bold px-3 py-1 rounded-full border shadow-sm ${map[status] ?? 'bg-slate-50 text-slate-600 border-slate-100'}`}>

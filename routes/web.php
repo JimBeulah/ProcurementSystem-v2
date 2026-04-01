@@ -156,10 +156,11 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
     // Operations
     Route::get('/operations/deliveries', [OperationsController::class, 'deliveries'])->name('operations.deliveries')->middleware('role_or_permission:site_engineer|view receiving');
 
-    // Site Release
+    // Site Release (Warehouse Dispatch Queue)
     Route::get('/site-release', [SiteReleaseController::class, 'index'])->name('site-release.index')->middleware('can:view site release');
-    Route::post('/site-release', [SiteReleaseController::class, 'store'])->name('site-release.store')->middleware('can:create site release');
+    Route::post('/site-release/{siteRelease}/dispatch', [SiteReleaseController::class, 'dispatch'])->name('site-release.dispatch')->middleware('can:create site release');
     Route::post('/site-release/{siteRelease}/confirm', [SiteReleaseController::class, 'confirmReceipt'])->name('site-release.confirm')->middleware('can:confirm site release');
+    Route::post('/site-release', [SiteReleaseController::class, 'store'])->name('site-release.store')->middleware('can:create site release');
 
     // Material Returns (Site → Warehouse)
     Route::get('/inventory/returns', [\App\Http\Controllers\MaterialReturnController::class, 'index'])->name('material-returns.index')->middleware('can:view inventory');

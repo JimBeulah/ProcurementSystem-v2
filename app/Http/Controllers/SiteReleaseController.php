@@ -18,33 +18,44 @@ class SiteReleaseController extends Controller
 
     public function index(): Response
     {
-        $inventoryQuery = InventoryItem::with('project')
-            ->whereNotNull('project_id')
-            ->where('quantity', '>', 0)
-            ->orderBy('material_name', 'asc');
-
-        if (auth()->user()->hasRole('site_engineer')) {
-            $inventoryQuery->whereHas('project', function ($q) {
-                $q->where('site_engineer_id', auth()->id());
-            });
+        // Restrict access to Warehouse and Admin only as requested
+        if (!auth()->user()->hasRole(['admin', 'warehouse'])) {
+            return Inertia::render('Errors/403', [
+                'message' => 'Only Warehouse Officers and Admins can access the Dispatch Queue.'
+            ]);
         }
-        $inventory = $inventoryQuery->get();
 
-        $releasesQuery = SiteRelease::with(['inventoryItem', 'project', 'releasedBy', 'receivedBy'])
-            ->orderBy('release_date', 'desc')
-            ->limit(50);
+        // Show ONLY pending dispatches from the warehouse
+        $pendingReleases = SiteRelease::with(['inventoryItem.warehouse', 'project', 'releasedBy'])
+            ->where('status', SiteRelease::STATUS_PENDING)
+            ->orderBy('created_at', 'asc')
+            ->get();
 
-        if (auth()->user()->hasRole('site_engineer')) {
-            $releasesQuery->whereHas('project', function ($q) {
-                $q->where('site_engineer_id', auth()->id());
-            });
-        }
-        $releases = $releasesQuery->get();
+        // Historical releases for reference
+        $recentReleases = SiteRelease::with(['inventoryItem', 'project', 'releasedBy', 'receivedBy'])
+            ->where('status', '!=', SiteRelease::STATUS_PENDING)
+            ->orderBy('updated_at', 'desc')
+            ->limit(20)
+            ->get();
 
         return Inertia::render('SiteRelease/Index', [
-            'inventory' => $inventory,
-            'releases' => $releases,
+            'pendingReleases' => $pendingReleases,
+            'recentReleases' => $recentReleases,
         ]);
+    }
+
+    public function dispatch(SiteRelease $siteRelease): RedirectResponse
+    {
+        if ($siteRelease->status !== SiteRelease::STATUS_PENDING) {
+            return redirect()->back()->with('error', 'This item is not pending dispatch.');
+        }
+
+        $this->service->dispatch($siteRelease, auth()->id());
+
+        return redirect()->back()->with(
+            'success',
+            "Item dispatched successfully. It is now In Transit to {$siteRelease->project->name}."
+        );
     }
 
     public function store(\App\Http\Requests\StoreSiteReleaseRequest $request): RedirectResponse

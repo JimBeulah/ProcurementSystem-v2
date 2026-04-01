@@ -24,7 +24,7 @@ class OperationsController extends Controller
         }
 
         $warehouseDeliveries = $warehouseQuery
-            ->whereIn('status', ['IN_TRANSIT', 'PENDING'])
+            ->where('status', SiteRelease::STATUS_IN_TRANSIT)
             ->latest()
             ->get()
             ->map(fn ($r) => [
