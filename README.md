@@ -71,7 +71,7 @@ composer setup
 
 ### 3. Database Seeding (Optional)
 
-To populate the system with default roles, permissions, and master data:
+To populate the system with default roles and permissions:
 
 ```bash
 php artisan migrate --seed
@@ -104,7 +104,7 @@ Open [http://localhost:8000](http://localhost:8000) in your browser.
 │   └── Notifications/      # System alerts (Project deadlines, Approval requests)
 ├── database/
 │   ├── migrations/         # Database schema definitions
-│   └── seeders/            # Roles, Permissions, and Master Data
+│   └── seeders/            # Roles and Permissions seeders
 ├── docs/                   # Detailed module and architecture documentation
 ├── resources/
 │   ├── js/                 # React application root

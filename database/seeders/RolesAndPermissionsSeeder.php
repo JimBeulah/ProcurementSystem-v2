@@ -18,7 +18,6 @@ class RolesAndPermissionsSeeder extends Seeder
             'view dashboard',
             'view settings',
             'manage users',
-            'manage master data',
 
             // Clients
             'view clients',

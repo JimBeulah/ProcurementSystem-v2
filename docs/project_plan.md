@@ -10,7 +10,7 @@ This document outlines the high-level project plan and timeline for the developm
 - Implementation of Authentication and Role-Based Access Control (RBAC).
 
 ### Phase 2: Core Project Modules
-- **Settings & Master Data**: Warehouses, Materials, Suppliers.
+- **Foundation Settings**: System configuration and User management.
 - **Client & Project Management**: Creating projects and assigning them to clients.
 - **Bill of Quantities (BOQ)**: Granular itemized budgeting for projects (labor, materials, equipment).
 
@@ -44,7 +44,7 @@ gantt
     Authentication & RBAC Setup       :done,    des3, after des2, 7d
     
     section Phase 2: Core Modules
-    Settings & Master Data            :done,    dev1, after des3, 10d
+    Foundation Settings               :done,    dev1, after des3, 10d
     Projects & Client Management      :done,    dev2, after dev1, 14d
     Bill of Quantities (BOQ)          :done,    dev3, after dev2, 14d
     

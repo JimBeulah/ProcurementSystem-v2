@@ -3,7 +3,7 @@ import { Head, Link } from '@inertiajs/react';
 import { Card } from '@/Components/UI/Card';
 import { WelcomeBanner } from '@/Components/UI/WelcomeBanner';
 import {
-    Package, UserCog, ShoppingCart, AlertCircle, ClipboardList, CheckCircle, TrendingUp, ShieldCheck, Database
+    Package, UserCog, ShoppingCart, AlertCircle, ClipboardList, CheckCircle, TrendingUp, ShieldCheck, Database, Settings
 } from 'lucide-react';
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 
@@ -152,8 +152,8 @@ export default function AdminDashboard({ stats }) {
                             <div className="grid grid-cols-2 gap-3">
                                 <ModernQuickLink href="/settings/users" icon={<UserCog size={18} />} label="Users" brand="purple" />
                                 <ModernQuickLink href="/projects" icon={<Package size={18} />} label="Projects" brand="blue" />
-                                <ModernQuickLink href="/settings/master-data" icon={<Database size={18} />} label="Master Data" brand="slate" />
                                 <ModernQuickLink href="/finance/reports" icon={<TrendingUp size={18} />} label="Reports" brand="emerald" />
+                                <ModernQuickLink href="/settings" icon={<Settings size={18} />} label="Settings" brand="slate" />
                             </div>
                         </Card>
                     </div>

@@ -24,6 +24,6 @@ Procurement System v2 is divided into several cohesive modules that track the li
 - **Reports**: High-level financial tracking of budget vs. actuals for Projects.
 
 ## 5. System Administration (Settings)
-- **Master Data**: Centralized lists of available standalone Materials (with assigned Units), Warehouses, and Suppliers.
 - **User Management**: Creating users, resetting passwords, and assigning roles/permissions.
 - **Activity Logs**: Auditing system to track all critical actions (Who did what and when) for accountability.
+- **Workflows**: Multi-stage approval hierarchy and site-specific rules.
