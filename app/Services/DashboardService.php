@@ -112,9 +112,9 @@ class DashboardService
     {
         return [
             'inventoryItems' => \App\Models\InventoryItem::count(),
-            'pendingReceiving' => PurchaseOrder::whereIn('status', ['APPROVED', 'PARTIALLY DELIVERED'])->count(),
+            'pendingReceiving' => \App\Models\PurchaseOrder::whereIn('status', ['APPROVED', 'PARTIALLY DELIVERED'])->count(),
+            'pendingReturns' => \App\Models\MaterialReturn::where('status', 'PENDING')->count(),
             'siteReleases' => \App\Models\SiteRelease::count(),
-            'lowStockAlerts' => \App\Models\InventoryItem::where('current_stock', '<=', DB::raw('minimum_stock'))->count(),
         ];
     }
 

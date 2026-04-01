@@ -4,6 +4,8 @@ import { Head, router, usePage, Link } from '@inertiajs/react';
 import { RotateCcw, Plus, X, CheckCircle, Clock, Inbox, Briefcase, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Combobox from '@/Components/UI/Combobox.jsx';
+import { usePermissions } from '@/Hooks/usePermissions';
+import { PackageCheck } from 'lucide-react';
 
 const STATUS_BADGE = {
     PENDING: { cls: 'bg-amber-500/10 text-amber-600 border-amber-500/20', label: 'Pending Arrival' },
@@ -12,7 +14,17 @@ const STATUS_BADGE = {
 
 export default function ProjectMaterialReturns() {
     const { project, returns, inventory, flash } = usePage().props;
+    const { can } = usePermissions();
     const [showForm, setShowForm] = useState(false);
+    const [processing, setProcessing] = useState(null);
+
+    const handleReceive = (id) => {
+        if (processing) return;
+        setProcessing(id);
+        router.post(route('material-returns.receive', id), {}, {
+            onFinish: () => setProcessing(null),
+        });
+    };
 
     return (
         <AuthenticatedLayout>
@@ -62,6 +74,7 @@ export default function ProjectMaterialReturns() {
                                         <th className="p-4 text-right">Qty</th>
                                         <th className="p-4">Status</th>
                                         <th className="p-4">Timestamps</th>
+                                        {can('manage inventory') && <th className="p-4 text-right">Actions</th>}
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-border">
@@ -97,6 +110,20 @@ export default function ProjectMaterialReturns() {
                                                         )}
                                                     </div>
                                                 </td>
+                                                {can('manage inventory') && (
+                                                    <td className="p-4 text-right">
+                                                        {ret.status === 'PENDING' && (
+                                                            <button
+                                                                onClick={() => handleReceive(ret.id)}
+                                                                disabled={processing === ret.id}
+                                                                className="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1 ml-auto transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                                                            >
+                                                                <PackageCheck size={12} />
+                                                                {processing === ret.id ? '...' : 'Receive'}
+                                                            </button>
+                                                        )}
+                                                    </td>
+                                                )}
                                             </tr>
                                         );
                                     })}

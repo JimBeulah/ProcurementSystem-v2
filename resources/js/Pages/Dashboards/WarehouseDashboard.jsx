@@ -2,7 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { Card } from '@/Components/UI/Card';
 import { WelcomeBanner } from '@/Components/UI/WelcomeBanner';
-import { Package, Truck, ArrowDownCircle, TrendingUp, AlertCircle } from 'lucide-react';
+import { Package, Truck, ArrowDownCircle, TrendingUp, AlertCircle, RotateCcw } from 'lucide-react';
 
 export default function WarehouseDashboard({ stats }) {
     return (
@@ -37,22 +37,23 @@ export default function WarehouseDashboard({ stats }) {
                         color="from-indigo-500/10 to-transparent"
                     />
                     <StatCard
-                        title="Low Stock Alerts"
-                        value={stats?.lowStockAlerts?.toString() || '0'}
-                        icon={<AlertCircle className="text-red-500" size={20} />}
-                        trend="Check Now"
-                        color="from-red-500/10 to-transparent"
+                        title="Pending Returns"
+                        value={stats?.pendingReturns?.toString() || '0'}
+                        icon={<RotateCcw className="text-pink-500" size={20} />}
+                        trend="From Sites"
+                        color="from-pink-500/10 to-transparent"
                     />
                 </div>
 
                 {/* Quick Actions */}
                 <Card className="bg-white/40 dark:bg-zinc-900/40 backdrop-blur-2xl border-white/20 dark:border-white/5 shadow-sm p-6 rounded-3xl">
                     <h3 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 mb-4">Quick Actions</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {[
                             { label: 'View Inventory', href: '/inventory', icon: <Package size={18} />, color: 'bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400' },
                             { label: 'Receive Goods', href: '/inventory/receiving', icon: <ArrowDownCircle size={18} />, color: 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' },
                             { label: 'Site Release', href: '/site-release', icon: <Truck size={18} />, color: 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' },
+                            { label: 'Material Returns', href: '/inventory/returns', icon: <RotateCcw size={18} />, color: 'bg-pink-50 dark:bg-pink-500/10 text-pink-600 dark:text-pink-400' },
                         ].map((action) => (
                             <a key={action.label} href={action.href} className={`flex flex-col items-center gap-2 p-4 rounded-2xl ${action.color} hover:opacity-80 transition-opacity text-center`}>
                                 {action.icon}
