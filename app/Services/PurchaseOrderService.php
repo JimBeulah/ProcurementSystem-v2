@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
+use App\Models\PurchaseRequestItem;
+use App\Models\SiteRelease;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -33,63 +35,76 @@ class PurchaseOrderService
                 }
             }
 
-            // 1. Process Warehouse Items by auto-generating Site Releases
-            if (! empty($warehouseItems)) {
-                $this->siteReleaseService->autoReleaseWarehouseItems($warehouseItems, $validated['project_id'], $requesterId);
+            // Calculate total amount ONLY for supplier items
+            $totalAmount = 0;
+            foreach ($supplierItems as $item) {
+                $totalAmount += $item['quantity'] * ($item['unit_price'] ?? 0);
             }
 
-            // 2. Create the Purchase Order ONLY for the supplier items (if any exist)
-            if (empty($supplierItems)) {
-                // Entire order fulfilled from warehouse! No PO needed.
-                return null;
-            }
-
-            $totalAmount = collect($supplierItems)->sum(fn ($i) => $i['quantity'] * $i['unit_price']);
-
+            // 1. Create the Purchase Order (the Fulfillment Plan)
+            // This is ALWAYS created so the manager can approve the sourcing.
             $po = PurchaseOrder::create([
                 'project_id' => $validated['project_id'],
-                'supplier_id' => $validated['supplier_id'],
                 'purchase_request_id' => $validated['purchase_request_id'] ?? null,
+                'supplier_id' => $validated['supplier_id'] ?? null, // Null for internal warehouse-only orders
                 'requester_id' => $requesterId,
-                'order_date' => now(),
                 'status' => 'PENDING',
                 'remarks' => $validated['remarks'] ?? null,
                 'total_amount' => $totalAmount,
             ]);
 
-            $itemsData = collect($supplierItems)->map(function ($item) {
-                // If this is sourced from a PR, update the ordered_quantity
+            // 2. Process Warehouse Items by auto-generating Site Releases
+            if (! empty($warehouseItems)) {
+                // Link the warehouse releases to the new PO for approval sync
+                $this->siteReleaseService->autoReleaseWarehouseItems($warehouseItems, $validated['project_id'], $requesterId, $po->id);
+
+                // Update ordered_quantity for items sourced from a PR
+                foreach ($warehouseItems as $item) {
+                    if (! empty($item['purchase_request_item_id'])) {
+                        $prItem = PurchaseRequestItem::find($item['purchase_request_item_id']);
+                        if ($prItem instanceof PurchaseRequestItem) {
+                            $prItem->increment('ordered_quantity', $item['quantity']);
+                        }
+                    }
+                }
+            }
+
+            // 3. Create PO Items for Supplier items
+            foreach ($supplierItems as $item) {
+                // Update ordered_quantity for items sourced from a PR
                 if (! empty($item['purchase_request_item_id'])) {
-                    $prItem = \App\Models\PurchaseRequestItem::find($item['purchase_request_item_id']);
-                    if ($prItem) {
+                    $prItem = PurchaseRequestItem::find($item['purchase_request_item_id']);
+                    if ($prItem instanceof PurchaseRequestItem) {
                         $prItem->increment('ordered_quantity', $item['quantity']);
                     }
                 }
 
-                return [
+                $po->items()->create([
                     'purchase_request_item_id' => $item['purchase_request_item_id'] ?? null,
                     'material_name' => $item['material_name'],
                     'description' => $item['description'] ?? null,
                     'quantity' => $item['quantity'],
+                    'unit' => $item['unit'] ?? 'pcs',
                     'unit_price' => $item['unit_price'],
                     'total_price' => $item['quantity'] * $item['unit_price'],
-                    'unit' => $item['unit'] ?? 'pcs',
-                ];
-            })->toArray();
-
-            $po->items()->createMany($itemsData);
-
-            // Update parent PR status if applicable
-            if ($validated['purchase_request_id']) {
-                $this->updatePurchaseRequestStatus(PurchaseRequest::find($validated['purchase_request_id']));
+                ]);
             }
 
+            // 4. Update parent PR status
+            if (! empty($validated['purchase_request_id'])) {
+                $pr = PurchaseRequest::find($validated['purchase_request_id']);
+                if ($pr instanceof PurchaseRequest) {
+                    $this->updatePurchaseRequestStatus($pr);
+                }
+            }
+
+            // 5. Notify approvers
             $approvers = User::role(['admin', 'finance'])->get();
             if ($approvers->isNotEmpty()) {
                 Notification::send($approvers, new \App\Notifications\NewPurchaseOrderSubmitted($po));
             }
 
-            return $po;
+            return $po->load(['items', 'project', 'supplier']);
         });
     }
 
@@ -113,6 +128,11 @@ class PurchaseOrderService
             'approver_id' => $approverId,
         ]);
 
+        // Release associated warehouse items from "Awaiting Approval"
+        SiteRelease::where('purchase_order_id', $order->id)
+            ->where('status', SiteRelease::STATUS_AWAITING_APPROVAL)
+            ->update(['status' => SiteRelease::STATUS_PENDING]);
+
         if ($order->requester) {
             $order->requester->notify(new \App\Notifications\PurchaseOrderApproved($order));
         }
@@ -128,10 +148,54 @@ class PurchaseOrderService
             throw new \Exception("Only PENDING orders can be declined. Current status: {$order->status}.");
         }
 
-        $order->update([
-            'status' => 'DECLINED',
-            'remarks' => $remarks ?? $order->remarks,
-        ]);
+        DB::transaction(function () use ($order, $remarks) {
+            $order->update([
+                'status' => 'DECLINED',
+                'remarks' => $remarks ?? $order->remarks,
+            ]);
+
+            // 1. Rollback Supplier Items
+            foreach ($order->items as $poItem) {
+                if ($poItem->purchase_request_item_id) {
+                    $prItem = $poItem->purchaseRequestItem;
+                    if ($prItem instanceof PurchaseRequestItem) {
+                        $newQty = max(0, (float)$prItem->ordered_quantity - (float)$poItem->quantity);
+                        $prItem->update(['ordered_quantity' => $newQty]);
+                    }
+                }
+            }
+
+            // 2. Rollback Warehouse Items
+            $warehouseReleases = SiteRelease::where('purchase_order_id', $order->id)->get();
+            /** @var SiteRelease $release */
+            foreach ($warehouseReleases as $release) {
+                if ($release->status === SiteRelease::STATUS_AWAITING_APPROVAL) {
+                    // Return stock to inventory
+                    if ($release->inventoryItem) {
+                        $release->inventoryItem->increment('quantity', (float)$release->quantity_released);
+                    }
+
+                    // Return quantity to PR item
+                    if ($release->purchase_request_item_id) {
+                        $prItem = $release->purchaseRequestItem;
+                        if ($prItem instanceof PurchaseRequestItem) {
+                            $newQty = max(0, $prItem->ordered_quantity - $release->quantity_released);
+                            $prItem->update(['ordered_quantity' => $newQty]);
+                        }
+                    }
+
+                    $release->update(['status' => SiteRelease::STATUS_CANCELLED]);
+                }
+            }
+
+            // 3. Update PR status
+            if ($order->purchase_request_id) {
+                $pr = PurchaseRequest::find($order->purchase_request_id);
+                if ($pr instanceof PurchaseRequest) {
+                    $this->updatePurchaseRequestStatus($pr);
+                }
+            }
+        });
     }
 
     /**
@@ -145,22 +209,46 @@ class PurchaseOrderService
                 'remarks' => $remarks,
             ]);
 
-            // Return the quantities to their respective PR items
-            $prToUpdate = null;
+            $prToUpdate = $order->purchase_request_id;
+
+            // 1. Rollback Supplier Items
             foreach ($order->items as $poItem) {
                 if ($poItem->purchase_request_item_id) {
                     $prItem = $poItem->purchaseRequestItem;
-                    if ($prItem) {
-                        // Make sure we don't go below 0 just in case
-                        $newQty = max(0, $prItem->ordered_quantity - $poItem->quantity);
+                    if ($prItem instanceof PurchaseRequestItem) {
+                        $newQty = max(0, (float)$prItem->ordered_quantity - (float)$poItem->quantity);
                         $prItem->update(['ordered_quantity' => $newQty]);
-                        $prToUpdate = $prItem->purchase_request_id;
                     }
                 }
             }
 
+            // 2. Rollback Warehouse Items
+            $warehouseReleases = SiteRelease::where('purchase_order_id', $order->id)->get();
+            /** @var SiteRelease $release */
+            foreach ($warehouseReleases as $release) {
+                // Return stock to inventory
+                if ($release->inventoryItem) {
+                    $release->inventoryItem->increment('quantity', (float)$release->quantity_released);
+                }
+
+                // Return quantity to PR item
+                if ($release->purchase_request_item_id) {
+                    $prItem = $release->purchaseRequestItem;
+                    if ($prItem instanceof PurchaseRequestItem) {
+                        $newQty = max(0, (float)$prItem->ordered_quantity - (float)$release->quantity_released);
+                        $prItem->update(['ordered_quantity' => $newQty]);
+                    }
+                }
+
+                $release->update(['status' => SiteRelease::STATUS_CANCELLED]);
+            }
+
+            // 3. Update PR status
             if ($prToUpdate) {
-                $this->updatePurchaseRequestStatus(PurchaseRequest::find($prToUpdate));
+                $pr = PurchaseRequest::find($prToUpdate);
+                if ($pr instanceof PurchaseRequest) {
+                    $this->updatePurchaseRequestStatus($pr);
+                }
             }
         });
     }

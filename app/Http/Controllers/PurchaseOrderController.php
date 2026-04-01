@@ -24,7 +24,7 @@ class PurchaseOrderController extends Controller
     public function index(Request $request): Response
     {
         $this->authorize('viewAny', PurchaseOrder::class);
-        $orders = PurchaseOrder::with(['project', 'supplier', 'requester', 'approver', 'items.purchaseRequestItem'])
+        $orders = PurchaseOrder::with(['project', 'supplier', 'requester', 'approver', 'items.purchaseRequestItem', 'siteReleases.inventoryItem'])
             ->orderBy('created_at', 'desc')
             ->paginate(10)
             ->withQueryString();
@@ -54,7 +54,7 @@ class PurchaseOrderController extends Controller
     public function show(PurchaseOrder $order): Response
     {
         $this->authorize('view', $order);
-        $order->load(['project', 'supplier', 'requester', 'approver', 'items.purchaseRequestItem']);
+        $order->load(['project', 'supplier', 'requester', 'approver', 'items.purchaseRequestItem', 'siteReleases.inventoryItem']);
 
         return Inertia::render('Purchasing/Orders/Show', [
             'order' => $order,
@@ -105,7 +105,7 @@ class PurchaseOrderController extends Controller
     public function approve(PurchaseOrder $order): RedirectResponse
     {
         try {
-            $this->authorize('update', $order);
+            $this->authorize('approve', $order);
             $this->service->approve($order, \Illuminate\Support\Facades\Auth::id());
 
             return redirect()->back()->with('success', 'Purchase order approved successfully.');
@@ -117,7 +117,7 @@ class PurchaseOrderController extends Controller
     public function decline(Request $request, PurchaseOrder $order): RedirectResponse
     {
         try {
-            $this->authorize('update', $order);
+            $this->authorize('decline', $order);
             $this->service->decline($order, $request->input('remarks'));
 
             return redirect()->back()->with('success', 'Purchase order declined.');
@@ -128,7 +128,7 @@ class PurchaseOrderController extends Controller
 
     public function cancel(Request $request, PurchaseOrder $order): RedirectResponse
     {
-        $this->authorize('update', $order);
+        $this->authorize('cancel', $order);
         $request->validate([
             'remarks' => 'required|string|max:500',
         ]);

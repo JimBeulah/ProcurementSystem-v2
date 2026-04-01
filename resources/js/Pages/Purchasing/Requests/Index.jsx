@@ -524,8 +524,21 @@ export default function PurchaseRequestsIndex() {
                                                             <div className="font-medium text-slate-800 dark:text-slate-200">{item.item_description}</div>
                                                             {item.ordered_quantity > 0 && (
                                                                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-0.5">
-                                                                    <div className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold tracking-wider uppercase">
-                                                                        {Number(item.ordered_quantity).toFixed(0)} Ordered • {rem > 0 ? `${Number(rem).toFixed(0)} Remaining` : 'Fully Ordered'}
+                                                                    <div className="text-[9px] font-bold tracking-wider uppercase flex items-center gap-1.5">
+                                                                        {item.supplier_quantity > 0 && (
+                                                                            <span className="text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-100 dark:border-blue-500/20">
+                                                                                {Number(item.supplier_quantity).toFixed(0)} Ordered
+                                                                            </span>
+                                                                        )}
+                                                                        {item.warehouse_quantity > 0 && (
+                                                                            <span className="text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-100 dark:border-amber-500/20">
+                                                                                {Number(item.warehouse_quantity).toFixed(0)} from Warehouse
+                                                                            </span>
+                                                                        )}
+                                                                        <span className="text-slate-400">•</span>
+                                                                        <span className={rem > 0 ? "text-emerald-600 font-bold" : "text-slate-400"}>
+                                                                            {rem > 0 ? `${Number(rem).toFixed(0)} Remaining` : 'Fully Sourced'}
+                                                                        </span>
                                                                     </div>
                                                                     {item.purchase_order_items?.length > 0 && (() => {
                                                                         const avgActualPrice = item.purchase_order_items.reduce((sum, poi) => sum + Number(poi.unit_price), 0) / item.purchase_order_items.length;

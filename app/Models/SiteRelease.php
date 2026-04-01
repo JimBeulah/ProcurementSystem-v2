@@ -6,12 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class SiteRelease extends Model
 {
+    const STATUS_AWAITING_APPROVAL = 'AWAITING_APPROVAL';
     const STATUS_PENDING = 'PENDING';
     const STATUS_IN_TRANSIT = 'IN_TRANSIT';
     const STATUS_RECEIVED = 'RECEIVED';
+    const STATUS_CANCELLED = 'CANCELLED';
 
     protected $fillable = [
         'inventory_item_id',
+        'purchase_order_id',
+        'purchase_request_item_id',
         'project_id',
         'released_by_id',
         'issued_to',
@@ -54,5 +58,15 @@ class SiteRelease extends Model
     public function receivedBy()
     {
         return $this->belongsTo(User::class, 'received_by_id');
+    }
+
+    public function purchaseOrder()
+    {
+        return $this->belongsTo(PurchaseOrder::class);
+    }
+
+    public function purchaseRequestItem()
+    {
+        return $this->belongsTo(PurchaseRequestItem::class);
     }
 }

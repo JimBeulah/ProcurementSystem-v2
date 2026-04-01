@@ -74,13 +74,13 @@ class SiteReleaseService
      * Auto-release items from warehouse inventory directly to a project site.
      * Used when fulfilling PRs directly from warehouse stock.
      */
-    public function autoReleaseWarehouseItems(array $warehouseItems, int $projectId, int $requesterId): void
+    public function autoReleaseWarehouseItems(array $warehouseItems, int $projectId, int $requesterId, ?int $purchaseOrderId = null): void
     {
         foreach ($warehouseItems as $wItem) {
-            // Find matching warehouse inventory
+            // Find matching warehouse inventory (stock not yet assigned to any project)
             $inventory = InventoryItem::where('material_name', $wItem['material_name'])
                 ->where('quantity', '>', 0)
-                ->whereNotNull('warehouse_id')
+                ->whereNull('project_id')
                 ->first();
 
             if ($inventory) {
@@ -89,6 +89,8 @@ class SiteReleaseService
 
                 SiteRelease::create([
                     'inventory_item_id' => $inventory->id,
+                    'purchase_order_id' => $purchaseOrderId,
+                    'purchase_request_item_id' => $wItem['purchase_request_item_id'] ?? null,
                     'project_id' => $projectId,
                     'released_by_id' => $requesterId, // Initial requestor/preparer
                     'issued_to' => 'Site Engineer',
@@ -96,7 +98,7 @@ class SiteReleaseService
                     'unit' => $wItem['unit'] ?? 'pcs',
                     'purpose' => 'Auto-sourced from warehouse stock',
                     'release_date' => now(),
-                    'status' => SiteRelease::STATUS_PENDING, // Wait for warehouse officer dispatch
+                    'status' => SiteRelease::STATUS_AWAITING_APPROVAL, // Wait for manager approval
                 ]);
 
                 // Deduct from warehouse stock immediately to reserve it

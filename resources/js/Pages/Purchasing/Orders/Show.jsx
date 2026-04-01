@@ -1,7 +1,7 @@
 import React from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeft, CheckCircle, Printer } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Printer, Package } from 'lucide-react';
 import { usePermissions } from '@/Hooks/usePermissions';
 import PdfPreviewModal from '@/Components/UI/PdfPreviewModal';
 import ConfirmationModal from '@/Components/UI/ConfirmationModal';
@@ -45,6 +45,8 @@ export default function PurchaseOrderShow() {
             title: 'Cancel Purchase Order',
             message: 'Please enter the reason for cancellation:',
             inputPlaceholder: 'Reason for cancellation...',
+            required: true,
+            minLength: 5,
             onConfirm: (remarks) => {
                 if (remarks) {
                     router.post(`/purchasing/orders/${po.id}/cancel`, { remarks });
@@ -170,6 +172,53 @@ export default function PurchaseOrderShow() {
                     </table>
                 </div>
 
+                {/* Warehouse Deployment Tracking */}
+                {po.site_releases && po.site_releases.length > 0 && (
+                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
+                        <div className="p-4 bg-amber-50 dark:bg-amber-900/10 border-b border-amber-100 dark:border-amber-900/20 flex items-center gap-2">
+                            <Package size={18} className="text-amber-600" />
+                            <h2 className="text-sm font-bold text-amber-900 dark:text-amber-400 uppercase tracking-wider">Warehouse Deployment</h2>
+                        </div>
+                        <table className="w-full text-left text-sm text-slate-500">
+                            <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-400 uppercase text-[10px] tracking-wider font-bold">
+                                <tr>
+                                    <th className="p-4">Material (From Warehouse)</th>
+                                    <th className="p-4 text-center">Qty</th>
+                                    <th className="p-4 text-center">Status</th>
+                                    <th className="p-4 text-right whitespace-nowrap">Last Update</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+                                {po.site_releases.map(release => (
+                                    <tr key={release.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <td className="p-4 font-medium text-slate-900 dark:text-white">
+                                            {release.inventory_item?.material_name || "Unknown Material"}
+                                        </td>
+                                        <td className="p-4 text-center font-mono whitespace-nowrap">{release.quantity_released} {release.unit}</td>
+                                        <td className="p-4 text-center">
+                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider ${
+                                                release.status === 'AWAITING_APPROVAL' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
+                                                release.status === 'PENDING' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
+                                                release.status === 'IN_TRANSIT' ? 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20' :
+                                                release.status === 'RECEIVED' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
+                                                'bg-slate-500/10 text-slate-500 border-slate-500/20'
+                                            }`}>
+                                                {release.status.replace(/_/g, ' ')}
+                                            </span>
+                                        </td>
+                                        <td className="p-4 text-right text-xs text-slate-400 whitespace-nowrap">
+                                            {new Date(release.updated_at).toLocaleString()}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        <div className="p-3 bg-slate-50/50 dark:bg-slate-800/30 text-[11px] text-slate-500 italic px-4 border-t border-slate-100 dark:border-slate-700 leading-relaxed">
+                            Warehouse dispatches are only triggered after the manager approves this fulfillment plan.
+                        </div>
+                    </div>
+                )}
+
                 {po.approver && (
                     <div className="flex justify-end text-sm text-emerald-600 items-center gap-2">
                         <CheckCircle size={14} /> Approved by {po.approver.name}
@@ -192,6 +241,8 @@ export default function PurchaseOrderShow() {
                 message={confirmModal.message}
                 type={confirmModal.type}
                 inputPlaceholder={confirmModal.inputPlaceholder}
+                required={confirmModal.required}
+                minLength={confirmModal.minLength}
             />
         </AuthenticatedLayout>
     );

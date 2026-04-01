@@ -50,11 +50,44 @@ class PurchaseOrderPolicy
     }
 
     /**
-     * Determine if the user can approve/decline the purchase order.
+     * Determine if the user can approve the purchase order.
+     */
+    public function approve(User $user, PurchaseOrder $order): bool
+    {
+        // Handled by before() for admin/project_manager
+        return false;
+    }
+
+    /**
+     * Determine if the user can decline the purchase order.
+     */
+    public function decline(User $user, PurchaseOrder $order): bool
+    {
+        // Handled by before() for admin/project_manager
+        return false;
+    }
+
+    /**
+     * Determine if the user can cancel the purchase order.
+     */
+    public function cancel(User $user, PurchaseOrder $order): bool
+    {
+        // Procurement Officers can cancel their own PENDING or APPROVED orders
+        // (But NOT partially delivered or completed ones)
+        if ($user->hasRole('procurement_officer') && 
+            in_array($order->status, [PurchaseOrder::STATUS_PENDING, PurchaseOrder::STATUS_APPROVED]) && 
+            $order->requester_id === $user->id) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine if the user can update the purchase order.
      */
     public function update(User $user, PurchaseOrder $order): bool
     {
-        // Only admins and project managers (handled by before()) should update/approve POs
         return false;
     }
 }

@@ -16,6 +16,8 @@ export default function ConfirmationModal({
     cancelText = 'Cancel',
     defaultValue = '',
     inputPlaceholder = 'Enter reason...',
+    required = false,
+    minLength = 1,
 }) {
     const [inputValue, setInputValue] = useState(defaultValue);
 
@@ -25,7 +27,10 @@ export default function ConfirmationModal({
         }
     }, [isOpen, defaultValue]);
 
+    const isInvalid = type === 'prompt' && required && inputValue.trim().length < minLength;
+
     const handleConfirm = () => {
+        if (isInvalid) return;
         if (type === 'prompt') {
             onConfirm(inputValue);
         } else {
@@ -37,7 +42,11 @@ export default function ConfirmationModal({
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={title}>
             <div className="space-y-4">
-                {message && <p className="text-sm text-gray-600 dark:text-gray-400">{message}</p>}
+                {message && (
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {message} {required && <span className="text-rose-500 font-bold">*</span>}
+                    </p>
+                )}
 
                 {type === 'prompt' && (
                     <div className="mt-4">
@@ -59,11 +68,11 @@ export default function ConfirmationModal({
                     )}
                     
                     {type === 'danger' ? (
-                        <DangerButton onClick={handleConfirm}>
+                        <DangerButton onClick={handleConfirm} disabled={isInvalid}>
                             {confirmText}
                         </DangerButton>
                     ) : (
-                        <PrimaryButton onClick={handleConfirm}>
+                        <PrimaryButton onClick={handleConfirm} disabled={isInvalid}>
                             {confirmText}
                         </PrimaryButton>
                     )}

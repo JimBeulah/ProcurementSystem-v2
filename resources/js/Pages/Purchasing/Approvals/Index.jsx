@@ -53,8 +53,10 @@ export default function ApprovalsIndex() {
             isOpen: true,
             type: 'prompt',
             title: 'Decline Request',
-            message: 'Reason for declining (optional):',
+            message: 'Please enter the reason for declining:',
             inputPlaceholder: 'Reason...',
+            required: true,
+            minLength: 5,
             onConfirm: (remarks) => {
                 setProcessing(id);
                 setIsDrawerOpen(false);
@@ -229,6 +231,8 @@ export default function ApprovalsIndex() {
                 message={confirmModal.message}
                 type={confirmModal.type}
                 inputPlaceholder={confirmModal.inputPlaceholder}
+                required={confirmModal.required}
+                minLength={confirmModal.minLength}
             />
 
             <Drawer 

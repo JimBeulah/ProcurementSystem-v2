@@ -150,6 +150,8 @@ export default function PurchaseOrdersIndex() {
             title: 'Cancel Purchase Order',
             message: 'Please enter the reason for cancellation:',
             inputPlaceholder: 'Reason for cancellation...',
+            required: true,
+            minLength: 5,
             onConfirm: (remarks) => {
                 if (remarks) {
                     router.post(`/purchasing/orders/${po.id}/cancel`, { remarks }, {
@@ -353,6 +355,8 @@ export default function PurchaseOrdersIndex() {
                 message={confirmModal.message}
                 type={confirmModal.type}
                 inputPlaceholder={confirmModal.inputPlaceholder}
+                required={confirmModal.required}
+                minLength={confirmModal.minLength}
             />
         </AuthenticatedLayout>
     );

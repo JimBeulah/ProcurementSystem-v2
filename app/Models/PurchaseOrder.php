@@ -7,6 +7,31 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
+/**
+ * @property int $id
+ * @property \Illuminate\Support\Carbon $order_date
+ * @property int $project_id
+ * @property int $supplier_id
+ * @property int $requester_id
+ * @property int|null $approver_id
+ * @property int|null $purchase_request_id
+ * @property string $status
+ * @property string|null $remarks
+ * @property float $total_amount
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * 
+ * @property-read \App\Models\Project $project
+ * @property-read \App\Models\Supplier $supplier
+ * @property-read \App\Models\User $requester
+ * @property-read \App\Models\User|null $approver
+ * @property-read \App\Models\PurchaseRequest|null $purchaseRequest
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\PurchaseOrderItem[] $items
+ * 
+ * @mixin \Eloquent
+ * @mixin \Illuminate\Database\Eloquent\Builder
+ */
 class PurchaseOrder extends Model
 {
     use LogsActivity, SoftDeletes;
@@ -89,5 +114,10 @@ class PurchaseOrder extends Model
     public function disbursements()
     {
         return $this->hasMany(Disbursement::class);
+    }
+
+    public function siteReleases()
+    {
+        return $this->hasMany(SiteRelease::class);
     }
 }
