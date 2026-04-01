@@ -285,54 +285,81 @@ export default function ApprovalsIndex() {
                                     {drawerType === 'mr' ? 'Items Requested' : 'Purchase Order Items'}
                                     <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md text-[10px]">{selectedItem.items.length}</span>
                                 </h3>
-                                <div className="border border-slate-100 dark:border-slate-700 rounded-xl overflow-hidden divide-y divide-slate-100 dark:divide-slate-700 shadow-sm">
-                                    {selectedItem.items.map((item, idx) => (
-                                        <div key={idx} className="p-3 flex justify-between items-center bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
-                                            <div className="flex-1 min-w-0 pr-4">
-                                                <div className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
-                                                    {drawerType === 'mr' ? item.item_description : item.material_name}
-                                                </div>
-                                                {item.description && (
-                                                    <div className="text-[10px] text-slate-500 truncate mt-0.5">
-                                                        {item.description}
+                                <div className="border border-slate-100 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
+                                    {drawerType === 'mr' && (
+                                        <div className="bg-slate-50 dark:bg-slate-800/50 p-3 grid grid-cols-[1fr,70px,70px,90px,100px] gap-2 text-[8px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-700">
+                                            <div>Item</div>
+                                            <div className="text-right">Whse</div>
+                                            <div className="text-right">Qty</div>
+                                            <div className="text-right">Price</div>
+                                            <div className="text-right">Total</div>
+                                        </div>
+                                    )}
+                                    <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                                        {selectedItem.items.map((item, idx) => (
+                                            <div key={idx} className={`p-3 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors ${drawerType === 'mr' ? 'grid grid-cols-[1fr,70px,70px,90px,100px] gap-2 items-center' : 'flex justify-between items-center'}`}>
+                                                <div className="min-w-0 pr-2">
+                                                    <div className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+                                                        {drawerType === 'mr' ? item.item_description : item.material_name}
                                                     </div>
-                                                )}
-                                            </div>
-                                            <div className="text-right shrink-0">
-                                                <div className="text-xs font-mono font-bold text-slate-900 dark:text-white">
-                                                    {Number(item.quantity).toLocaleString()} <span className="text-[10px] text-slate-400 uppercase font-black tracking-tighter ml-0.5">{item.unit}</span>
+                                                    {item.description && (
+                                                        <div className="text-[10px] text-slate-500 truncate mt-0.5">
+                                                            {item.description}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                {drawerType === 'po' && (
-                                                    <div className="flex flex-col items-end gap-0.5 pt-1">
-                                                        <div className="flex items-center gap-1.5 justify-end mb-0.5">
-                                                            <div className={`text-[10px] font-mono font-bold ${
-                                                                getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost) > VARIANCE_THRESHOLD 
-                                                                    ? 'text-red-500' 
-                                                                    : (getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost) < -VARIANCE_THRESHOLD ? 'text-emerald-500' : 'text-slate-900 dark:text-white')
-                                                            }`}>
-                                                                @ ₱{Number(item.unit_price).toLocaleString()}
+
+                                                {drawerType === 'mr' ? (
+                                                    <>
+                                                        <div className={`text-right text-[10px] font-bold ${Number(item.warehouse_quantity || 0) >= Number(item.quantity) ? 'text-emerald-600' : 'text-amber-500'}`}>
+                                                            {Number(item.warehouse_quantity || 0).toLocaleString()}
+                                                        </div>
+                                                        <div className="text-right text-[10px] font-bold text-slate-900 dark:text-white">
+                                                            {Number(item.quantity).toLocaleString()} <span className="text-[8px] text-slate-400">{item.unit}</span>
+                                                        </div>
+                                                        <div className="text-right text-[10px] font-mono font-bold text-slate-600 dark:text-slate-400">
+                                                            ₱{Number(item.material_unit_price).toLocaleString()}
+                                                        </div>
+                                                        <div className="text-right text-xs font-mono font-bold text-blue-600 dark:text-cyan-400">
+                                                            ₱{Number(item.quantity * item.material_unit_price).toLocaleString()}
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <div className="text-right shrink-0">
+                                                        <div className="text-xs font-mono font-bold text-slate-900 dark:text-white">
+                                                            {Number(item.quantity).toLocaleString()} <span className="text-[10px] text-slate-400 uppercase font-black tracking-tighter ml-0.5">{item.unit}</span>
+                                                        </div>
+                                                        <div className="flex flex-col items-end gap-0.5 pt-1">
+                                                            <div className="flex items-center gap-1.5 justify-end mb-0.5">
+                                                                <div className={`text-[10px] font-mono font-bold ${
+                                                                    getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost) > VARIANCE_THRESHOLD 
+                                                                        ? 'text-red-500' 
+                                                                        : (getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost) < -VARIANCE_THRESHOLD ? 'text-emerald-500' : 'text-slate-900 dark:text-white')
+                                                                }`}>
+                                                                    @ ₱{Number(item.unit_price).toLocaleString()}
+                                                                </div>
+                                                                {getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost) > VARIANCE_THRESHOLD && (
+                                                                    <span className="inline-flex items-center gap-0.5 text-[8px] font-bold uppercase tracking-tighter bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400 px-1 py-0.5 rounded leading-none">
+                                                                        <TrendingUp size={8} /> +{getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost)?.toFixed(0)}% OVER
+                                                                    </span>
+                                                                )}
+                                                                {getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost) < -VARIANCE_THRESHOLD && (
+                                                                    <span className="inline-flex items-center gap-0.5 text-[8px] font-bold uppercase tracking-tighter bg-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 px-1 py-0.5 rounded leading-none">
+                                                                        ↓ {Math.abs(getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost)).toFixed(0)}% UNDER
+                                                                    </span>
+                                                                )}
                                                             </div>
-                                                            {getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost) > VARIANCE_THRESHOLD && (
-                                                                <span className="inline-flex items-center gap-0.5 text-[8px] font-bold uppercase tracking-tighter bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400 px-1 py-0.5 rounded leading-none">
-                                                                    <TrendingUp size={8} /> +{getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost)?.toFixed(0)}% OVER
-                                                                </span>
-                                                            )}
-                                                            {getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost) < -VARIANCE_THRESHOLD && (
-                                                                <span className="inline-flex items-center gap-0.5 text-[8px] font-bold uppercase tracking-tighter bg-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 px-1 py-0.5 rounded leading-none">
-                                                                    ↓ {Math.abs(getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost)).toFixed(0)}% UNDER
-                                                                </span>
+                                                            {item.purchase_request_item?.estimated_unit_cost && (
+                                                                <div className="text-[9px] text-slate-400">
+                                                                    Est. ₱{Number(item.purchase_request_item.estimated_unit_cost).toLocaleString()}
+                                                                </div>
                                                             )}
                                                         </div>
-                                                        {item.purchase_request_item?.estimated_unit_cost && (
-                                                            <div className="text-[9px] text-slate-400">
-                                                                Est. ₱{Number(item.purchase_request_item.estimated_unit_cost).toLocaleString()}
-                                                            </div>
-                                                        )}
                                                     </div>
                                                 )}
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         )}

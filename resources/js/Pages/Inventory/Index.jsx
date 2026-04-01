@@ -47,8 +47,8 @@ export default function InventoryIndex() {
                     consolidated[name] = { ...item, quantity: Number(item.quantity) };
                 } else {
                     consolidated[name].quantity += Number(item.quantity);
-                    if (new Date(item.updated_at) > new Date(consolidated[name].updated_at)) {
-                        consolidated[name].updated_at = item.updated_at;
+                    if (new Date(item.last_updated) > new Date(consolidated[name].last_updated)) {
+                        consolidated[name].last_updated = item.last_updated;
                     }
                 }
             });
@@ -101,12 +101,12 @@ export default function InventoryIndex() {
             )
         },
         {
-            accessorKey: 'updated_at',
+            accessorKey: 'last_updated',
             header: () => <div className="text-right">Last Updated</div>,
             cell: ({ row }) => (
                 <div className="flex items-center justify-end gap-2 text-slate-500 text-sm">
                     <Calendar size={14} className="opacity-70" />
-                    {new Date(row.original.updated_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                    {new Date(row.original.last_updated).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                 </div>
             )
         }
@@ -224,7 +224,7 @@ export default function InventoryIndex() {
                             <h4 className="text-xs text-slate-500 uppercase font-bold mb-3 tracking-widest text-center">Last Inventory Activity</h4>
                             <div className="flex items-center justify-center gap-2 text-slate-900 dark:text-white font-medium">
                                 <Calendar size={16} className="text-slate-400" />
-                                {new Date(selectedItem.updated_at).toLocaleDateString(undefined, { 
+                                {new Date(selectedItem.last_updated).toLocaleDateString(undefined, { 
                                     year: 'numeric', 
                                     month: 'long', 
                                     day: 'numeric',
