@@ -19,12 +19,14 @@ class DatabaseManagementController extends Controller
     {
         // On Windows, especially with Laragon, we might need absolute paths
         if (PHP_OS_FAMILY === 'Windows') {
-            // Try to find in Laragon common paths if not in PATH
-            $laragonPath = 'C:\\laragon\\bin\\mysql\\';
-            if (is_dir($laragonPath)) {
-                $versions = array_diff(scandir($laragonPath, SCANDIR_SORT_DESCENDING), ['.', '..']);
+            // Determine driver based on binary prefix
+            $isPg = str_starts_with($binary, 'pg_') || $binary === 'psql';
+            $driverPath = $isPg ? 'C:\\laragon\\bin\\postgresql\\' : 'C:\\laragon\\bin\\mysql\\';
+
+            if (is_dir($driverPath)) {
+                $versions = array_diff(scandir($driverPath, SCANDIR_SORT_DESCENDING), ['.', '..']);
                 foreach ($versions as $version) {
-                    $fullPath = $laragonPath.$version.'\\bin\\'.$binary.'.exe';
+                    $fullPath = $driverPath.$version.'\\bin\\'.$binary.'.exe';
                     if (file_exists($fullPath)) {
                         return $fullPath;
                     }
@@ -38,12 +40,12 @@ class DatabaseManagementController extends Controller
     public function backup()
     {
         $connection = config('database.default');
+        $config = config("database.connections.{$connection}");
 
-        if ($connection !== 'mysql') {
-            return back()->with('error', 'Backup feature currently only supports MySQL.');
+        if (! in_array($connection, ['mysql', 'pgsql'])) {
+            return back()->with('error', "Backup feature currently only supports MySQL and PostgreSQL. Current driver: {$connection}");
         }
 
-        $config = config('database.connections.mysql');
         $filename = 'backup-'.date('Y-m-d-H-i-s').'.sql';
         $path = storage_path('app/backups/'.$filename);
 
@@ -51,21 +53,31 @@ class DatabaseManagementController extends Controller
             mkdir(storage_path('app/backups'), 0755, true);
         }
 
-        $mysqldump = $this->getBinaryPath('mysqldump');
-
-        // Inherit system environment variables to avoid socket errors on Windows
-        // Critical for Windows network initialization (Winsock)
-        $env = array_merge($_SERVER, getenv(), ['MYSQL_PWD' => $config['password']]);
-
-        $command = sprintf(
-            '%s --user=%s --host=%s --port=%s --protocol=tcp %s > %s',
-            escapeshellarg($mysqldump),
-            escapeshellarg($config['username']),
-            escapeshellarg($config['host']),
-            escapeshellarg($config['port']),
-            escapeshellarg($config['database']),
-            escapeshellarg($path)
-        );
+        if ($connection === 'mysql') {
+            $mysqldump = $this->getBinaryPath('mysqldump');
+            $env = array_merge($_SERVER, getenv(), ['MYSQL_PWD' => $config['password']]);
+            $command = sprintf(
+                '%s --user=%s --host=%s --port=%s --protocol=tcp %s > %s',
+                escapeshellarg($mysqldump),
+                escapeshellarg($config['username']),
+                escapeshellarg($config['host']),
+                escapeshellarg($config['port']),
+                escapeshellarg($config['database']),
+                escapeshellarg($path)
+            );
+        } else {
+            $pgdump = $this->getBinaryPath('pg_dump');
+            $env = array_merge($_SERVER, getenv(), ['PGPASSWORD' => $config['password']]);
+            $command = sprintf(
+                '%s -U %s -h %s -p %s %s > %s',
+                escapeshellarg($pgdump),
+                escapeshellarg($config['username']),
+                escapeshellarg($config['host']),
+                escapeshellarg($config['port']),
+                escapeshellarg($config['database']),
+                escapeshellarg($path)
+            );
+        }
 
         $process = Process::fromShellCommandline($command, null, $env);
         $process->run();
@@ -84,30 +96,43 @@ class DatabaseManagementController extends Controller
         ]);
 
         $connection = config('database.default');
-        if ($connection !== 'mysql') {
-            return back()->with('error', 'Import feature currently only supports MySQL.');
+        $config = config("database.connections.{$connection}");
+
+        if (! in_array($connection, ['mysql', 'pgsql'])) {
+            return back()->with('error', "Import feature currently only supports MySQL and PostgreSQL. Current driver: {$connection}");
         }
 
-        $config = config('database.connections.mysql');
         $file = $request->file('database_file');
         $path = $file->storeAs('temp', 'import.sql');
         $fullPath = storage_path('app/'.$path);
 
-        $mysql = $this->getBinaryPath('mysql');
-
-        // Inherit system environment variables to avoid socket errors on Windows
-        // Critical for Windows network initialization (Winsock)
-        $env = array_merge($_SERVER, getenv(), ['MYSQL_PWD' => $config['password']]);
-
-        $command = sprintf(
-            '%s --user=%s --host=%s --port=%s --protocol=tcp %s < %s',
-            escapeshellarg($mysql),
-            escapeshellarg($config['username']),
-            escapeshellarg($config['host']),
-            escapeshellarg($config['port']),
-            escapeshellarg($config['database']),
-            escapeshellarg($fullPath)
-        );
+        if ($connection === 'mysql') {
+            $mysql = $this->getBinaryPath('mysql');
+            $env = array_merge($_SERVER, getenv(), ['MYSQL_PWD' => $config['password']]);
+            $command = sprintf(
+                '%s --user=%s --host=%s --port=%s --protocol=tcp %s < %s',
+                escapeshellarg($mysql),
+                escapeshellarg($config['username']),
+                escapeshellarg($config['host']),
+                escapeshellarg($config['port']),
+                escapeshellarg($config['database']),
+                escapeshellarg($fullPath)
+            );
+        } else {
+            $psql = $this->getBinaryPath('psql');
+            $env = array_merge($_SERVER, getenv(), ['PGPASSWORD' => $config['password']]);
+            // For PostgreSQL, we often need to drop/create or just pipe. 
+            // Standard restore from .sql file usually works with psql.
+            $command = sprintf(
+                '%s -U %s -h %s -p %s %s < %s',
+                escapeshellarg($psql),
+                escapeshellarg($config['username']),
+                escapeshellarg($config['host']),
+                escapeshellarg($config['port']),
+                escapeshellarg($config['database']),
+                escapeshellarg($fullPath)
+            );
+        }
 
         $process = Process::fromShellCommandline($command, null, $env);
         $process->run();
