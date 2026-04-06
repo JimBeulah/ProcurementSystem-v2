@@ -65,6 +65,7 @@ class FinanceReportTest extends TestCase
             'received_by_id' => $user->id,
             'amount' => 50000,
             'payment_date' => now(),
+            'method' => 'ONLINE',
             'status' => 'PAID',
         ]);
 

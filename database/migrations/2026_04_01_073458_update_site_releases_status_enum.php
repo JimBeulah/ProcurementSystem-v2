@@ -13,16 +13,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Drop the old enum check constraint (PostgreSQL stores enum as a check constraint)
-        DB::statement("ALTER TABLE site_releases DROP CONSTRAINT IF EXISTS site_releases_status_check");
+        if (DB::getDriverName() === 'pgsql') {
+            // Drop the old enum check constraint (PostgreSQL stores enum as a check constraint)
+            DB::statement("ALTER TABLE site_releases DROP CONSTRAINT IF EXISTS site_releases_status_check");
 
-        // Re-add the constraint with the full set of allowed values
-        DB::statement("ALTER TABLE site_releases ADD CONSTRAINT site_releases_status_check CHECK (status IN ('AWAITING_APPROVAL', 'PENDING', 'IN_TRANSIT', 'RECEIVED', 'CANCELLED'))");
+            // Re-add the constraint with the full set of allowed values
+            DB::statement("ALTER TABLE site_releases ADD CONSTRAINT site_releases_status_check CHECK (status IN ('AWAITING_APPROVAL', 'PENDING', 'IN_TRANSIT', 'RECEIVED', 'CANCELLED'))");
+        }
     }
 
     public function down(): void
     {
-        DB::statement("ALTER TABLE site_releases DROP CONSTRAINT IF EXISTS site_releases_status_check");
-        DB::statement("ALTER TABLE site_releases ADD CONSTRAINT site_releases_status_check CHECK (status IN ('IN_TRANSIT', 'RECEIVED'))");
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement("ALTER TABLE site_releases DROP CONSTRAINT IF EXISTS site_releases_status_check");
+            DB::statement("ALTER TABLE site_releases ADD CONSTRAINT site_releases_status_check CHECK (status IN ('IN_TRANSIT', 'RECEIVED'))");
+        }
     }
 };

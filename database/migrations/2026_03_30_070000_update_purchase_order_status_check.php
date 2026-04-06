@@ -14,8 +14,10 @@ return new class extends Migration
     {
         // For PostgreSQL, we need to drop the old check constraint and add a new one.
         // The check constraint name is usually table_column_check.
-        DB::statement('ALTER TABLE purchase_orders DROP CONSTRAINT IF EXISTS purchase_orders_status_check');
-        DB::statement("ALTER TABLE purchase_orders ADD CONSTRAINT purchase_orders_status_check CHECK (status IN ('PENDING', 'APPROVED', 'DECLINED', 'COMPLETED', 'CANCELLED', 'PARTIALLY DELIVERED'))");
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE purchase_orders DROP CONSTRAINT IF EXISTS purchase_orders_status_check');
+            DB::statement("ALTER TABLE purchase_orders ADD CONSTRAINT purchase_orders_status_check CHECK (status IN ('PENDING', 'APPROVED', 'DECLINED', 'COMPLETED', 'CANCELLED', 'PARTIALLY DELIVERED'))");
+        }
     }
 
     /**
@@ -23,7 +25,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement('ALTER TABLE purchase_orders DROP CONSTRAINT IF EXISTS purchase_orders_status_check');
-        DB::statement("ALTER TABLE purchase_orders ADD CONSTRAINT purchase_orders_status_check CHECK (status IN ('PENDING', 'APPROVED', 'DECLINED', 'COMPLETED', 'CANCELLED'))");
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE purchase_orders DROP CONSTRAINT IF EXISTS purchase_orders_status_check');
+            DB::statement("ALTER TABLE purchase_orders ADD CONSTRAINT purchase_orders_status_check CHECK (status IN ('PENDING', 'APPROVED', 'DECLINED', 'COMPLETED', 'CANCELLED'))");
+        }
     }
 };
