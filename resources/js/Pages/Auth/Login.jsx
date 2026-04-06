@@ -1,6 +1,7 @@
 import { Head, useForm, Link } from '@inertiajs/react';
 import { Loader2, Hexagon, Mail, Lock } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import GuestLayout from '@/Layouts/GuestLayout';
 import AuthCarousel from '@/Components/AuthCarousel';
 
@@ -138,12 +139,15 @@ export default function Login({ status }) {
                                         Remember me
                                     </span>
                                 </label>
-                                <Link
-                                    href={route('password.request')}
+                                <button
+                                    type="button"
+                                    onClick={() => toast.info('Please contact the system administrator to reset your password.', {
+                                        description: 'Account security and reset requests are handled by the Admin.',
+                                    })}
                                     className="text-[14px] font-semibold text-[#0066FF] hover:text-[#0052CC] transition-colors"
                                 >
                                     Forgot Password?
-                                </Link>
+                                </button>
                             </div>
 
                             {/* Submit */}
@@ -165,9 +169,15 @@ export default function Login({ status }) {
                         <div className="text-center pt-8">
                             <p className="text-[14px] text-slate-600">
                                 Don't have an account?{' '}
-                                <Link href={route('register')} className="font-semibold text-[#0066FF] hover:text-[#0052CC] transition-colors">
+                                <button
+                                    type="button"
+                                    onClick={() => toast.info('Please contact the Admin to create a new account.', {
+                                        description: 'New user registration is currently handled through official procurement channels.',
+                                    })}
+                                    className="font-semibold text-[#0066FF] hover:text-[#0052CC] transition-colors"
+                                >
                                     Create an account
-                                </Link>
+                                </button>
                             </p>
                         </div>
                     </div>
