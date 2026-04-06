@@ -177,6 +177,10 @@ class BoqController extends Controller
     public function updateComponent(StoreBoqComponentRequest $request, Project $project, \App\Models\BoqItemComponent $boqComponent): RedirectResponse
     {
         // Enforce project ownership via relation check
+        if ($boqComponent->boqItem->project_id !== $project->id) {
+            abort(403, 'Component does not belong to this project.');
+        }
+
         if ($project->approved_by) {
             abort(403, 'Project is approved. Modifications are locked.');
         }
@@ -188,6 +192,10 @@ class BoqController extends Controller
 
     public function destroyComponent(Project $project, \App\Models\BoqItemComponent $boqComponent): RedirectResponse
     {
+        if ($boqComponent->boqItem->project_id !== $project->id) {
+            abort(403, 'Component does not belong to this project.');
+        }
+
         if ($project->approved_by) {
             abort(403, 'Project is approved. Modifications are locked.');
         }
