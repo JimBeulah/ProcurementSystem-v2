@@ -13,10 +13,10 @@ class MaterialFactory extends Factory
     {
         return [
             'code' => fake()->unique()->bothify('MAT-####'),
-            'name' => fake()->word(),
+            'name' => fake()->words(2, true),
             'description' => fake()->sentence(),
-            'unit' => fake()->word(),
-            'category' => fake()->word(),
+            'unit' => fake()->randomElement(['pcs', 'kg', 'm', 'set', 'roll', 'bag']),
+            'category' => fake()->randomElement(['Structural', 'Electrical', 'Plumbing', 'Finishing', 'HVAC']),
         ];
     }
 }
