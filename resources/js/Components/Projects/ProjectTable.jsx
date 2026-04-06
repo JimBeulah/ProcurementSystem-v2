@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from '@inertiajs/react';
-import { Briefcase, MapPin, Edit2, Trash2, Plus } from 'lucide-react';
+import { Briefcase, Edit2, Trash2, Plus } from 'lucide-react';
 import DataTable from '@/Components/UI/DataTable';
 
 export default function ProjectTable({ projects, onEdit, onDelete, onCreate, auth }) {
@@ -72,7 +72,7 @@ export default function ProjectTable({ projects, onEdit, onDelete, onCreate, aut
                     const project = row.original;
                     return (
                         <div className="flex flex-col">
-                            <Link href={`/projects/${project.id}`} className="font-bold text-slate-900 dark:text-white hover:text-cyan-600 transition-colors uppercase truncate max-w-[300px]">
+                            <Link href={`/projects/${project.id}`} className="font-bold text-slate-900 dark:text-white hover:text-cyan-600 transition-colors uppercase truncate max-w-[200px]" title={project.name}>
                                 {project.name}
                             </Link>
                             <span className="text-[10px] text-slate-500 flex items-center gap-1">
@@ -82,28 +82,7 @@ export default function ProjectTable({ projects, onEdit, onDelete, onCreate, aut
                     );
                 }
             },
-            {
-                accessorKey: 'location',
-                header: 'Location / Contract',
-                cell: ({ row }) => {
-                    const project = row.original;
-                    return (
-                        <div className="flex flex-col gap-1">
-                            <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
-                                <MapPin size={10} className="opacity-50" /> {project.location || 'N/A'}
-                            </span>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[9px] text-slate-400 font-mono bg-slate-100 dark:bg-slate-700/50 px-1.5 py-0.5 rounded w-fit capitalize">
-                                    {project.duration_days ? `${project.duration_days} Days` : 'No Duration'}
-                                </span>
-                                <span className="text-[9px] text-slate-500 font-mono font-medium">
-                                    {project.target_end_date ? new Date(project.target_end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'No End Date'}
-                                </span>
-                            </div>
-                        </div>
-                    );
-                }
-            },
+
             {
                 accessorKey: 'project_type',
                 header: () => <div className="text-center w-full block">Type</div>,
