@@ -21,7 +21,7 @@ class InventoryMatchingService
         foreach ($pr->items as $item) {
             $matches = InventoryItem::where('quantity', '>', 0)
                 ->whereNull('project_id') // Ensure it's warehouse stock, not project stock
-                ->where('material_name', 'LIKE', '%'.$item->item_description.'%')
+                ->where('material_name', '=', $item->item_description)
                 ->get(['id', 'material_name', 'quantity', 'unit', 'project_id'])
                 ->toArray();
 
