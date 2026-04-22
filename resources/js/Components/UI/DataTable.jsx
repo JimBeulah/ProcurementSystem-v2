@@ -291,6 +291,7 @@ export function DataTable({
 
                     <div className="flex items-center justify-center gap-2 w-full md:w-auto">
                         <button
+                            type="button"
                             className="flex-1 md:flex-none inline-flex items-center justify-center rounded-xl text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:pointer-events-none disabled:opacity-30 border border-slate-200 bg-white shadow-sm hover:bg-slate-50 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-900 dark:hover:border-slate-700 h-10 px-6 active:scale-95"
                             onClick={() => table.previousPage()}
                             disabled={!table.getCanPreviousPage()}
@@ -298,6 +299,7 @@ export function DataTable({
                             Previous
                         </button>
                         <button
+                            type="button"
                             className="flex-1 md:flex-none inline-flex items-center justify-center rounded-xl text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:pointer-events-none disabled:opacity-30 border border-slate-200 bg-white shadow-sm hover:bg-slate-50 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-900 dark:hover:border-slate-700 h-10 px-6 active:scale-95"
                             onClick={() => table.nextPage()}
                             disabled={!table.getCanNextPage()}

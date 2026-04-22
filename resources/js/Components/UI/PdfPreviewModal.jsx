@@ -28,6 +28,7 @@ export default function PdfPreviewModal({ isOpen, onClose, url, title }) {
 
                 <div className="mt-4 flex justify-end gap-3">
                     <button
+                        type="button"
                         onClick={onClose}
                         className="px-4 py-2 text-sm font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors uppercase"
                     >

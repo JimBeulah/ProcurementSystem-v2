@@ -22,6 +22,7 @@ export function ThemeToggle() {
 
     return (
         <button
+            type="button"
             onClick={toggle}
             className="p-2 rounded-full hover:bg-muted/10 text-muted hover:text-foreground transition-colors"
             title="Toggle theme"

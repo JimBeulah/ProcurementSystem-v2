@@ -63,6 +63,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
                         <div className="relative flex items-center justify-center px-5 py-4 border-b border-black/[0.06] dark:border-white/[0.06]">
                             {/* Close button — left side like macOS */}
                             <button
+                                type="button"
                                 onClick={onClose}
                                 className="absolute left-4 top-1/2 -translate-y-1/2 group w-7 h-7 rounded-full bg-black/[0.04] dark:bg-white/[0.06] hover:bg-red-500 flex items-center justify-center transition-all duration-150"
                             >

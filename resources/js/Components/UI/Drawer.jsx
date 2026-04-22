@@ -65,6 +65,7 @@ export default function Drawer({ isOpen, onClose, title, children, width = 'w-fu
                                 {title}
                             </h2>
                             <button
+                                type="button"
                                 onClick={onClose}
                                 className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] flex items-center justify-center transition-colors"
                             >

@@ -73,6 +73,7 @@ export default function Select({ value, onChange, options, icon: Icon, placehold
                                 return (
                                     <button
                                         key={option.value}
+                                        type="button"
                                         onClick={() => {
                                             onChange(option.value);
                                             setIsOpen(false);
