@@ -34,7 +34,7 @@ class ProjectPolicy
     public function view(User $user, Project $project): bool
     {
         if ($user->hasRole('site_engineer')) {
-            return $project->site_engineer_id === $user->id;
+            return $project->isMember($user);
         }
 
         return $user->hasPermissionTo('view projects');

@@ -13,7 +13,7 @@ class MaterialRequestPolicy
      */
     public function before(User $user, string $ability): ?bool
     {
-        if ($user->hasRole('admin')) {
+        if ($user->hasAnyRole(['admin', 'project_manager'])) {
             return true;
         }
 
@@ -27,7 +27,7 @@ class MaterialRequestPolicy
     public function viewAny(User $user, Project $project): bool
     {
         if ($user->hasRole('site_engineer')) {
-            return $project->site_engineer_id === $user->id;
+            return $project->isMember($user);
         }
 
         return $user->hasPermissionTo('view material requests');
@@ -40,7 +40,7 @@ class MaterialRequestPolicy
         }
 
         if ($user->hasRole('site_engineer')) {
-            return $project->site_engineer_id === $user->id;
+            return $project->isMember($user);
         }
 
         return $user->hasPermissionTo('create material requests');

@@ -78,7 +78,12 @@ class Project extends Model
     public function scopeForUser($query, $user)
     {
         if ($user && $user->hasRole('site_engineer')) {
-            return $query->where('site_engineer_id', $user->id);
+            return $query->where(function($q) use ($user) {
+                $q->where('site_engineer_id', $user->id)
+                  ->orWhereHas('teamMembers', function($sq) use ($user) {
+                      $sq->where('user_id', $user->id);
+                  });
+            });
         }
 
         return $query;
@@ -87,6 +92,15 @@ class Project extends Model
     public function teamMembers()
     {
         return $this->hasMany(ProjectMember::class);
+    }
+
+    public function isMember(User $user): bool
+    {
+        if ($this->site_engineer_id === $user->id) {
+            return true;
+        }
+
+        return $this->teamMembers()->where('user_id', $user->id)->exists();
     }
 
     public function boqItems()
