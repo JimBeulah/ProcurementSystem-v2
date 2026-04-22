@@ -189,7 +189,7 @@ export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleColl
                         href="/settings"
                         icon={<Settings />}
                         label="Settings"
-                        isActive={url.startsWith('/settings')}
+                        isActive={url.startsWith('/settings') && !NAVIGATION_CONFIG.some(({ items }) => items.some(isItemActive))}
                         isCollapsed={isCollapsed}
                         onClick={handleLinkClick}
                         onHover={setActiveTooltip}
