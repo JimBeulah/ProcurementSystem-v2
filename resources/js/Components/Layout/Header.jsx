@@ -165,7 +165,7 @@ export default function Header({ user, onMenuClick }) {
                                         animate={{ opacity: 1, y: 0, scale: 1 }}
                                         exit={{ opacity: 0, y: 8, scale: 0.96 }}
                                         transition={{ duration: 0.15, ease: "easeOut" }}
-                                        className="absolute right-0 mt-2 w-80 rounded-2xl bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 shadow-xl shadow-black/5 overflow-hidden z-[70] origin-top-right"
+                                        className="fixed md:absolute inset-x-4 md:inset-x-auto md:right-0 top-16 md:top-full mt-2 md:w-80 rounded-2xl bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 shadow-xl shadow-black/5 overflow-hidden z-[70] origin-top-right"
                                     >
                                         <div className="p-4 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
                                             <h3 className="text-sm font-semibold text-foreground tracking-tight">Notifications</h3>
@@ -244,7 +244,7 @@ export default function Header({ user, onMenuClick }) {
                                         animate={{ opacity: 1, y: 0, scale: 1 }}
                                         exit={{ opacity: 0, y: 8, scale: 0.96 }}
                                         transition={{ duration: 0.15, ease: "easeOut" }}
-                                        className="absolute right-0 mt-2 w-56 rounded-2xl bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 shadow-xl shadow-black/5 overflow-hidden z-[70] origin-top-right"
+                                        className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 shadow-xl shadow-black/5 overflow-hidden z-[70] origin-top-right"
                                     >
                                         <div className="p-4 border-b border-black/5 dark:border-white/5">
                                             <p className="text-sm font-semibold text-foreground tracking-tight">{user?.name}</p>

@@ -9,10 +9,11 @@ import {
 } from 'lucide-react';
 
 const TABS = [
-    { id: 'all', label: 'All Deliveries', icon: LayoutList },
-    { id: 'supplier', label: 'From Suppliers', icon: ShoppingBag },
-    { id: 'warehouse', label: 'From Warehouse', icon: Warehouse },
+    { id: 'all', label: 'All Deliveries', mobileLabel: 'All', icon: LayoutList },
+    { id: 'supplier', label: 'From Suppliers', mobileLabel: 'Suppliers', icon: ShoppingBag },
+    { id: 'warehouse', label: 'From Warehouse', mobileLabel: 'Warehouse', icon: Warehouse },
 ];
+
 
 export default function Deliveries() {
     const { allDeliveries = [], supplierDeliveries = [], warehouseDeliveries = [] } = usePage().props;
@@ -121,6 +122,7 @@ export default function Deliveries() {
                 {
                     accessorKey: 'title',
                     header: 'Reference',
+                    mobileHeader: 'Ref',
                     cell: ({ row }) => <span className="font-semibold text-zinc-900 dark:text-zinc-100">{row.original.title}</span>
                 },
                 {
@@ -163,6 +165,7 @@ export default function Deliveries() {
                 {
                     accessorKey: 'title',
                     header: 'PO Reference',
+                    mobileHeader: 'Ref',
                     cell: ({ row }) => (
                         <span className="font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                             <Package size={14} className="text-indigo-500" /> {row.original.title}
@@ -206,6 +209,7 @@ export default function Deliveries() {
             {
                 accessorKey: 'title',
                 header: 'Reference',
+                mobileHeader: 'Ref',
                 cell: ({ row }) => (
                     <span className="font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                         <Truck size={14} className="text-violet-500" /> {row.original.title}
@@ -225,6 +229,7 @@ export default function Deliveries() {
             {
                 accessorKey: 'issued_to',
                 header: 'Issued To',
+                mobileHeader: 'To',
                 cell: ({ row }) => <span className="text-slate-500 text-xs">{row.original.issued_to}</span>
             },
             {
@@ -249,50 +254,55 @@ export default function Deliveries() {
         ];
     }, [activeTab, confirming]);
 
+
     return (
         <AuthenticatedLayout>
             <Head title="Pending Deliveries" />
 
             <div className="space-y-6">
                 {/* Page Header */}
-                <div className="rounded-3xl bg-gradient-to-br from-indigo-500 to-violet-600 p-6 text-white relative overflow-hidden shadow-xl shadow-indigo-500/20">
+                <div className="rounded-3xl bg-gradient-to-br from-indigo-500 to-violet-600 p-4 md:p-6 text-white relative overflow-hidden shadow-xl shadow-indigo-500/20">
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.15),_transparent_60%)]" />
                     <div className="relative z-10">
-                        <p className="text-indigo-100 text-xs font-semibold uppercase tracking-widest mb-1">Operations</p>
-                        <h2 className="text-2xl font-bold mb-1 flex items-center gap-2">
-                            <Truck size={22} className="text-white" /> Pending Deliveries
+                        <p className="text-indigo-100 text-[10px] md:text-xs font-semibold uppercase tracking-widest mb-1">Operations</p>
+                        <h2 className="text-xl md:text-2xl font-bold mb-1 flex items-center gap-2">
+                            <Truck size={20} className="text-white md:w-6 md:h-6" /> Pending Deliveries
                         </h2>
-                        <p className="text-indigo-100 text-sm">
-                            <span className="font-bold text-white">{allDeliveries.length}</span> deliveries awaiting confirmation
-                            &nbsp;·&nbsp;
-                            <span className="font-bold text-white">{supplierDeliveries.length}</span> from suppliers
-                            &nbsp;·&nbsp;
-                            <span className="font-bold text-white">{warehouseDeliveries.length}</span> from warehouse
-                        </p>
+                        <div className="text-indigo-100 text-xs md:text-sm flex flex-wrap gap-x-2 gap-y-1 items-center">
+                            <span><span className="font-bold text-white">{allDeliveries.length}</span> awaiting confirmation</span>
+                            <span className="hidden md:inline text-white/30">·</span>
+                            <span><span className="font-bold text-white">{supplierDeliveries.length}</span> from suppliers</span>
+                            <span className="hidden md:inline text-white/30">·</span>
+                            <span><span className="font-bold text-white">{warehouseDeliveries.length}</span> from warehouse</span>
+                        </div>
                     </div>
                 </div>
 
+
                 {/* Tab Switcher & Table */}
-                <div className="bg-white/40 dark:bg-zinc-900/40 backdrop-blur-2xl border border-white/20 dark:border-white/5 rounded-3xl p-6 shadow-sm">
+                <div className="bg-white/40 dark:bg-zinc-900/40 backdrop-blur-2xl border border-white/20 dark:border-white/5 rounded-3xl p-4 md:p-6 shadow-sm">
                     <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-                        <div className="flex gap-2 bg-slate-100/50 dark:bg-zinc-800/50 rounded-2xl p-1 w-fit">
-                            {TABS.map(({ id, label, icon: Icon }) => (
+                        <div className="flex gap-1 md:gap-2 bg-slate-100/50 dark:bg-zinc-800/50 rounded-2xl p-1 w-full md:w-fit overflow-x-auto scrollbar-hide flex-nowrap pr-4 md:pr-1">
+                            {TABS.map(({ id, label, mobileLabel, icon: Icon }) => (
                                 <button
                                     key={id}
                                     onClick={() => setActiveTab(id)}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300
+                                    className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-[10px] md:text-xs font-bold transition-all duration-300 whitespace-nowrap
                                         ${activeTab === id
                                             ? 'bg-white dark:bg-zinc-700 text-indigo-600 dark:text-indigo-400 shadow-sm ring-1 ring-black/5 dark:ring-white/5'
                                             : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100'
                                         }`}
                                 >
                                     <Icon size={14} />
-                                    {label}
+                                    <span className="hidden md:inline">{label}</span>
+                                    <span className="md:hidden">{mobileLabel}</span>
                                     <Badge n={id === 'all' ? allDeliveries.length : id === 'supplier' ? supplierDeliveries.length : warehouseDeliveries.length} active={activeTab === id} />
                                 </button>
                             ))}
                         </div>
+
                     </div>
+
 
                     <DataTable
                         columns={columns}
