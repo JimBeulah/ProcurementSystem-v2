@@ -90,7 +90,7 @@ export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleColl
             </AnimatePresence>
 
             <motion.div
-                className="fixed left-0 top-0 h-full bg-background/80 backdrop-blur-2xl saturate-180 border-r border-black/5 dark:border-white/5 z-50 font-sans flex flex-col md:translate-x-0 transition-colors"
+                className="fixed left-0 top-0 h-full bg-background md:bg-background/80 backdrop-blur-2xl saturate-180 border-r border-black/5 dark:border-white/5 z-50 font-sans flex flex-col md:translate-x-0 transition-colors"
                 variants={sidebarVariants}
                 animate={
                     (typeof window !== 'undefined' && window.innerWidth < 768 && !isOpen)

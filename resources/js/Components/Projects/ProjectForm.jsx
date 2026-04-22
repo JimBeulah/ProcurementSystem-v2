@@ -13,6 +13,25 @@ export default function ProjectForm({
     onCancel, 
     isEditing 
 }) {
+    const formatWithCommas = (value) => {
+        if (value === null || value === undefined || value === '') return '';
+        const stringValue = value.toString();
+        const parts = stringValue.split('.');
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return parts.join('.');
+    };
+
+    const stripCommas = (value) => {
+        return value.replace(/,/g, '');
+    };
+
+    const handleNumericChange = (field, value) => {
+        const stripped = stripCommas(value);
+        if (stripped === '' || /^\d*\.?\d*$/.test(stripped)) {
+            setData(field, stripped);
+        }
+    };
+
     return (
         <form onSubmit={handleSubmit} className="space-y-4 w-full">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -51,12 +70,23 @@ export default function ProjectForm({
                 </div>
                 <div>
                     <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Budget (PhP)</label>
-                    <input type="number" step="0.01" className={`w-full bg-slate-50 dark:bg-slate-900/50 border ${errors.budget ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'} rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-cyan-500 transition-all font-mono`} value={data.budget} onChange={e => setData('budget', e.target.value)} required />
+                    <input 
+                        type="text" 
+                        className={`w-full bg-slate-50 dark:bg-slate-900/50 border ${errors.budget ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'} rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-cyan-500 transition-all font-mono`} 
+                        value={formatWithCommas(data.budget)} 
+                        onChange={e => handleNumericChange('budget', e.target.value)} 
+                        required 
+                    />
                     {errors.budget && <div className="text-red-500 text-[10px] mt-1 uppercase font-bold">{errors.budget}</div>}
                 </div>
                 <div>
                     <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Appropriation (PhP)</label>
-                    <input type="number" step="0.01" className={`w-full bg-slate-50 dark:bg-slate-900/50 border ${errors.appropriation ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'} rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-cyan-500 transition-all font-mono`} value={data.appropriation} onChange={e => setData('appropriation', e.target.value)} />
+                    <input 
+                        type="text" 
+                        className={`w-full bg-slate-50 dark:bg-slate-900/50 border ${errors.appropriation ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'} rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-cyan-500 transition-all font-mono`} 
+                        value={formatWithCommas(data.appropriation)} 
+                        onChange={e => handleNumericChange('appropriation', e.target.value)} 
+                    />
                     {errors.appropriation && <div className="text-red-500 text-[10px] mt-1 uppercase font-bold">{errors.appropriation}</div>}
                 </div>
                 <div className="md:col-span-2">
