@@ -44,10 +44,25 @@ class ProjectService
     }
 
     /**
-     * Delete a project and its BOQ items.
+     * Delete a project and its BOQ items, but only if no transactions exist.
+     * 
+     * @throws \Exception
      */
     public function delete(Project $project): void
     {
+        // Check for active transactions
+        $hasTransactions = $project->purchaseOrders()->exists() ||
+            $project->materialRequests()->exists() ||
+            $project->financialTransactions()->exists() ||
+            $project->inventoryItems()->where('quantity', '>', 0)->exists() ||
+            \App\Models\MaterialReturn::where('project_id', $project->id)->exists() ||
+            \App\Models\SiteRelease::where('project_id', $project->id)->exists();
+
+        if ($hasTransactions) {
+            throw new \Exception('Cannot delete project because it has active transactions (Purchase Orders, Material Requests, or Inventory). Please archive or cancel the project instead.');
+        }
+
+        // If it only has BOQ items, we can safely delete them
         $project->boqItems()->delete();
         $project->delete();
     }
