@@ -1,5 +1,5 @@
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, Link } from '@inertiajs/react';
 import { Loader2, Lock, Hexagon } from 'lucide-react';
 import { useState } from 'react';
 import AuthCarousel from '@/Components/AuthCarousel';

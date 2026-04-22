@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useSyncExternalStore } from 'react';
 import { X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-lg' }) {
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+    const isMounted = useSyncExternalStore(
+        () => () => { },
+        () => true,
+        () => false
+    );
 
     useEffect(() => {
         if (isOpen) {
@@ -30,7 +30,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
         return () => window.removeEventListener('keydown', handler);
     }, [isOpen, onClose]);
 
-    if (!mounted) return null;
+    if (!isMounted) return null;
 
     return createPortal(
         <AnimatePresence>

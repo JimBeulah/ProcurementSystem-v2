@@ -19,9 +19,8 @@ import { toast } from 'sonner';
 export default function ProjectBoq() {
     const { project, boqItems: initialItems, materials, units, isApproved, auth } = usePage().props;
 
-    const [items, setItems] = useState(initialItems || []);
     const [searchTerm, setSearchTerm] = useState('');
-    const [drawerItem, setDrawerItem] = useState(null);
+    const [drawerItemId, setDrawerItemId] = useState(null);
     const [isWizardOpen, setIsWizardOpen] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -40,19 +39,11 @@ export default function ProjectBoq() {
         onConfirm: () => {} 
     });
 
+    const items = initialItems || [];
+    const drawerItem = items.find(i => i.id === drawerItemId) || null;
+
     // Memoized calculations
     const calculations = useBoqCalculations(items, project);
-
-    useEffect(() => {
-        setItems(initialItems);
-    }, [initialItems]);
-
-    useEffect(() => {
-        if (drawerItem) {
-            const updatedItem = items.find(i => i.id === drawerItem.id);
-            if (updatedItem) setDrawerItem(updatedItem);
-        }
-    }, [items]);
 
     const handleWizardSubmit = (payload) => {
         return new Promise((resolve, reject) => {
@@ -339,7 +330,7 @@ export default function ProjectBoq() {
                                         <tr
                                             key={item.id}
                                             className={`group hover:bg-white/60 dark:hover:bg-slate-700/40 transition-all duration-200 cursor-pointer ${drawerItem?.id === item.id ? 'bg-white/80 dark:bg-slate-700/30' : ''}`}
-                                            onClick={() => setDrawerItem(item)}
+                                            onClick={() => setDrawerItemId(item.id)}
                                         >
                                             <td className="py-3 px-3 text-center text-slate-400 font-mono text-xs border-l-4 border-transparent group-hover:border-purple-500/50 transition-all">{idx + 1}</td>
                                             <td className="py-3 px-3 font-semibold text-slate-900 dark:text-white truncate">
@@ -411,7 +402,7 @@ export default function ProjectBoq() {
 
                 <Drawer
                     isOpen={!!drawerItem}
-                    onClose={() => setDrawerItem(null)}
+                    onClose={() => setDrawerItemId(null)}
                     title={
                         <div className="flex flex-col">
                             <span className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">{drawerItem?.item_description}</span>

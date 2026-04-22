@@ -11,11 +11,11 @@ export default function InventoryIndex() {
     const [activeTab, setActiveTab] = useState('all'); // 'all', 'warehouse', 'projects'
     const [selectedItem, setSelectedReport] = useState(null);
 
-    const tabs = [
+    const tabs = React.useMemo(() => [
         { id: 'all', label: 'All Inventory', icon: ClipboardList },
         { id: 'warehouse', label: 'Central Warehouse', icon: Box },
         { id: 'projects', label: 'Project Sites', icon: Building2 },
-    ];
+    ], []);
 
     // Filter by tab
     const tabFiltered = useMemo(() => {
@@ -59,7 +59,7 @@ export default function InventoryIndex() {
         return grouped;
     }, [tabFiltered, activeTab]);
 
-    const columns = [
+    const columns = React.useMemo(() => [
         {
             accessorKey: 'material_name',
             header: 'Material Name',
@@ -110,11 +110,13 @@ export default function InventoryIndex() {
                 </div>
             )
         }
-    ];
+    ], []);
 
-    const filteredColumns = activeTab === 'warehouse' 
+    const filteredColumns = React.useMemo(() => activeTab === 'warehouse' 
         ? columns.filter(col => col.id !== 'project')
-        : columns;
+        : columns, [activeTab, columns]);
+
+    const handleRowClick = React.useCallback((row) => setSelectedReport(row), []);
 
     return (
         <AuthenticatedLayout>
@@ -150,7 +152,7 @@ export default function InventoryIndex() {
                             <DataTable
                                 columns={filteredColumns}
                                 data={tabFiltered}
-                                onRowClick={(row) => setSelectedReport(row)}
+                                onRowClick={handleRowClick}
                             />
                         </div>
                     ) : (
@@ -176,7 +178,7 @@ export default function InventoryIndex() {
                                         <DataTable
                                             columns={columns.filter(col => col.id !== 'project')}
                                             data={projectItems}
-                                            onRowClick={(row) => setSelectedReport(row)}
+                                            onRowClick={handleRowClick}
                                         />
                                     </div>
                                 ))

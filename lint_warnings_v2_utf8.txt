@@ -1,0 +1,560 @@
+﻿
+> lint
+> eslint resources/js
+
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Components\Boq\AddBoqItemWizard.jsx
+   43:33  error    Error: Cannot access variable before it is declared
+
+`handleSubmit` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  41 |             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+  42 |                 e.preventDefault();
+> 43 |                 if (step === 2) handleSubmit(); // Fixed: changed from handleSubmit to arrow function to avoid closure staleness if any? No, handleSubmit is const.
+     |                                 ^^^^^^^^^^^^ `handleSubmit` accessed before it is declared
+  44 |                 else handleNext();
+  45 |             }
+  46 |         };
+
+   75 |     const handleBack = () => setStep(prev => Math.max(prev - 1, 0));
+   76 |
+>  77 |     const handleSubmit = async () => {
+      |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  78 |         if (!validateStep(0)) { setStep(0); return; }
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  79 |         setSubmitting(true);
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 113 |         }
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 114 |     };
+      | ^^^^^^^ `handleSubmit` is declared here
+  115 |
+  116 |     // Component helpers
+  117 |     const addComponent = () => {  react-hooks/immutability
+   44:22  error    Error: Cannot access variable before it is declared
+
+`handleNext` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  42 |                 e.preventDefault();
+  43 |                 if (step === 2) handleSubmit(); // Fixed: changed from handleSubmit to arrow function to avoid closure staleness if any? No, handleSubmit is const.
+> 44 |                 else handleNext();
+     |                      ^^^^^^^^^^ `handleNext` accessed before it is declared
+  45 |             }
+  46 |         };
+  47 |         window.addEventListener('keydown', handler);
+
+  67 |     };
+  68 |
+> 69 |     const handleNext = () => {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 70 |         if (validateStep(step)) {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 71 |             setStep(prev => Math.min(prev + 1, 2));
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 72 |         }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 73 |     };
+     | ^^^^^^^ `handleNext` is declared here
+  74 |
+  75 |     const handleBack = () => setStep(prev => Math.max(prev - 1, 0));
+  76 |                                                                                                                                                                                    react-hooks/immutability
+   49:8   warning  React Hook useEffect has missing dependencies: 'handleNext' and 'handleSubmit'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       react-hooks/exhaustive-deps
+  110:18  warning  'error' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        no-unused-vars
+  405:85  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react/no-unescaped-entities
+  405:98  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react/no-unescaped-entities
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Components\Boq\DeleteBoqItemModal.jsx
+  23:124  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  23:148  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Components\Clients\ClientCard.jsx
+  3:21  warning  'FileText' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+  3:45  warning  'Clock' is defined but never used. Allowed unused vars must match /React/u     no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Components\Finance\IncomeStatement.jsx
+  2:10  warning  'TrendingUp' is defined but never used. Allowed unused vars must match /React/u    no-unused-vars
+  2:22  warning  'ShoppingCart' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+  2:36  warning  'Activity' is defined but never used. Allowed unused vars must match /React/u      no-unused-vars
+  2:46  warning  'CreditCard' is defined but never used. Allowed unused vars must match /React/u    no-unused-vars
+  2:58  warning  'ChevronDown' is defined but never used. Allowed unused vars must match /React/u   no-unused-vars
+  2:71  warning  'CheckCircle2' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+  2:85  warning  'AlertCircle' is defined but never used. Allowed unused vars must match /React/u   no-unused-vars
+  2:98  warning  'PieChart' is defined but never used. Allowed unused vars must match /React/u      no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Components\Layout\Sidebar.jsx
+   1:27  warning  'useEffect' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+  19:35  warning  'user' is defined but never used                                                no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Components\Layout\SubNavigationTabs.jsx
+  3:18  warning  'AnimatePresence' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Components\UI\DataTable.jsx
+  65:19  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+  63 |     }, [columns, enableSelection]);
+  64 |
+> 65 |     const table = useReactTable({
+     |                   ^^^^^^^^^^^^^ TanStack Table's `useReactTable()` API returns functions that cannot be memoized safely
+  66 |         data,
+  67 |         columns: tableColumns,
+  68 |         getCoreRowModel: getCoreRowModel(),  react-hooks/incompatible-library
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Components\UI\Drawer.jsx
+  10:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+   8 |
+   9 |     useEffect(() => {
+> 10 |         setMounted(true);
+     |         ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  11 |     }, []);
+  12 |
+  13 |     useEffect(() => {  react-hooks/set-state-in-effect
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Components\UI\GlobalSearch.jsx
+  17:5   warning  'Send' is defined but never used. Allowed unused vars must match /React/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   no-unused-vars
+  27:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  25 |     useEffect(() => {
+  26 |         if (!isOpen) {
+> 27 |             setSearchQuery('');
+     |             ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  28 |         }
+  29 |     }, [isOpen]);
+  30 |  react-hooks/set-state-in-effect
+  39:9   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  37 |
+  38 |     useEffect(() => {
+> 39 |         setMounted(true);
+     |         ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  40 |     }, []);
+  41 |
+  42 |     useEffect(() => {                                 react-hooks/set-state-in-effect
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Components\UI\Modal.jsx
+  10:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+   8 |
+   9 |     useEffect(() => {
+> 10 |         setMounted(true);
+     |         ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  11 |     }, []);
+  12 |
+  13 |     useEffect(() => {  react-hooks/set-state-in-effect
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Components\UI\Pagination.jsx
+  8:13  warning  'current_page' is assigned a value but never used. Allowed unused vars must match /React/u  no-unused-vars
+  8:27  warning  'last_page' is assigned a value but never used. Allowed unused vars must match /React/u     no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Components\UI\ParticleCanvas.jsx
+  2:10  warning  'usePage' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Components\UI\PdfPreviewModal.jsx
+  3:10  warning  'X' is defined but never used. Allowed unused vars must match /React/u            no-unused-vars
+  3:34  warning  'PrinterIcon' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Components\UI\ThemeToggle.jsx
+  11:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+   9 |         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  10 |         const dark = stored ? stored === 'dark' : prefersDark;
+> 11 |         setIsDark(dark);
+     |         ^^^^^^^^^ Avoid calling setState() directly within an effect
+  12 |         document.documentElement.classList.toggle('dark', dark);
+  13 |     }, []);
+  14 |  react-hooks/set-state-in-effect
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Config\Navigation.jsx
+  4:12  warning  'Hexagon' is defined but never used. Allowed unused vars must match /React/u          no-unused-vars
+  4:21  warning  'X' is defined but never used. Allowed unused vars must match /React/u                no-unused-vars
+  4:43  warning  'ArrowDownCircle' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+  5:5   warning  'ChevronDown' is defined but never used. Allowed unused vars must match /React/u      no-unused-vars
+  5:35  warning  'ChevronLeft' is defined but never used. Allowed unused vars must match /React/u      no-unused-vars
+  5:48  warning  'ChevronRight' is defined but never used. Allowed unused vars must match /React/u     no-unused-vars
+  6:5   warning  'LayoutDashboard' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+  6:37  warning  'FileSearch' is defined but never used. Allowed unused vars must match /React/u       no-unused-vars
+  7:13  warning  'Settings' is defined but never used. Allowed unused vars must match /React/u         no-unused-vars
+  7:23  warning  'CircleDashed' is defined but never used. Allowed unused vars must match /React/u     no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\ActivityLogs\Index.jsx
+   1:27  warning  'useEffect' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+   6:8   warning  'TextInput' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+  83:68  warning  '_' is defined but never used                                                   no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Auth\ConfirmPassword.jsx
+  31:26  error  'Link' is not defined  react/jsx-no-undef
+  31:26  error  'Link' is not defined  no-undef
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Auth\Login.jsx
+  171:36  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Auth\VerifyEmail.jsx
+  57:49  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Clients\Index.jsx
+  10:10  warning  'motion' is defined but never used. Allowed unused vars must match /React/u           no-unused-vars
+  10:18  warning  'AnimatePresence' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+  12:18  warning  'Search' is defined but never used. Allowed unused vars must match /React/u           no-unused-vars
+  12:37  warning  'FileText' is defined but never used. Allowed unused vars must match /React/u         no-unused-vars
+  12:47  warning  'Filter' is defined but never used. Allowed unused vars must match /React/u           no-unused-vars
+  13:17  warning  'ShieldCheck' is defined but never used. Allowed unused vars must match /React/u      no-unused-vars
+  14:5   warning  'CreditCard' is defined but never used. Allowed unused vars must match /React/u       no-unused-vars
+  14:41  warning  'Factory' is defined but never used. Allowed unused vars must match /React/u          no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Dashboards\AdminDashboard.jsx
+  6:90  warning  'ShieldCheck' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Dashboards\ProcurementOfficerDashboard.jsx
+  6:29  warning  'Clock' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Dashboards\ProjectManagerDashboard.jsx
+  2:16  warning  'Link' is defined but never used. Allowed unused vars must match /React/u       no-unused-vars
+  6:70  warning  'BarChart3' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Dashboards\SiteEngineerDashboard.jsx
+  5:50  warning  'Package' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Dashboards\WarehouseDashboard.jsx
+  5:55  warning  'AlertCircle' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Finance\Disbursements\Index.jsx
+  142:21  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  140 |         if (poId) {
+  141 |             const po = poList.find(p => p.id === Number(poId));
+> 142 |             if (po) setAmount(Number(po.total_amount));
+      |                     ^^^^^^^^^ Avoid calling setState() directly within an effect
+  143 |         }
+  144 |     }, [poId]);
+  145 |  react-hooks/set-state-in-effect
+  144:8   warning  React Hook useEffect has a missing dependency: 'poList'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react-hooks/exhaustive-deps
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Finance\Invoices\Index.jsx
+  1:27  warning  'useEffect' is defined but never used. Allowed unused vars must match /React/u   no-unused-vars
+  4:73  warning  'ArrowRight' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Finance\Reports\Index.jsx
+  4:69   warning  'ChevronDown' is defined but never used. Allowed unused vars must match /React/u   no-unused-vars
+  4:82   warning  'CheckCircle2' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+  4:96   warning  'AlertCircle' is defined but never used. Allowed unused vars must match /React/u   no-unused-vars
+  4:123  warning  'CreditCard' is defined but never used. Allowed unused vars must match /React/u    no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Inventory\Index.jsx
+  10:11  warning  The 'items' logical expression could make the dependencies of useMemo Hook (at line 25) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'items' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Inventory\MaterialReturns\Index.jsx
+   5:55  warning  'Inbox' is defined but never used. Allowed unused vars must match /React/u           no-unused-vars
+  16:13  warning  'flash' is assigned a value but never used. Allowed unused vars must match /React/u  no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Inventory\Receiving\Create.jsx
+  17:13  error    Error: Cannot access variable before it is declared
+
+`handlePoChange` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  15 |     useEffect(() => {
+  16 |         if (selectedPoId) {
+> 17 |             handlePoChange(selectedPoId.toString());
+     |             ^^^^^^^^^^^^^^ `handlePoChange` accessed before it is declared
+  18 |         }
+  19 |     }, [selectedPoId]);
+  20 |
+
+  19 |     }, [selectedPoId]);
+  20 |
+> 21 |     const handlePoChange = (id) => {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 22 |         setSelectedPo(id);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 23 |         const po = purchaseOrders.find(p => p.id.toString() === id);
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 37 |         }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 38 |     };
+     | ^^^^^^^ `handlePoChange` is declared here
+  39 |
+  40 |     const toggleReject = (idx) => {
+  41 |         const newItems = [...items];  react-hooks/immutability
+  19:8   warning  React Hook useEffect has a missing dependency: 'handlePoChange'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react-hooks/exhaustive-deps
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Inventory\Receiving\Index.jsx
+  4:32  warning  'Package' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+  4:58  warning  'User' is defined but never used. Allowed unused vars must match /React/u     no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Operations\Deliveries.jsx
+  250:8  warning  React Hook useMemo has a missing dependency: 'openDelivery'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Profile\Partials\UpdateProfileInformationForm.jsx
+  31:40  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Projects\Boq.jsx
+   14:13  warning  'AlertTriangle' is defined but never used. Allowed unused vars must match /React/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        no-unused-vars
+   47:9   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  45 |
+  46 |     useEffect(() => {
+> 47 |         setItems(initialItems);
+     |         ^^^^^^^^ Avoid calling setState() directly within an effect
+  48 |     }, [initialItems]);
+  49 |
+  50 |     useEffect(() => {                                                                                                               react-hooks/set-state-in-effect
+   53:30  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  51 |         if (drawerItem) {
+  52 |             const updatedItem = items.find(i => i.id === drawerItem.id);
+> 53 |             if (updatedItem) setDrawerItem(updatedItem);
+     |                              ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  54 |         }
+  55 |     }, [items]);
+  56 |  react-hooks/set-state-in-effect
+   55:8   warning  React Hook useEffect has a missing dependency: 'drawerItem'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             react-hooks/exhaustive-deps
+  114:17  warning  'components' is assigned a value but never used. Allowed unused vars must match /React/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  no-unused-vars
+  158:27  warning  'errors' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        no-unused-vars
+  168:27  warning  'errors' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        no-unused-vars
+  199:18  warning  'error' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Projects\Index.jsx
+   7:8   warning  'Select' is defined but never used. Allowed unused vars must match /React/u                   no-unused-vars
+  12:10  warning  'Plus' is defined but never used. Allowed unused vars must match /React/u                     no-unused-vars
+  12:16  warning  'Search' is defined but never used. Allowed unused vars must match /React/u                   no-unused-vars
+  12:24  warning  'LayoutGrid' is defined but never used. Allowed unused vars must match /React/u               no-unused-vars
+  12:44  warning  'ListIcon' is defined but never used. Allowed unused vars must match /React/u                 no-unused-vars
+  12:54  warning  'Building2' is defined but never used. Allowed unused vars must match /React/u                no-unused-vars
+  12:65  warning  'Layers' is defined but never used. Allowed unused vars must match /React/u                   no-unused-vars
+  12:73  warning  'UserCog' is defined but never used. Allowed unused vars must match /React/u                  no-unused-vars
+  23:25  warning  'setSearchQuery' is assigned a value but never used. Allowed unused vars must match /React/u  no-unused-vars
+  24:22  warning  'setViewMode' is assigned a value but never used. Allowed unused vars must match /React/u     no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Projects\MaterialRequests.jsx
+    1:27  warning  'useEffect' is defined but never used. Allowed unused vars must match /React/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        no-unused-vars
+    3:16  warning  'Link' is defined but never used. Allowed unused vars must match /React/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             no-unused-vars
+    8:58  warning  'CheckCircle2' is defined but never used. Allowed unused vars must match /React/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     no-unused-vars
+   12:78  warning  'flash' is assigned a value but never used. Allowed unused vars must match /React/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   no-unused-vars
+   13:11  warning  The 'requests' logical expression could make the dependencies of useMemo Hook (at line 111) change on every render. To fix this, wrap the initialization of 'requests' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      react-hooks/exhaustive-deps
+  100:19  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. This value was memoized in source but not in compilation output.
+
+   98 |
+   99 |     // Calculate Usage History (PENDING + APPROVED)
+> 100 |     const usage = React.useMemo(() => {
+      |                   ^^^^^^^^^^^^^^^^^^^^^
+> 101 |         if (!selectedComponent) return { qty: 0, cost: 0 };
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 102 |         return requests.reduce((acc, mr) => {
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 110 |         }, { qty: 0, cost: 0 });
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 111 |     }, [requests, selectedComponent]);
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Could not preserve existing memoization
+  112 |
+  113 |     // Budget Calculations
+  114 |     const totalBudgetQty = (selectedBoqItem && selectedComponent)                                                        react-hooks/preserve-manual-memoization
+  111:19  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. This dependency may be mutated later, which could cause the value to change unexpectedly.
+
+  109 |             return acc;
+  110 |         }, { qty: 0, cost: 0 });
+> 111 |     }, [requests, selectedComponent]);
+      |                   ^^^^^^^^^^^^^^^^^ This dependency may be modified later
+  112 |
+  113 |     // Budget Calculations
+  114 |     const totalBudgetQty = (selectedBoqItem && selectedComponent)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      react-hooks/preserve-manual-memoization
+  126:31  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. This value was memoized in source but not in compilation output.
+
+  124 |     const remainingCost = Math.max(0, totalBudgetCost - usage.cost);
+  125 |
+> 126 |     const warehouseQuantity = React.useMemo(() => {
+      |                               ^^^^^^^^^^^^^^^^^^^^^
+> 127 |         if (!selectedComponent) return 0;
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 128 |
+      ΓÇª
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 139 |         return items.reduce((acc, current) => acc + Number(current.quantity), 0);
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 140 |     }, [selectedComponent, inventoryItems]);
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Could not preserve existing memoization
+  141 |
+  142 |     // Current Request Calculations
+  143 |     const currentRequestCost = (Number(requestQty) || 0) * ((Number(materialUnitPrice) || 0) + (Number(laborUnitPrice) || 0));  react-hooks/preserve-manual-memoization
+  140:9   error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. This dependency may be mutated later, which could cause the value to change unexpectedly.
+
+  138 |
+  139 |         return items.reduce((acc, current) => acc + Number(current.quantity), 0);
+> 140 |     }, [selectedComponent, inventoryItems]);
+      |         ^^^^^^^^^^^^^^^^^ This dependency may be modified later
+  141 |
+  142 |     // Current Request Calculations
+  143 |     const currentRequestCost = (Number(requestQty) || 0) * ((Number(materialUnitPrice) || 0) + (Number(laborUnitPrice) || 0));                                                                                                                                                                                                                                                                                                                                                                                                                           react-hooks/preserve-manual-memoization
+  148:11  warning  'hasAltapilBudget' is assigned a value but never used. Allowed unused vars must match /React/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Projects\MaterialReturns.jsx
+   4:27  warning  'X' is defined but never used. Allowed unused vars must match /React/u               no-unused-vars
+  16:42  warning  'flash' is assigned a value but never used. Allowed unused vars must match /React/u  no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Projects\Show.jsx
+   5:52  warning  'ArrowRight' is defined but never used. Allowed unused vars must match /React/u    no-unused-vars
+   6:59  warning  'Command' is defined but never used. Allowed unused vars must match /React/u       no-unused-vars
+   7:5   warning  'ExternalLink' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+   7:56  warning  'ChevronRight' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+  11:10  warning  'StatCard' is defined but never used. Allowed unused vars must match /React/u      no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Purchasing\Approvals\Index.jsx
+    4:79  warning  'Calendar' is defined but never used. Allowed unused vars must match /React/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                no-unused-vars
+  125:8   warning  React Hook useMemo has missing dependencies: 'handleApprove' and 'handleReject'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react-hooks/exhaustive-deps
+  176:8   warning  React Hook useMemo has missing dependencies: 'handleApprove' and 'handleReject'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react-hooks/exhaustive-deps
+  196:22  error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  194 |
+  195 |                 <div className="flex border-b border-slate-200 dark:border-slate-700">
+> 196 |                     <TabBtn id="mr" label="Material Requests" count={mrs.length} />
+      |                      ^^^^^^ This component is created during render
+  197 |                     <TabBtn id="po" label="Purchase Orders" count={pos.length} />
+  198 |                 </div>
+  199 |
+
+  182 |     };
+  183 |
+> 184 |     const TabBtn = ({ id, label, count }) => (
+      |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 185 |         <button onClick={() => setTab(id)} className={`px-4 py-3 border-b-2 text-sm font-bold transition-colors ${tab === id ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 186 |             {label} <span className="ml-1 px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-xs">{count}</span>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 187 |         </button>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 188 |     );
+      | ^^^^^^ The component is created during render here
+  189 |
+  190 |     return (
+  191 |         <AuthenticatedLayout>                                                                                                                                       react-hooks/static-components
+  197:22  error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+  195 |                 <div className="flex border-b border-slate-200 dark:border-slate-700">
+  196 |                     <TabBtn id="mr" label="Material Requests" count={mrs.length} />
+> 197 |                     <TabBtn id="po" label="Purchase Orders" count={pos.length} />
+      |                      ^^^^^^ This component is created during render
+  198 |                 </div>
+  199 |
+  200 |                 <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+
+  182 |     };
+  183 |
+> 184 |     const TabBtn = ({ id, label, count }) => (
+      |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 185 |         <button onClick={() => setTab(id)} className={`px-4 py-3 border-b-2 text-sm font-bold transition-colors ${tab === id ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 186 |             {label} <span className="ml-1 px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-xs">{count}</span>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 187 |         </button>
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 188 |     );
+      | ^^^^^^ The component is created during render here
+  189 |
+  190 |     return (
+  191 |         <AuthenticatedLayout>  react-hooks/static-components
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Purchasing\Orders\Create.jsx
+  69:38  warning  'estimated_unit_cost' is defined but never used  no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Purchasing\Requests\Index.jsx
+  14:5   warning  'ClipboardList' is defined but never used. Allowed unused vars must match /React/u                                                                            no-unused-vars
+  14:56  warning  'ChevronDown' is defined but never used. Allowed unused vars must match /React/u                                                                              no-unused-vars
+  14:69  warning  'ChevronRight' is defined but never used. Allowed unused vars must match /React/u                                                                             no-unused-vars
+  15:32  warning  'PhilippinePeso' is defined but never used. Allowed unused vars must match /React/u                                                                           no-unused-vars
+  15:48  warning  'AlertTriangle' is defined but never used. Allowed unused vars must match /React/u                                                                            no-unused-vars
+  16:5   warning  'MoreVertical' is defined but never used. Allowed unused vars must match /React/u                                                                             no-unused-vars
+  18:10  warning  'toast' is defined but never used. Allowed unused vars must match /React/u                                                                                    no-unused-vars
+  42:42  warning  'flash' is assigned a value but never used. Allowed unused vars must match /React/u                                                                           no-unused-vars
+  94:8   warning  React Hook useEffect has missing dependencies: 'filters?.date', 'filters?.search', and 'filters?.status'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Purchasing\SupplierReturns\Create.jsx
+   1:27   warning  'useEffect' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+  82:124  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                 react/no-unescaped-entities
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Purchasing\Suppliers\Index.jsx
+    8:10  warning  'toast' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+  147:23  warning  'err' is defined but never used                                             no-unused-vars
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Settings\Database\Index.jsx
+    3:16  warning  'router' is defined but never used. Allowed unused vars must match /React/u                no-unused-vars
+   15:61  warning  'clearErrors' is assigned a value but never used. Allowed unused vars must match /React/u  no-unused-vars
+  179:64  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                            react/no-unescaped-entities
+  179:70  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                            react/no-unescaped-entities
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\Settings\Users\Index.jsx
+  140:11  warning  The 'list' logical expression could make the dependencies of useMemo Hook (at line 152) change on every render. To fix this, wrap the initialization of 'list' in its own useMemo() Hook                                                        react-hooks/exhaustive-deps
+  154:11  warning  The 'handleToggleActive' function makes the dependencies of useMemo Hook (at line 290) change on every render. Move it inside the useMemo callback. Alternatively, wrap the definition of 'handleToggleActive' in its own useCallback() Hook    react-hooks/exhaustive-deps
+  160:11  warning  The 'handleResetPassword' function makes the dependencies of useMemo Hook (at line 290) change on every render. Move it inside the useMemo callback. Alternatively, wrap the definition of 'handleResetPassword' in its own useCallback() Hook  react-hooks/exhaustive-deps
+
+C:\laragon\www\ProcurementSystem-v2\resources\js\Pages\SiteRelease\Index.jsx
+   6:5   warning  'Package' is defined but never used. Allowed unused vars must match /React/u           no-unused-vars
+   9:5   warning  'ArrowRightCircle' is defined but never used. Allowed unused vars must match /React/u  no-unused-vars
+  12:5   warning  'AlertTriangle' is defined but never used. Allowed unused vars must match /React/u     no-unused-vars
+  19:10  warning  'toast' is defined but never used. Allowed unused vars must match /React/u             no-unused-vars
+  22:56  warning  'auth' is assigned a value but never used. Allowed unused vars must match /React/u     no-unused-vars
+
+Γ£û 147 problems (29 errors, 118 warnings)
+

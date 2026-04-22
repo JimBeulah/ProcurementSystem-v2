@@ -17,7 +17,7 @@ export default function MaterialReturnsIndex({ returns }) {
     const [processing, setProcessing] = useState(null);
     const [selectedReturn, setSelectedReturn] = useState(null);
 
-    const handleReceive = (id, e) => {
+    const handleReceive = React.useCallback((id, e) => {
         if (e) {
             e.preventDefault();
             e.stopPropagation();
@@ -30,9 +30,9 @@ export default function MaterialReturnsIndex({ returns }) {
                 setSelectedReturn(null);
             },
         });
-    };
+    }, [processing]);
 
-    const columns = [
+    const columns = React.useMemo(() => [
         {
             accessorKey: 'material_name',
             header: 'Material',
@@ -108,7 +108,9 @@ export default function MaterialReturnsIndex({ returns }) {
                 return null;
             }
         }
-    ];
+    ], [handleReceive, processing, can]);
+
+    const handleRowClick = React.useCallback((row) => setSelectedReturn(row), []);
 
     const renderReturnDetails = (ret) => {
         if (!ret) return null;
@@ -208,7 +210,7 @@ export default function MaterialReturnsIndex({ returns }) {
                     <DataTable
                         columns={columns}
                         data={returns.data || []}
-                        onRowClick={(row) => setSelectedReturn(row)}
+                        onRowClick={handleRowClick}
                     />
                 </div>
             </div>

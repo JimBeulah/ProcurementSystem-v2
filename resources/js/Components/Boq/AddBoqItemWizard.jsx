@@ -27,27 +27,6 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
     const descRef = useRef(null);
     const resourceListRef = useRef(null);
 
-    // Auto-focus description on open
-    useEffect(() => {
-        if (isOpen && step === 0) {
-            setTimeout(() => descRef.current?.focus(), 150);
-        }
-    }, [isOpen, step]);
-
-    // Keyboard shortcuts
-    useEffect(() => {
-        if (!isOpen) return;
-        const handler = (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                e.preventDefault();
-                if (step === 2) handleSubmit(); // Fixed: changed from handleSubmit to arrow function to avoid closure staleness if any? No, handleSubmit is const.
-                else handleNext();
-            }
-        };
-        window.addEventListener('keydown', handler);
-        return () => window.removeEventListener('keydown', handler);
-    }, [isOpen, step, item]); // Added item dependency to ensure latest state is used
-
     const resetForm = useCallback(() => {
         setItem({ ...INITIAL_STATE });
         setStep(0);
@@ -112,6 +91,27 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
             // Keep modal open and let user fix errors
         }
     };
+
+    // Auto-focus description on open
+    useEffect(() => {
+        if (isOpen && step === 0) {
+            setTimeout(() => descRef.current?.focus(), 150);
+        }
+    }, [isOpen, step]);
+
+    // Keyboard shortcuts
+    useEffect(() => {
+        if (!isOpen) return;
+        const handler = (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                if (step === 2) handleSubmit();
+                else handleNext();
+            }
+        };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+    }, [isOpen, step, item, handleSubmit, handleNext]); // Added handleSubmit and handleNext to dependencies
 
     // Component helpers
     const addComponent = () => {
@@ -402,7 +402,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                             <div className="text-center py-8 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
                                 <Settings size={24} className="mx-auto text-slate-300 mb-2" />
                                 <p className="text-[10px] text-slate-500 uppercase font-black">No resources added yet</p>
-                                <p className="text-[9px] text-slate-400 mt-1">Click "Add Resource" below to define material, labor & equipment costs</p>
+                                <p className="text-[9px] text-slate-400 mt-1">Click &quot;Add Resource&quot; below to define material, labor &amp; equipment costs</p>
                             </div>
                         )}
                     </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useSyncExternalStore } from 'react';
 import { Command } from 'cmdk';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
@@ -18,15 +18,21 @@ import {
 } from 'lucide-react';
 
 export default function GlobalSearch({ isOpen, onClose }) {
-    const [mounted, setMounted] = useState(false);
+    const isMounted = useSyncExternalStore(
+        () => () => { },
+        () => true,
+        () => false
+    );
     const [searchQuery, setSearchQuery] = useState('');
     const { auth, search_projects } = usePage().props;
 
-    useEffect(() => {
+    const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+    if (isOpen !== prevIsOpen) {
+        setPrevIsOpen(isOpen);
         if (!isOpen) {
             setSearchQuery('');
         }
-    }, [isOpen]);
+    }
 
     // Helper function to check permissions
     const hasPermission = (permission) => {
@@ -34,10 +40,6 @@ export default function GlobalSearch({ isOpen, onClose }) {
         if (auth.roles?.includes('admin')) return true;
         return auth.permissions?.includes(permission);
     };
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
 
     useEffect(() => {
         if (isOpen) {
@@ -64,7 +66,7 @@ export default function GlobalSearch({ isOpen, onClose }) {
         router.get(href);
     };
 
-    if (!mounted) return null;
+    if (!isMounted) return null;
 
     return createPortal(
         <AnimatePresence>

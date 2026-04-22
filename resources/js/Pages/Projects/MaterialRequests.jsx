@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 
 export default function ProjectMaterialRequests() {
     const { project, materialRequests: initialMRs, boqItems, inventoryItems, flash, auth } = usePage().props;
-    const requests = initialMRs || [];
+    const requests = React.useMemo(() => initialMRs || [], [initialMRs]);
 
     const [showModal, setShowModal] = useState(false);
     const [submitting, setSubmitting] = useState(false);

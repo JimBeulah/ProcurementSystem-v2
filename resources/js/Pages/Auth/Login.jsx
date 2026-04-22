@@ -168,7 +168,7 @@ export default function Login({ status }) {
 
                         <div className="text-center pt-8">
                             <p className="text-[14px] text-slate-600">
-                                Don't have an account?{' '}
+                                Don&apos;t have an account?{' '}
                                 <button
                                     type="button"
                                     onClick={() => toast.info('Please contact the Admin to create a new account.', {

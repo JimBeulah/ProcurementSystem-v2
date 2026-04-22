@@ -12,13 +12,7 @@ export default function CreateReceiving() {
     const [items, setItems] = useState([]);
     const [submitting, setSubmitting] = useState(false);
 
-    useEffect(() => {
-        if (selectedPoId) {
-            handlePoChange(selectedPoId.toString());
-        }
-    }, [selectedPoId]);
-
-    const handlePoChange = (id) => {
+    const handlePoChange = React.useCallback((id) => {
         setSelectedPo(id);
         const po = purchaseOrders.find(p => p.id.toString() === id);
         if (po && po.items) {
@@ -35,7 +29,13 @@ export default function CreateReceiving() {
         } else {
             setItems([]);
         }
-    };
+    }, [purchaseOrders]);
+
+    useEffect(() => {
+        if (selectedPoId) {
+            handlePoChange(selectedPoId.toString());
+        }
+    }, [selectedPoId, handlePoChange]);
 
     const toggleReject = (idx) => {
         const newItems = [...items];

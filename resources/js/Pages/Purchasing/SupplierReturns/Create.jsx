@@ -79,7 +79,7 @@ export default function SupplierReturnCreate() {
                 <div className="bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 rounded-xl p-4 flex items-start gap-3">
                     <AlertTriangle size={18} className="text-rose-500 mt-0.5 shrink-0" />
                     <p className="text-sm text-rose-700 dark:text-rose-400">
-                        Submitting this return will immediately <strong>deduct</strong> the selected items from the project's site inventory.
+                        Submitting this return will immediately <strong>deduct</strong> the selected items from the project&apos;s site inventory.
                         A new Purchase Request/Order will be needed to procure the correct items.
                     </p>
                 </div>

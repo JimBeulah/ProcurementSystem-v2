@@ -28,7 +28,7 @@ export default function UpdateProfileInformation({
         <section className={className}>
             <header>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                    Update your account's profile information and email address.
+                    Update your account&apos;s profile information and email address.
                 </p>
             </header>
 

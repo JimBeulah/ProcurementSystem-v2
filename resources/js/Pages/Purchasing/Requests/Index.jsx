@@ -91,7 +91,7 @@ export default function PurchaseRequestsIndex() {
             }
         }, 300);
         return () => clearTimeout(timer);
-    }, [search, dateFilter, statusFilter]);
+    }, [search, dateFilter, statusFilter, filters?.search, filters?.date, filters?.status]);
 
     // Expanded rows logic removed in favor of Drawer
     const addToCart = () => {

@@ -15,6 +15,12 @@ function getPriceVariance(actualPrice, estimatedPrice) {
     return ((actualPrice - estimatedPrice) / estimatedPrice) * 100;
 }
 
+const TabBtn = ({ id, label, count, activeTab, setTab }) => (
+    <button onClick={() => setTab(id)} className={`px-4 py-3 border-b-2 text-sm font-bold transition-colors ${activeTab === id ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>
+        {label} <span className="ml-1 px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-xs">{count}</span>
+    </button>
+);
+
 export default function ApprovalsIndex() {
     const { pendingPos, pendingMrs } = usePage().props;
     const { can } = usePermissions();
@@ -33,7 +39,7 @@ export default function ApprovalsIndex() {
         onConfirm: () => {} 
     });
 
-    const handleApprove = (type, id) => {
+    const handleApprove = React.useCallback((type, id) => {
         if (processing) return;
         setProcessing(id);
         if (type === 'po') {
@@ -45,9 +51,9 @@ export default function ApprovalsIndex() {
                 onFinish: () => setProcessing(null),
             });
         }
-    };
+    }, [processing]);
 
-    const handleReject = (type, id) => {
+    const handleReject = React.useCallback((type, id) => {
         if (processing) return;
         setConfirmModal({
             isOpen: true,
@@ -71,7 +77,7 @@ export default function ApprovalsIndex() {
                 }
             }
         });
-    };
+    }, [processing]);
 
     const mrColumns = useMemo(() => [
         {
@@ -122,7 +128,7 @@ export default function ApprovalsIndex() {
                 </div>
             ),
         }
-    ], [processing, can]);
+    ], [processing, can, handleApprove, handleReject]);
 
     const poColumns = useMemo(() => [
         {
@@ -173,7 +179,7 @@ export default function ApprovalsIndex() {
                 </div>
             ),
         }
-    ], [processing, can]);
+    ], [processing, can, handleApprove, handleReject]);
 
     const openDetails = (item, type) => {
         setSelectedItem(item);
@@ -181,11 +187,6 @@ export default function ApprovalsIndex() {
         setIsDrawerOpen(true);
     };
 
-    const TabBtn = ({ id, label, count }) => (
-        <button onClick={() => setTab(id)} className={`px-4 py-3 border-b-2 text-sm font-bold transition-colors ${tab === id ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>
-            {label} <span className="ml-1 px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-xs">{count}</span>
-        </button>
-    );
 
     return (
         <AuthenticatedLayout>
@@ -193,8 +194,8 @@ export default function ApprovalsIndex() {
             <div className="max-w-7xl mx-auto space-y-6">
 
                 <div className="flex border-b border-slate-200 dark:border-slate-700">
-                    <TabBtn id="mr" label="Material Requests" count={mrs.length} />
-                    <TabBtn id="po" label="Purchase Orders" count={pos.length} />
+                    <TabBtn id="mr" label="Material Requests" count={mrs.length} activeTab={tab} setTab={setTab} />
+                    <TabBtn id="po" label="Purchase Orders" count={pos.length} activeTab={tab} setTab={setTab} />
                 </div>
 
                 <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">

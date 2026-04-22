@@ -20,7 +20,7 @@ export default function DeleteBoqItemModal({
                     <div className="space-y-1">
                         <h4 className="text-sm font-bold text-slate-900 dark:text-white">Delete Item?</h4>
                         <p className="text-sm text-slate-500 dark:text-slate-400">
-                            Are you sure you want to delete <span className="font-bold text-slate-700 dark:text-slate-300">"{item.item_description}"</span>?
+                            Are you sure you want to delete <span className="font-bold text-slate-700 dark:text-slate-300">&quot;{item.item_description}&quot;</span>?
                             <br />This action cannot be undone.
                         </p>
                     </div>

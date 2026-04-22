@@ -35,7 +35,38 @@ export default function PurchaseOrdersIndex() {
         onConfirm: () => {} 
     });
 
-    const columns = [
+    const handleApprove = React.useCallback((po) => {
+        setConfirmModal({
+            isOpen: true,
+            type: 'confirm',
+            title: 'Approve Purchase Order',
+            message: 'Are you sure you want to approve this Purchase Order?',
+            onConfirm: () => router.post(`/purchasing/orders/${po.id}/approve`, {}, {
+                onSuccess: () => setSelectedOrder(null)
+            })
+        });
+    }, []);
+
+    const handleCancel = React.useCallback((po) => {
+        setConfirmModal({
+            isOpen: true,
+            type: 'prompt',
+            title: 'Cancel Purchase Order',
+            message: 'Please enter the reason for cancellation:',
+            inputPlaceholder: 'Reason for cancellation...',
+            required: true,
+            minLength: 5,
+            onConfirm: (remarks) => {
+                if (remarks) {
+                    router.post(`/purchasing/orders/${po.id}/cancel`, { remarks }, {
+                        onSuccess: () => setSelectedOrder(null)
+                    });
+                }
+            }
+        });
+    }, []);
+
+    const columns = React.useMemo(() => [
         {
             accessorKey: 'po_number',
             header: 'PO #',
@@ -129,38 +160,9 @@ export default function PurchaseOrdersIndex() {
                 );
             }
         }
-    ];
+    ], [can]);
 
-    const handleApprove = (po) => {
-        setConfirmModal({
-            isOpen: true,
-            type: 'confirm',
-            title: 'Approve Purchase Order',
-            message: 'Are you sure you want to approve this Purchase Order?',
-            onConfirm: () => router.post(`/purchasing/orders/${po.id}/approve`, {}, {
-                onSuccess: () => setSelectedOrder(null)
-            })
-        });
-    };
-
-    const handleCancel = (po) => {
-        setConfirmModal({
-            isOpen: true,
-            type: 'prompt',
-            title: 'Cancel Purchase Order',
-            message: 'Please enter the reason for cancellation:',
-            inputPlaceholder: 'Reason for cancellation...',
-            required: true,
-            minLength: 5,
-            onConfirm: (remarks) => {
-                if (remarks) {
-                    router.post(`/purchasing/orders/${po.id}/cancel`, { remarks }, {
-                        onSuccess: () => setSelectedOrder(null)
-                    });
-                }
-            }
-        });
-    };
+    const handleRowClick = React.useCallback((row) => setSelectedOrder(row), []);
 
     const renderOrderDetails = (po) => {
         if (!po) return null;
@@ -313,7 +315,7 @@ export default function PurchaseOrdersIndex() {
                     <DataTable
                         columns={columns}
                         data={pos}
-                        onRowClick={(row) => setSelectedOrder(row)}
+                        onRowClick={handleRowClick}
                         showPagination={false}
                     />
                     <Pagination links={orders.links} meta={orders} />

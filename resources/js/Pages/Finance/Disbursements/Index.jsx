@@ -32,13 +32,13 @@ export default function DisbursementsIndex() {
     const [receiptFile, setReceiptFile] = useState(null);
     const [remarks, setRemarks] = useState('');
 
-    const openLiquidation = (pay) => {
+    const openLiquidation = React.useCallback((pay) => {
         setSelectedPayment(pay);
         setActualAmount(Number(pay.amount));
         setIsLiquidateOpen(true);
-    };
+    }, []);
 
-    const columns = [
+    const columns = React.useMemo(() => [
         {
             accessorKey: 'payment_date',
             header: 'Date',
@@ -134,14 +134,8 @@ export default function DisbursementsIndex() {
                 </div>
             ),
         }
-    ];
+    ], [openLiquidation]);
 
-    useEffect(() => {
-        if (poId) {
-            const po = poList.find(p => p.id === Number(poId));
-            if (po) setAmount(Number(po.total_amount));
-        }
-    }, [poId]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -351,7 +345,13 @@ export default function DisbursementsIndex() {
                         <label className="text-xs text-slate-500 uppercase font-bold mb-1 block">Link Purchase Order</label>
                         <Combobox
                             value={poId}
-                            onChange={(val) => setPoId(val)}
+                            onChange={(val) => {
+                                setPoId(val);
+                                if (val) {
+                                    const po = poList.find(p => p.id === Number(val));
+                                    if (po) setAmount(Number(po.total_amount));
+                                }
+                            }}
                             options={[{ value: '', label: 'Select PO...' }, ...poList.map(o => ({
                                 value: String(o.id),
                                 label: `PO-${o.id} - ${o.supplier?.name} (${Number(o.total_amount).toLocaleString()})`

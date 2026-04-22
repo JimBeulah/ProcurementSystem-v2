@@ -176,7 +176,7 @@ export default function DatabaseManagement() {
                     <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-6">
                         <p className="text-red-700 dark:text-red-400 text-sm leading-relaxed font-medium">
                             This will completely wipe all projects, BOQs, materials, suppliers, and transactions. 
-                            The system will be returned to its "empty" state with only the administrator accounts.
+                            The system will be returned to its &quot;empty&quot; state with only the administrator accounts.
                         </p>
                     </div>
                     <p className="text-slate-600 dark:text-slate-400 mb-6">
