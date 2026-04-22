@@ -20,7 +20,7 @@ class MaterialRequestFactory extends Factory
     public function definition(): array
     {
         return [
-            'mrf_no' => 'MRF-' . date('Y') . '-' . str_pad(fake()->unique()->numberBetween(1, 999), 3, '0', STR_PAD_LEFT),
+            'mrf_no' => 'MRF-'.date('Y').'-'.str_pad(fake()->unique()->numberBetween(1, 999), 3, '0', STR_PAD_LEFT),
             'project_id' => Project::factory(),
             'warehouse_id' => Warehouse::factory(),
             'requested_by' => User::factory(),

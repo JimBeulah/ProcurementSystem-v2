@@ -64,8 +64,8 @@ class OperationsController extends Controller
                 'created_at' => $po->updated_at->diffForHumans(),
                 'items' => $po->items->map(function ($item) use ($po) {
                     $received = \App\Models\ReceivingItem::whereHas('receivingReport', function ($q) use ($po) {
-                            $q->where('purchase_order_id', $po->id);
-                        })
+                        $q->where('purchase_order_id', $po->id);
+                    })
                         ->where('material_name', $item->material_name)
                         ->where('status', '!=', 'REJECTED')
                         ->sum('quantity_received');

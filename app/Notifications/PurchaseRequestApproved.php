@@ -7,7 +7,6 @@ use Illuminate\Notifications\Notification;
 
 class PurchaseRequestApproved extends Notification
 {
-
     public $purchaseRequest;
 
     /**

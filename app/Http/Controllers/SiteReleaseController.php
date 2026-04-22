@@ -19,9 +19,9 @@ class SiteReleaseController extends Controller
     public function index(): Response
     {
         // Restrict access to Warehouse and Admin only as requested
-        if (!auth()->user()->hasRole(['admin', 'warehouse'])) {
+        if (! auth()->user()->hasRole(['admin', 'warehouse'])) {
             return Inertia::render('Errors/403', [
-                'message' => 'Only Warehouse Officers and Admins can access the Dispatch Queue.'
+                'message' => 'Only Warehouse Officers and Admins can access the Dispatch Queue.',
             ]);
         }
 

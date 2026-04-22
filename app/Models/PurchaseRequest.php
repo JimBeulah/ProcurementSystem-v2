@@ -20,12 +20,11 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
- * 
  * @property-read \App\Models\Project $project
  * @property-read \App\Models\User $requester
  * @property-read \App\Models\User|null $approver
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\PurchaseRequestItem[] $items
- * 
+ *
  * @mixin \Eloquent
  * @mixin \Illuminate\Database\Eloquent\Builder
  */

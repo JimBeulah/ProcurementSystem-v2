@@ -28,12 +28,13 @@ class ApprovalController extends Controller
                 $items = [];
                 foreach ($mr->items as $item) {
                     $itemData = $item->toArray();
-                    $itemData['warehouse_quantity'] = (float)($warehouseStock[$item->item_description] ?? 0);
+                    $itemData['warehouse_quantity'] = (float) ($warehouseStock[$item->item_description] ?? 0);
                     $items[] = $itemData;
                 }
-                
+
                 $mrData = $mr->toArray();
                 $mrData['items'] = $items;
+
                 return $mrData;
             });
 

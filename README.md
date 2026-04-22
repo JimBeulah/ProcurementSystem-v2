@@ -1,192 +1,198 @@
 # Procurement System v2
 
-![Laravel](https://img.shields.io/badge/Laravel-12.0-FF2D20?style=for-the-badge&logo=laravel)
-![Inertia.js](https://img.shields.io/badge/Inertia.js-2.0-9553E9?style=for-the-badge&logo=inertia)
-![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=for-the-badge&logo=tailwind-css)
-![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
-
-A comprehensive procurement and project management system designed to streamline the lifecycle of construction and organizational projects. From initial budgeting (BOQ) to material requests, purchasing, inventory management, and final financial disbursement.
+Procurement System v2 is a comprehensive project management and procurement platform designed to track the entire lifecycle of construction or organizational projects. From initial budgeting (BOQ) to material requests, purchase orders, inventory management, and financial reconciliation, it provides a centralized hub for all procurement-related activities.
 
 ## Key Features
 
-- **Project & BOQ Management**: Detailed Bill of Quantities (BOQ) tracking with itemized resource components (Material, Labor, Equipment).
-- **Strict Budget Control**: Real-time validation of material requests against BOQ limits to prevent over-budgeting.
-- **Multi-stage Procurement**: Workflow moving from Material Requests (MR) to Purchase Requests (PR) and finalized Purchase Orders (PO).
-- **Inventory & Warehouse**: Tracks Goods Receipt Notes (GRN), centralized inventory, and site-specific releases.
-- **Financial Tracking**: Management of supplier invoices, disbursements, and project-level financial reporting.
-- **Robust RBAC**: Granular role-based access control powered by `spatie/laravel-permission`.
-- **Modern UI/UX**: macOS-inspired interface featuring glassmorphism, dark/light mode, and smooth animations via Framer Motion & GSAP.
-
----
+- **Project Management & BOQ**: Detailed budget tracking with elements, items, and resource components (Material, Labor, Equipment).
+- **Purchasing Workflow**: multi-stage approval processes for Material Requests (MR), Purchase Requests (PR), and Purchase Orders (PO).
+- **Inventory & Site Management**: Real-time tracking of Goods Receipt Notes (GRN), site releases, and returns.
+- **Finance Integration**: Logging supplier invoices, tracking disbursements, and generating budget vs. actual reports.
+- **Role-Based Access Control**: Granular permissions for Admins, Site Engineers, Procurement Officers, and Finance Managers.
+- **Audit Trails**: Full activity logging for accountability and transparency.
 
 ## Tech Stack
 
-- **Framework**: [Laravel 12.0](https://laravel.com)
-- **Frontend**: [React 18](https://reactjs.org), [Inertia.js 2.0](https://inertiajs.com)
-- **Styling**: [Tailwind CSS 4.0](https://tailwindcss.com) (with Vite integration)
-- **Animations**: [Framer Motion 12](https://www.framer.com/motion/), [GSAP](https://gsap.com)
-- **State/Table**: [TanStack Table v8](https://tanstack.com/table)
-- **Charts**: [Recharts](https://recharts.org)
-- **Icons**: [Lucide React](https://lucide.dev)
-- **Notifications**: [Sonner](https://sonner.steventey.com)
-- **Permissions**: [Spatie Laravel Permission](https://spatie.be/docs/laravel-permission)
-
----
+- **Backend**: [Laravel 12.x](https://laravel.com/) (PHP 8.2+)
+- **Frontend**: [Inertia.js](https://inertiajs.com/) with [React 18](https://react.dev/)
+- **Build Tool**: [Vite 7](https://vitejs.dev/)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) & [shadcn/ui](https://ui.shadcn.com/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/) & [GSAP](https://gsap.com/)
+- **Database**: PostgreSQL (Recommended for production), MySQL/MariaDB, or SQLite (Development)
+- **State Management**: React Hooks & Inertia Page Props
+- **Testing**: [PHPUnit](https://phpunit.de/) (Unit/Feature) & [Playwright](https://playwright.dev/) (E2E)
+- **Deployment**: [Vercel](https://vercel.com/) (configured via `vercel.json`)
 
 ## Prerequisites
 
-- **PHP**: ^8.2
-- **Node.js**: ^20.0
-- **Composer**: ^2.0
-- **Database**: MySQL 8.0+, MariaDB, or SQLite
-- **Environment**: Laragon (recommended for Windows users)
-
----
+- **PHP 8.2** or higher
+- **Node.js 20** or higher
+- **Composer**
+- **npm** or **yarn**
+- **SQLite**, **PostgreSQL**, or **MySQL**
 
 ## Getting Started
 
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-repo/ProcurementSystem-v2.git
+git clone https://github.com/your-username/ProcurementSystem-v2.git
 cd ProcurementSystem-v2
 ```
 
-### 2. Automated Setup
-
-The project includes a unified setup script that handles dependency installation, environment configuration, key generation, and migrations:
+### 2. Install PHP Dependencies
 
 ```bash
-composer setup
+composer install
 ```
 
-**What this script does:**
-1. `composer install` (PHP dependencies)
-2. Generates `.env` from `.env.example`
-3. `php artisan key:generate`
-4. `php artisan migrate --force`
-5. `npm install` (JS dependencies)
-6. `npm run build` (Production assets)
+### 3. Install JavaScript Dependencies
 
-### 3. Database Seeding (Optional)
+```bash
+npm install
+```
 
-To populate the system with default roles and permissions:
+### 4. Environment Setup
+
+Copy the example environment file:
+
+```bash
+cp .env.example .env
+```
+
+Generate the application key:
+
+```bash
+php artisan key:generate
+```
+
+### 5. Database Setup
+
+Create a database (if using MySQL/PostgreSQL) and update the `DB_*` variables in your `.env` file. By default, it's configured for SQLite.
+
+Run the migrations and seeders:
 
 ```bash
 php artisan migrate --seed
 ```
 
-### 4. Start Development Server
+This will set up the necessary tables and populate the system with default roles, permissions, and an admin user.
 
-We use `concurrently` to run the Laravel server, Vite, and background processes in a single terminal:
+### 6. Start Development Server
+
+Run both the Laravel server and the Vite dev server concurrently:
 
 ```bash
-composer dev
+npm run dev
 ```
 
-Open [http://localhost:8000](http://localhost:8000) in your browser.
+The application will be available at [http://localhost:8000](http://localhost:8000).
 
----
-
-## Architecture Overview
+## Architecture
 
 ### Directory Structure
 
-```text
+```
 ├── app/
 │   ├── Http/
-│   │   ├── Controllers/    # Inertia-ready controllers
-│   │   ├── Requests/       # Form validation logic
-│   │   └── Middleware/     # Permission & Role checks
-│   ├── Models/             # Eloquent Models (Project, BoqItem, PO, etc.)
-│   ├── Services/           # Business logic (FinanceService, ReceivingService)
-│   └── Notifications/      # System alerts (Project deadlines, Approval requests)
+│   │   ├── Controllers/    # Web and API controllers
+│   │   ├── Middleware/     # Auth, Permission, and ForcePasswordChange
+│   │   └── Requests/       # Form validation logic
+│   ├── Models/             # Eloquent models (Project, BoqItem, PurchaseOrder, etc.)
+│   ├── Policies/           # Authorization logic for resources
+│   ├── Services/           # Business logic extraction (Procurement, Finance, etc.)
+│   └── Notifications/      # System notifications (PO Approved, etc.)
 ├── database/
 │   ├── migrations/         # Database schema definitions
-│   └── seeders/            # Roles and Permissions seeders
-├── docs/                   # Detailed module and architecture documentation
+│   └── seeders/            # Default roles, permissions, and sample data
 ├── resources/
-│   ├── js/                 # React application root
-│   │   ├── Pages/          # Inertia page components
-│   │   ├── Components/     # Reusable UI elements (shadcn-based)
-│   │   └── Layouts/        # Application layouts (Authenticated/Guest)
-│   └── views/              # Root Blade templates
-└── routes/
-    ├── web.php             # Main application routes
-    └── api.php             # API endpoints (if any)
+│   ├── js/
+│   │   ├── Pages/          # Inertia React components
+│   │   ├── Components/     # Reusable UI components (shadcn/ui)
+│   │   └── Layouts/        # Shared page layouts
+│   └── css/                # Tailwind CSS entry point
+├── routes/
+│   ├── web.php             # Main web routes (Inertia)
+│   ├── api.php             # API routes (Sanctum)
+│   └── auth.php            # Authentication routes (Breeze)
+├── docs/                   # Extended documentation and system architecture
+└── public/                 # Static assets and Vite build output
 ```
 
-### Core Workflow
+### Key Modules
 
-1.  **Project Creation**: A client and project are registered.
-2.  **BOQ Entry**: Detailed items and components are added to the project budget.
-3.  **Material Request (MR)**: Site engineers request materials. The system validates against BOQ quantity/budget.
-4.  **Purchase Order (PO)**: Procurement converts requests into orders for suppliers.
-5.  **Receiving (GRN)**: Warehouse logs delivered items.
-6.  **Site Release**: Materials are dispatched to the project site.
-7.  **Liquidation**: Finance logs invoices and processes disbursements.
-
----
+1.  **BOQ Module**: Manages the "Bill of Quantities". Items are linked to projects and have components (Materials, Labor, Equipment).
+2.  **Procurement Module**: Handles the MR -> PR -> PO flow. Includes budget checking against the BOQ.
+3.  **Inventory Module**: Tracks physical goods entering the warehouse (Receiving) and leaving for site (Site Release).
+4.  **Finance Module**: Connects procurement to the ledger via Invoices and Disbursements.
 
 ## Environment Variables
 
 | Variable | Description | Default |
 | :--- | :--- | :--- |
-| `DB_CONNECTION` | Database driver | `mysql` |
-| `DB_DATABASE` | Database name | `procurementsystem_v2` |
+| `APP_NAME` | Name of the application | `Laravel` |
 | `APP_ENV` | Application environment | `local` |
-| `APP_DEBUG` | Debug mode | `true` |
-
----
+| `DB_CONNECTION` | Database driver | `sqlite` |
+| `SESSION_DRIVER` | Session storage driver | `database` |
+| `QUEUE_CONNECTION` | Queue driver | `database` |
+| `CACHE_STORE` | Cache driver | `database` |
 
 ## Available Scripts
 
 | Command | Description |
 | :--- | :--- |
-| `composer setup` | Full project initialization |
-| `composer dev` | Start development environment (Server + Vite + Queue) |
-| `composer test` | Run Pest/PHPUnit test suite |
-| `npm run build` | Compile assets for production |
-| `php artisan migrate:fresh --seed` | Wipe database and re-seed with default data |
+| `npm run dev` | Runs Laravel server, Vite dev, and queues concurrently |
+| `npm run build` | Compiles assets for production |
+| `php artisan migrate` | Runs database migrations |
+| `php artisan db:seed` | Seeds the database |
+| `php artisan test` | Runs PHPUnit tests |
+| `npm run test:e2e` | Runs Playwright E2E tests |
 
----
+## Testing
+
+### Running Unit & Feature Tests
+
+```bash
+php artisan test
+```
+
+### Running E2E Tests (Playwright)
+
+```bash
+npx playwright test
+```
+
+For the UI mode:
+
+```bash
+npx playwright test --ui
+```
 
 ## Deployment
 
-1.  **Server Requirements**: PHP 8.2+, MySQL 8.0+.
-2.  **Permissions**: Ensure `storage` and `bootstrap/cache` are writable.
-3.  **Optimization**:
-    ```bash
-    php artisan config:cache
-    php artisan route:cache
-    php artisan view:cache
-    ```
-4.  **Process Management**: Use Supervisor to manage the queue worker:
-    ```bash
-    php artisan queue:work
-    ```
+### Vercel (Recommended)
 
----
+This project is pre-configured for deployment on Vercel using the `vercel-php` runtime.
+
+1.  Connect your repository to Vercel.
+2.  Set the environment variables in the Vercel dashboard.
+3.  Ensure `APP_KEY` is set.
+4.  Vercel will automatically detect `vercel.json` and deploy.
+
+### Manual / VPS
+
+1.  Clone the repo.
+2.  Run `composer install --optimize-autoloader --no-dev`.
+3.  Run `npm install && npm run build`.
+4.  Set up Nginx/Apache to point to the `public/` directory.
+5.  Run migrations: `php artisan migrate --force`.
 
 ## Troubleshooting
 
-### Database Issues
-If you encounter `Connection refused`, ensure your DB service is running (e.g., MySQL in Laragon). For SQLite, ensure `database/database.sqlite` exists.
-
-### UI Not Updating
-If changes in React components aren't reflecting, ensure `npm run dev` or `composer dev` is running. For production, run `npm run build`.
+- **Vite Build Failures**: Ensure you are using Node.js 20+. Try clearing `node_modules` and re-installing.
+- **Permission Denied (Storage)**: Ensure the `storage` and `bootstrap/cache` directories are writable by the web server.
+- **Database Connection**: Check `.env` for correct credentials. For SQLite, ensure `database/database.sqlite` exists.
 
 ---
 
-## 🤝 Contributing
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git checkout -b feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 License
-
-Distributed under the MIT License. See `LICENSE` for more information.
+Built with ❤️ for efficient procurement management.

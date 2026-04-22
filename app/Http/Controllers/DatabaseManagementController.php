@@ -121,7 +121,7 @@ class DatabaseManagementController extends Controller
         } else {
             $psql = $this->getBinaryPath('psql');
             $env = array_merge($_SERVER, getenv(), ['PGPASSWORD' => $config['password']]);
-            // For PostgreSQL, we often need to drop/create or just pipe. 
+            // For PostgreSQL, we often need to drop/create or just pipe.
             // Standard restore from .sql file usually works with psql.
             $command = sprintf(
                 '%s -U %s -h %s -p %s %s < %s',

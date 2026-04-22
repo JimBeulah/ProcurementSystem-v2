@@ -74,8 +74,8 @@ class PurchaseOrderPolicy
     {
         // Procurement Officers can cancel their own PENDING or APPROVED orders
         // (But NOT partially delivered or completed ones)
-        if ($user->hasRole('procurement_officer') && 
-            in_array($order->status, [PurchaseOrder::STATUS_PENDING, PurchaseOrder::STATUS_APPROVED]) && 
+        if ($user->hasRole('procurement_officer') &&
+            in_array($order->status, [PurchaseOrder::STATUS_PENDING, PurchaseOrder::STATUS_APPROVED]) &&
             $order->requester_id === $user->id) {
             return true;
         }

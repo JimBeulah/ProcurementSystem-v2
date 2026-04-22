@@ -20,7 +20,6 @@ use App\Models\Unit;
 use App\Models\User;
 use App\Models\Warehouse;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class SystemTestDataSeeder extends Seeder
 {
@@ -68,10 +67,10 @@ class SystemTestDataSeeder extends Seeder
         foreach ($materialBases as $cat => $mats) {
             foreach ($mats as $matName) {
                 Material::firstOrCreate(['name' => $matName], [
-                    'code' => 'MAT-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT),
+                    'code' => 'MAT-'.str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT),
                     'category' => $cat,
                     'unit' => fake()->randomElement(['pcs', 'bag', 'roll', 'cu.m', 'set']),
-                    'description' => 'High quality ' . $matName . ' for construction.',
+                    'description' => 'High quality '.$matName.' for construction.',
                 ]);
             }
         }
@@ -92,7 +91,7 @@ class SystemTestDataSeeder extends Seeder
     private function seedProjectStructure(): void
     {
         $clients = Client::factory(10)->create();
-        
+
         $statuses = ['ACTIVE', 'IN_PROGRESS', 'COMPLETED', 'ON_HOLD'];
 
         foreach ($clients as $client) {
@@ -100,7 +99,7 @@ class SystemTestDataSeeder extends Seeder
             for ($i = 0; $i < $numProjects; $i++) {
                 $p = Project::create([
                     'client_id' => $client->id,
-                    'name' => fake()->company() . ' - ' . fake()->words(2, true),
+                    'name' => fake()->company().' - '.fake()->words(2, true),
                     'location' => fake()->address(),
                     'budget' => fake()->randomFloat(2, 500000, 5000000),
                     'status' => fake()->randomElement($statuses),
@@ -151,13 +150,13 @@ class SystemTestDataSeeder extends Seeder
 
         foreach ($projects as $idx => $project) {
             $engineer = $engineers->random();
-            
+
             // 1. Material Request
             $mr = MaterialRequest::create([
                 'project_id' => $project->id,
                 'requester_id' => $engineer->id,
                 'status' => fake()->randomElement(['PENDING', 'APPROVED', 'FULFILLED']),
-                'remarks' => 'Batch seeding request for ' . $project->name,
+                'remarks' => 'Batch seeding request for '.$project->name,
             ]);
 
             $mats = Material::inRandomOrder()->limit(rand(3, 8))->get();
@@ -176,7 +175,7 @@ class SystemTestDataSeeder extends Seeder
                     'project_id' => $project->id,
                     'requester_id' => $procurement->id ?? $engineer->id,
                     'status' => fake()->randomElement(['PENDING', 'APPROVED']),
-                    'remarks' => 'PO sourcing for project ' . $project->name,
+                    'remarks' => 'PO sourcing for project '.$project->name,
                     'total_estimated_cost' => rand(10000, 100000),
                 ]);
 

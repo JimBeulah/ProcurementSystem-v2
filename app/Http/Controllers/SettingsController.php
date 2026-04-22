@@ -2,11 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Material;
-use App\Models\Supplier;
 use App\Models\User;
-use App\Models\Warehouse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class SettingsController extends Controller
@@ -37,4 +33,3 @@ class SettingsController extends Controller
         return Inertia::render('Settings/Workflows/Index');
     }
 }
-

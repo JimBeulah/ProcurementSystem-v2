@@ -7,7 +7,6 @@ use Illuminate\Notifications\Notification;
 
 class PurchaseRequestReadyForSourcing extends Notification
 {
-
     public $purchaseRequest;
 
     /**

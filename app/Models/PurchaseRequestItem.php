@@ -14,11 +14,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property float $estimated_unit_cost
  * @property float $estimated_total_cost
  * @property string|null $remarks
- * 
  * @property-read float $remaining_quantity
  * @property-read \App\Models\PurchaseRequest $purchaseRequest
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\PurchaseOrderItem[] $purchaseOrderItems
- * 
+ *
  * @mixin \Eloquent
  * @mixin \Illuminate\Database\Eloquent\Builder
  */

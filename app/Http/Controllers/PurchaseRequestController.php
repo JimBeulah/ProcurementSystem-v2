@@ -122,6 +122,7 @@ class PurchaseRequestController extends Controller
     {
         try {
             $this->service->decline($purchaseRequest);
+
             return redirect()->back()->with('success', 'Purchase Request declined.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());

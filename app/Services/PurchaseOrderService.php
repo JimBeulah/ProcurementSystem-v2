@@ -159,7 +159,7 @@ class PurchaseOrderService
                 if ($poItem->purchase_request_item_id) {
                     $prItem = $poItem->purchaseRequestItem;
                     if ($prItem instanceof PurchaseRequestItem) {
-                        $newQty = max(0, (float)$prItem->ordered_quantity - (float)$poItem->quantity);
+                        $newQty = max(0, (float) $prItem->ordered_quantity - (float) $poItem->quantity);
                         $prItem->update(['ordered_quantity' => $newQty]);
                     }
                 }
@@ -172,7 +172,7 @@ class PurchaseOrderService
                 if ($release->status === SiteRelease::STATUS_AWAITING_APPROVAL) {
                     // Return stock to inventory
                     if ($release->inventoryItem) {
-                        $release->inventoryItem->increment('quantity', (float)$release->quantity_released);
+                        $release->inventoryItem->increment('quantity', (float) $release->quantity_released);
                     }
 
                     // Return quantity to PR item
@@ -216,7 +216,7 @@ class PurchaseOrderService
                 if ($poItem->purchase_request_item_id) {
                     $prItem = $poItem->purchaseRequestItem;
                     if ($prItem instanceof PurchaseRequestItem) {
-                        $newQty = max(0, (float)$prItem->ordered_quantity - (float)$poItem->quantity);
+                        $newQty = max(0, (float) $prItem->ordered_quantity - (float) $poItem->quantity);
                         $prItem->update(['ordered_quantity' => $newQty]);
                     }
                 }
@@ -228,14 +228,14 @@ class PurchaseOrderService
             foreach ($warehouseReleases as $release) {
                 // Return stock to inventory
                 if ($release->inventoryItem) {
-                    $release->inventoryItem->increment('quantity', (float)$release->quantity_released);
+                    $release->inventoryItem->increment('quantity', (float) $release->quantity_released);
                 }
 
                 // Return quantity to PR item
                 if ($release->purchase_request_item_id) {
                     $prItem = $release->purchaseRequestItem;
                     if ($prItem instanceof PurchaseRequestItem) {
-                        $newQty = max(0, (float)$prItem->ordered_quantity - (float)$release->quantity_released);
+                        $newQty = max(0, (float) $prItem->ordered_quantity - (float) $release->quantity_released);
                         $prItem->update(['ordered_quantity' => $newQty]);
                     }
                 }

@@ -74,8 +74,8 @@ class PurchaseRequestService
 
             if ($purchaseRequest->total_estimated_cost > $remaining) {
                 $overAmount = (float) $purchaseRequest->total_estimated_cost - $remaining;
-                $warning = "Budget Warning: This PR (₱" . number_format((float) $purchaseRequest->total_estimated_cost, 2) . ") " .
-                           "is ₱" . number_format($overAmount, 2) . " over the remaining budget.";
+                $warning = 'Budget Warning: This PR (₱'.number_format((float) $purchaseRequest->total_estimated_cost, 2).') '.
+                           'is ₱'.number_format($overAmount, 2).' over the remaining budget.';
             }
         }
 

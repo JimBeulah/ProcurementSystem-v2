@@ -6,7 +6,6 @@ use App\Models\Project;
 use App\Models\PurchaseOrder;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 
 class DashboardService
 {
@@ -27,7 +26,7 @@ class DashboardService
 
             // Total budget of projects created in this month
             $budget = Project::whereBetween('created_at', [$startOfMonth, $endOfMonth])->sum('budget') ?: 0;
-            
+
             // Total spend of approved or delivered POs in this month
             $spend = PurchaseOrder::whereIn('status', ['APPROVED', 'DELIVERED', 'PARTIALLY DELIVERED'])
                 ->whereBetween('order_date', [$startOfMonth, $endOfMonth])
@@ -35,9 +34,9 @@ class DashboardService
 
             return [
                 'month' => $monthName,
-                'budget' => (float)$budget,
-                'spend' => (float)$spend,
-                'profit' => (float)($budget - $spend),
+                'budget' => (float) $budget,
+                'spend' => (float) $spend,
+                'profit' => (float) ($budget - $spend),
             ];
         })->toArray();
 
@@ -65,8 +64,8 @@ class DashboardService
                 'name' => $date->format('M'),
                 'requests' => \App\Models\MaterialRequest::whereBetween('created_at', [
                     $date->copy()->startOfMonth(),
-                    $date->copy()->endOfMonth()
-                ])->count()
+                    $date->copy()->endOfMonth(),
+                ])->count(),
             ];
         })->toArray();
 
@@ -82,9 +81,9 @@ class DashboardService
 
             return [
                 'month' => $monthName,
-                'budget' => (float)$budget,
-                'spend' => (float)$spend,
-                'profit' => (float)($budget - $spend),
+                'budget' => (float) $budget,
+                'spend' => (float) $spend,
+                'profit' => (float) ($budget - $spend),
             ];
         })->toArray();
 
@@ -123,7 +122,7 @@ class DashboardService
         return [
             'pendingInvoices' => \App\Models\SupplierInvoice::where('status', 'PENDING')->count(),
             'pendingDisbursements' => \App\Models\Disbursement::where('status', 'PENDING')->count(),
-            'totalInvoicedAmount' => (float)\App\Models\SupplierInvoice::sum('total_amount'),
+            'totalInvoicedAmount' => (float) \App\Models\SupplierInvoice::sum('total_amount'),
             'reportsCount' => \App\Models\FinancialTransaction::count(),
         ];
     }

@@ -21,14 +21,13 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
- * 
  * @property-read \App\Models\Project $project
  * @property-read \App\Models\Supplier $supplier
  * @property-read \App\Models\User $requester
  * @property-read \App\Models\User|null $approver
  * @property-read \App\Models\PurchaseRequest|null $purchaseRequest
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\PurchaseOrderItem[] $items
- * 
+ *
  * @mixin \Eloquent
  * @mixin \Illuminate\Database\Eloquent\Builder
  */
@@ -37,10 +36,15 @@ class PurchaseOrder extends Model
     use LogsActivity, SoftDeletes;
 
     const STATUS_PENDING = 'PENDING';
+
     const STATUS_APPROVED = 'APPROVED';
+
     const STATUS_DECLINED = 'DECLINED';
+
     const STATUS_COMPLETED = 'COMPLETED';
+
     const STATUS_CANCELLED = 'CANCELLED';
+
     const STATUS_PARTIALLY_DELIVERED = 'PARTIALLY DELIVERED';
 
     public function getActivitylogOptions(): LogOptions

@@ -89,11 +89,11 @@ return [
             $rawUrl = env('DATABASE_URL', env('DB_URL'));
             $parsed = $rawUrl ? parse_url($rawUrl) : [];
 
-            $host     = $parsed['host']                        ?? env('DB_HOST', '127.0.0.1');
-            $port     = $parsed['port']                        ?? env('DB_PORT', '5432');
+            $host = $parsed['host'] ?? env('DB_HOST', '127.0.0.1');
+            $port = $parsed['port'] ?? env('DB_PORT', '5432');
             $database = isset($parsed['path']) ? ltrim($parsed['path'], '/') : env('DB_DATABASE', 'laravel');
-            $username = $parsed['user']                        ?? env('DB_USERNAME', 'root');
-            $password = $parsed['pass']                        ?? env('DB_PASSWORD', '');
+            $username = $parsed['user'] ?? env('DB_USERNAME', 'root');
+            $password = $parsed['pass'] ?? env('DB_PASSWORD', '');
 
             // Parse sslmode from URL query string if present
             $sslmode = env('DB_SSLMODE', 'require');
@@ -105,22 +105,22 @@ return [
             // Inject Neon endpoint ID using libpq key=value syntax (Workaround B)
             $endpointId = env('DB_ENDPOINT_ID');
             if ($endpointId) {
-                $database = $database . "' options='endpoint=" . $endpointId;
+                $database = $database."' options='endpoint=".$endpointId;
             }
 
             return [
-                'driver'         => 'pgsql',
-                'host'           => $host,
-                'port'           => $port,
-                'database'       => $database,
-                'username'       => $username,
-                'password'       => $password,
-                'charset'        => env('DB_CHARSET', 'utf8'),
-                'prefix'         => '',
+                'driver' => 'pgsql',
+                'host' => $host,
+                'port' => $port,
+                'database' => $database,
+                'username' => $username,
+                'password' => $password,
+                'charset' => env('DB_CHARSET', 'utf8'),
+                'prefix' => '',
                 'prefix_indexes' => true,
-                'search_path'    => 'public',
-                'sslmode'        => $sslmode,
-                'options'        => [],
+                'search_path' => 'public',
+                'sslmode' => $sslmode,
+                'options' => [],
             ];
         })(),
 

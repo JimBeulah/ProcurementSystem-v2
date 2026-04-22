@@ -7,7 +7,6 @@ use Illuminate\Notifications\Notification;
 
 class NewPurchaseOrderSubmitted extends Notification
 {
-
     public $purchaseOrder;
 
     public function __construct(PurchaseOrder $purchaseOrder)

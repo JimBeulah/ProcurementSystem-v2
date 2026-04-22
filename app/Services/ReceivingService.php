@@ -42,11 +42,11 @@ class ReceivingService
                 // Fix #4: Uncapped Receiving Validation
                 if (! $isRejected) {
                     $poItem = collect($po->items)->firstWhere('id', $itemData['id']);
-                    
+
                     if ($poItem) {
                         $alreadyReceived = ReceivingItem::whereHas('receivingReport', function ($q) use ($po) {
-                                $q->where('purchase_order_id', $po->id);
-                            })
+                            $q->where('purchase_order_id', $po->id);
+                        })
                             ->where('material_name', $poItem->material_name)
                             ->where('status', '!=', 'REJECTED')
                             ->sum('quantity_received');
@@ -55,8 +55,8 @@ class ReceivingService
 
                         if ((float) $itemData['quantity_received'] > $remainingToReceive) {
                             throw new \Exception(
-                                "Cannot receive " . $itemData['quantity_received'] . " " . $poItem->unit . " of '" . $poItem->material_name . "'. " .
-                                "Only " . $remainingToReceive . " " . $poItem->unit . " remain on this PO."
+                                'Cannot receive '.$itemData['quantity_received'].' '.$poItem->unit." of '".$poItem->material_name."'. ".
+                                'Only '.$remainingToReceive.' '.$poItem->unit.' remain on this PO.'
                             );
                         }
                     }
@@ -138,8 +138,8 @@ class ReceivingService
                 // Fix #4: Uncapped Receiving Validation (for custom quantities)
                 if (! $isRejected && isset($quantities[$poItem->id])) {
                     $alreadyReceived = ReceivingItem::whereHas('receivingReport', function ($q) use ($po) {
-                            $q->where('purchase_order_id', $po->id);
-                        })
+                        $q->where('purchase_order_id', $po->id);
+                    })
                         ->where('material_name', $poItem->material_name)
                         ->where('status', '!=', 'REJECTED')
                         ->sum('quantity_received');
@@ -148,8 +148,8 @@ class ReceivingService
 
                     if ($receivedQty > $remainingToReceive) {
                         throw new \Exception(
-                            "Cannot receive " . $receivedQty . " " . $poItem->unit . " of '" . $poItem->material_name . "'. " .
-                            "Remaining on PO: " . $remainingToReceive
+                            'Cannot receive '.$receivedQty.' '.$poItem->unit." of '".$poItem->material_name."'. ".
+                            'Remaining on PO: '.$remainingToReceive
                         );
                     }
                 }
@@ -218,8 +218,8 @@ class ReceivingService
 
         foreach ($po->items as $poItem) {
             $totalReceived = ReceivingItem::whereHas('receivingReport', function ($q) use ($po) {
-                    $q->where('purchase_order_id', $po->id);
-                })
+                $q->where('purchase_order_id', $po->id);
+            })
                 ->where('material_name', $poItem->material_name)
                 ->where('status', '!=', 'REJECTED')
                 ->sum('quantity_received');

@@ -6,7 +6,6 @@ use Illuminate\Notifications\Notification;
 
 class ProjectDeadlineNotification extends Notification
 {
-
     protected $project;
 
     protected $daysRemaining;

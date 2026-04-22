@@ -9,7 +9,7 @@ use App\Models\User;
 class PurchaseRequestPolicy
 {
     /**
-     * Admins and project managers can bypass most checks, 
+     * Admins and project managers can bypass most checks,
      * but we still want to enforce project ACTIVE status for them too
      * to ensure BOQ is finalized before any purchasing happens.
      */
