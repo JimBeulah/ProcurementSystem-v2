@@ -4,14 +4,32 @@ import { Briefcase, PhilippinePeso, Building } from 'lucide-react';
 export default function ProjectMetrics({ projects, auth }) {
     const isSiteEngineer = auth?.user?.role === 'site_engineer';
     const totalProjects = projects.length;
-    const activeProjects = projects.filter(p => p.status === 'ACTIVE').length;
+    const activeProjects = projects.filter(p => ['ACTIVE', 'IN_PROGRESS'].includes(p.status)).length;
     const warrantyProjects = projects.filter(p => p.status === 'WARRANTY_PERIOD').length;
-    const completedProjects = totalProjects - activeProjects - warrantyProjects;
+    const completedProjects = projects.filter(p => p.status === 'COMPLETED').length;
+    const otherProjects = totalProjects - activeProjects - warrantyProjects - completedProjects;
+
     const totalBudget = projects.reduce((sum, p) => sum + Number(p.budget), 0);
     const totalAppropriation = projects.reduce((sum, p) => sum + (Number(p.appropriation) || 0), 0);
     const totalFloorArea = projects
         .filter(p => p.project_type === 'BUILDING')
         .reduce((sum, p) => sum + (Number(p.total_floor_area) || 0), 0);
+
+    // Dynamic Project Health Calculation
+    const activeProjectsList = projects.filter(p => ['ACTIVE', 'IN_PROGRESS'].includes(p.status));
+    const today = new Date();
+    const onTrackCount = activeProjectsList.filter(p => {
+        if (!p.target_end_date) return true;
+        return new Date(p.target_end_date) >= today;
+    }).length;
+    
+    const healthPercentage = activeProjectsList.length > 0 
+        ? Math.round((onTrackCount / activeProjectsList.length) * 100) 
+        : 100;
+
+    const healthStatus = healthPercentage >= 90 ? 'On Track' : (healthPercentage >= 70 ? 'At Risk' : 'Delayed');
+    const healthColor = healthPercentage >= 90 ? 'text-emerald-600' : (healthPercentage >= 70 ? 'text-amber-600' : 'text-red-600');
+    const barColor = healthPercentage >= 90 ? 'bg-emerald-500' : (healthPercentage >= 70 ? 'bg-amber-500' : 'bg-red-500');
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -23,8 +41,8 @@ export default function ProjectMetrics({ projects, auth }) {
                     <div className="flex gap-2 text-[9px] font-bold mt-1">
                         <span className="text-emerald-600">{activeProjects} Active</span>
                         <span className="text-amber-600">{warrantyProjects} Warranty</span>
-                        <span className="text-slate-400">|</span>
-                        <span className="text-slate-500">{completedProjects} Completed</span>
+                        <span className="text-slate-500">{completedProjects} Done</span>
+                        {otherProjects > 0 && <span className="text-slate-400">{otherProjects} Other</span>}
                     </div>
                 </div>
             </div>
@@ -53,12 +71,12 @@ export default function ProjectMetrics({ projects, auth }) {
                 <div className="bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex flex-col justify-center gap-2 group hover:border-orange-500/30 transition-all shadow-sm">
                     <div className="flex justify-between items-center">
                         <span className="text-[10px] text-slate-500 uppercase font-black">Project Health</span>
-                        <span className="text-xs font-bold text-emerald-600">98% On Track</span>
+                        <span className={`text-xs font-bold ${healthColor}`}>{healthPercentage}% {healthStatus}</span>
                     </div>
                     <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
-                        <div className="bg-emerald-500 h-full w-[98%]" />
+                        <div className={`${barColor} h-full transition-all duration-500`} style={{ width: `${healthPercentage}%` }} />
                     </div>
-                    <p className="text-[9px] text-slate-500">Based on timeline and budget utilization</p>
+                    <p className="text-[9px] text-slate-500">Based on timeline and status</p>
                 </div>
             )}
         </div>
