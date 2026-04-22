@@ -41,7 +41,7 @@ export const parseBoqCsv = (file) => {
         const reader = new FileReader();
         reader.onload = (event) => {
             try {
-                const text = (event.target?.result).replace(/^\uFEFF/, '');
+                const text = (event.target?.result || '').replace(/^\uFEFF/, '');
                 const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
 
                 const resultItems = [];
