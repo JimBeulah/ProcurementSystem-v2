@@ -1,13 +1,25 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
+import { useEffect } from 'react';
 
 export default function Modal({
     children,
     show = false,
     maxWidth = '2xl',
-    closeable = true,
+    closeable = false,
     onClose = () => { },
 }) {
+    useEffect(() => {
+        const onKeyDown = (e) => {
+            if (e.key === 'Escape' && show && closeable) {
+                onClose();
+            }
+        };
+
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [show, closeable, onClose]);
+
     const close = () => {
         if (closeable) {
             onClose();

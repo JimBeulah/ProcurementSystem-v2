@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-lg' }) {
+export default function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-lg', closeOnOutsideClick = false }) {
     const isMounted = useSyncExternalStore(
         () => () => { },
         () => true,
@@ -24,11 +24,11 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
     useEffect(() => {
         if (!isOpen) return;
         const handler = (e) => {
-            if (e.key === 'Escape') onClose?.();
+            if (e.key === 'Escape' && closeOnOutsideClick) onClose?.();
         };
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
-    }, [isOpen, onClose]);
+    }, [isOpen, onClose, closeOnOutsideClick]);
 
     if (!isMounted) return null;
 
@@ -43,7 +43,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.25, ease: 'easeOut' }}
                         className="absolute inset-0 bg-black/30 dark:bg-black/50 backdrop-blur-2xl"
-                        onClick={onClose}
+                        onClick={() => closeOnOutsideClick && onClose?.()}
                     />
 
                     {/* Modal Panel — macOS sheet style */}
