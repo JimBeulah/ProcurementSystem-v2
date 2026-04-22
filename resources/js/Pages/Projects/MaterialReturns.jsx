@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, usePage, Link } from '@inertiajs/react';
-import { RotateCcw, Plus, X, CheckCircle, Clock, Inbox, Briefcase, ArrowLeft } from 'lucide-react';
+import { RotateCcw, Plus, X, CheckCircle, Clock, Inbox, Briefcase, ArrowLeft, PackageCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Combobox from '@/Components/UI/Combobox.jsx';
 import { usePermissions } from '@/Hooks/usePermissions';
-import { PackageCheck } from 'lucide-react';
+import DataTable from '@/Components/UI/DataTable';
 
 const STATUS_BADGE = {
     PENDING: { cls: 'bg-amber-500/10 text-amber-600 border-amber-500/20', label: 'Pending Arrival' },
@@ -57,78 +57,90 @@ export default function ProjectMaterialReturns() {
 
                     {/* Left Column (Main Table) */}
                     <div className="lg:col-span-2 space-y-6">
-                        <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
-                            <div className="p-4 border-b border-border flex justify-between items-center bg-muted/30">
-                                <div>
-                                    <h2 className="font-bold text-foreground flex items-center gap-2">
-                                        Return History
-                                    </h2>
-                                    <p className="text-xs text-muted-foreground mt-0.5">Leftover materials returned from this site to the warehouse</p>
-                                </div>
-                            </div>
-
-                            <table className="w-full text-sm text-left">
-                                <thead className="bg-muted/50 text-muted-foreground uppercase text-[10px] font-bold tracking-wider border-b border-border">
-                                    <tr>
-                                        <th className="p-4">Material</th>
-                                        <th className="p-4 text-right">Qty</th>
-                                        <th className="p-4">Status</th>
-                                        <th className="p-4">Timestamps</th>
-                                        {can('manage inventory') && <th className="p-4 text-right">Actions</th>}
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-border">
-                                    {returns.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={4} className="p-16 text-center">
-                                                <Inbox size={40} className="mx-auto mb-3 opacity-20 text-foreground" />
-                                                <p className="text-muted-foreground text-xs uppercase font-bold tracking-widest">No site returns recorded</p>
-                                            </td>
-                                        </tr>
-                                    ) : returns.map((ret) => {
-                                        const badge = STATUS_BADGE[ret.status] ?? STATUS_BADGE.PENDING;
-                                        return (
-                                            <tr key={ret.id} className="hover:bg-muted/30 transition-colors">
-                                                <td className="p-4">
-                                                    <div className="font-semibold text-foreground">{ret.material_name}</div>
-                                                    {ret.remarks && <div className="text-xs text-muted-foreground mt-0.5 truncate max-w-[200px]" title={ret.remarks}>{ret.remarks}</div>}
-                                                </td>
-                                                <td className="p-4 text-right font-mono font-semibold text-foreground">
-                                                    {parseFloat(ret.quantity).toFixed(2)} <span className="text-[10px] text-muted-foreground uppercase">{ret.unit}</span>
-                                                </td>
-                                                <td className="p-4">
+                        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm relative z-0">
+                            <DataTable
+                                data={returns}
+                                columns={[
+                                    {
+                                        accessorKey: 'id',
+                                        header: '#',
+                                        cell: ({ row }) => (
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-[10px] font-bold text-slate-500">
+                                                    {row.original.id}
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="font-bold text-slate-900 dark:text-white leading-tight">
+                                                        {row.original.inventory_item?.material_name}
+                                                    </span>
+                                                    <span className="text-[10px] text-slate-500 font-mono">
+                                                        {row.original.inventory_item?.specifications}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )
+                                    },
+                                    {
+                                        accessorKey: 'quantity',
+                                        header: 'Qty',
+                                        cell: ({ row }) => (
+                                            <div className="flex flex-col">
+                                                <span className="font-bold text-slate-900 dark:text-white">{row.original.quantity}</span>
+                                                <span className="text-[10px] text-slate-500">{row.original.inventory_item?.unit}</span>
+                                            </div>
+                                        )
+                                    },
+                                    {
+                                        accessorKey: 'status',
+                                        header: () => <div className="text-center">Status</div>,
+                                        cell: ({ row }) => {
+                                            const badge = {
+                                                'PENDING': { cls: 'bg-amber-500/10 text-amber-600 border-amber-500/20', label: 'Pending' },
+                                                'RECEIVED': { cls: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', label: 'Received' }
+                                            }[row.original.status] || { cls: 'bg-slate-500/10 text-slate-600', label: row.original.status };
+                                            
+                                            return (
+                                                <div className="flex justify-center">
                                                     <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${badge.cls}`}>
-                                                        {ret.status === 'PENDING' ? <Clock size={10} className="animate-pulse" /> : <CheckCircle size={10} />}
+                                                        {row.original.status === 'PENDING' ? <Clock size={10} className="animate-pulse" /> : <CheckCircle size={10} />}
                                                         {badge.label}
                                                     </span>
-                                                </td>
-                                                <td className="p-4">
-                                                    <div className="flex flex-col gap-1 text-[10px] font-mono text-muted-foreground">
-                                                        <span>Req: {new Date(ret.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                                                        {ret.status === 'RECEIVED' && (
-                                                            <span className="text-emerald-500/80">Rcv: {new Date(ret.received_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                {can('manage inventory') && (
-                                                    <td className="p-4 text-right">
-                                                        {ret.status === 'PENDING' && (
-                                                            <button
-                                                                onClick={() => handleReceive(ret.id)}
-                                                                disabled={processing === ret.id}
-                                                                className="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1 ml-auto transition-all active:scale-95 disabled:opacity-50 shadow-sm"
-                                                            >
-                                                                <PackageCheck size={12} />
-                                                                {processing === ret.id ? '...' : 'Receive'}
-                                                            </button>
-                                                        )}
-                                                    </td>
+                                                </div>
+                                            );
+                                        }
+                                    },
+                                    {
+                                        id: 'dates',
+                                        header: 'Dates',
+                                        cell: ({ row }) => (
+                                            <div className="flex flex-col gap-1 text-[10px] font-mono text-slate-500">
+                                                <span>Req: {new Date(row.original.created_at).toLocaleDateString()}</span>
+                                                {row.original.status === 'RECEIVED' && (
+                                                    <span className="text-emerald-600">Rcv: {new Date(row.original.received_at).toLocaleDateString()}</span>
                                                 )}
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
+                                            </div>
+                                        )
+                                    },
+                                    {
+                                        id: 'actions',
+                                        header: () => <div className="text-right">Action</div>,
+                                        cell: ({ row }) => (
+                                            <div className="flex justify-end">
+                                                {can('manage inventory') && row.original.status === 'PENDING' && (
+                                                    <button
+                                                        onClick={() => handleReceive(row.original.id)}
+                                                        disabled={processing === row.original.id}
+                                                        className="bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                                                    >
+                                                        <PackageCheck size={12} />
+                                                        {processing === row.original.id ? '...' : 'Receive'}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )
+                                    }
+                                ]}
+                            />
                         </div>
                     </div>
 

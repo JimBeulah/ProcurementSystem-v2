@@ -29,6 +29,7 @@ export function DataTable({
     onRowClick,
     customToolbar,
     leftToolbar,
+    renderMobileRow, // Optional custom mobile row renderer
 }) {
     const [sorting, setSorting] = useState([]);
     const [globalFilter, setGlobalFilter] = useState('');
@@ -97,11 +98,11 @@ export function DataTable({
         <div className="space-y-4 w-full">
 
             {/* Toolbar: Search and Table Actions */}
-            <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 {/* Left side: Search and leftToolbar */}
-                <div className="flex items-center gap-3 flex-1 flex-wrap">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
                     {showSearch && (
-                        <div className="w-full max-w-sm relative group">
+                        <div className="w-full md:max-w-sm relative group">
                             <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
                                 <Search size={16} />
                             </div>
@@ -109,26 +110,90 @@ export function DataTable({
                                 placeholder="Search all columns..."
                                 value={globalFilter ?? ''}
                                 onChange={(e) => setGlobalFilter(e.target.value)}
-                                className="pl-10 h-9"
+                                className="pl-10 h-10 md:h-9 shadow-sm"
                             />
                         </div>
                     )}
-                    {leftToolbar}
+                    {leftToolbar && <div className="flex items-center gap-2">{leftToolbar}</div>}
                 </div>
 
                 {/* Right side: Custom content (Filters, etc) */}
-                <div className="flex items-center justify-end gap-3 flex-wrap">
+                <div className="flex items-center gap-3 flex-wrap md:flex-nowrap">
                     {customToolbar}
                     {enableSelection && Object.keys(rowSelection).length > 0 && (
-                        <span className="text-sm text-slate-500 dark:text-slate-400 ml-2 whitespace-nowrap">
+                        <span className="text-sm text-slate-500 dark:text-slate-400 ml-2 whitespace-nowrap bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700">
                             {Object.keys(rowSelection).length} row(s) selected
                         </span>
                     )}
                 </div>
             </div>
 
-            {/* The Table */}
-            <Table>
+            {/* Mobile Card View */}
+            <div className="grid grid-cols-1 gap-4 md:hidden">
+                {table.getRowModel().rows?.length ? (
+                    table.getRowModel().rows.map((row) => (
+                        <div
+                            key={row.id}
+                            onClick={() => onRowClick && onRowClick(row.original)}
+                            className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm space-y-3 ${
+                                onRowClick ? "cursor-pointer active:scale-[0.98] transition-transform" : ""
+                            }`}
+                        >
+                            {renderMobileRow ? (
+                                renderMobileRow(row.original)
+                            ) : (
+                                <>
+                                    {row.getVisibleCells().map((cell, idx) => {
+                                        // Skip selection column on mobile card if it exists
+                                        if (cell.column.id === 'select') return null;
+                                        
+                                        const header = cell.column.columnDef.header;
+                                        const isHeaderString = typeof header === 'string';
+
+                                        if (idx === (enableSelection ? 1 : 0)) {
+                                            return (
+                                                <div key={cell.id} className="pb-2 border-b border-slate-100 dark:border-slate-800 flex justify-between items-start">
+                                                    <div className="font-bold text-slate-900 dark:text-white">
+                                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                                    </div>
+                                                    {enableSelection && (
+                                                        <div onClick={(e) => e.stopPropagation()}>
+                                                            <Checkbox
+                                                                checked={row.getIsSelected()}
+                                                                onChange={row.getToggleSelectedHandler()}
+                                                                aria-label="Select row"
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        }
+
+                                        return (
+                                            <div key={cell.id} className="flex justify-between items-center gap-4 text-xs">
+                                                <span className="text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider shrink-0">
+                                                    {isHeaderString ? header : (cell.column.columnDef.mobileHeader || cell.column.id)}
+                                                </span>
+                                                <div className="text-slate-900 dark:text-slate-200 font-semibold text-right">
+                                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </>
+                            )}
+                        </div>
+                    ))
+                ) : (
+                    <div className="bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-8 text-center text-slate-500">
+                        No results found.
+                    </div>
+                )}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+                <Table>
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>
@@ -195,20 +260,21 @@ export function DataTable({
                     )}
                 </TableBody>
             </Table>
+            </div>
 
             {/* Pagination Controls */}
             {showPagination && table.getPageCount() > 0 && (
-                <div className="flex items-center justify-between px-2 mt-4">
-                    <div className="flex-1 text-sm text-slate-500 dark:text-slate-400">
-                        Page <span className="font-medium text-slate-900 dark:text-slate-100">{table.getState().pagination.pageIndex + 1}</span> of{" "}
-                        <span className="font-medium text-slate-900 dark:text-slate-100">{table.getPageCount()}</span>
-                    </div>
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-2 mt-6">
+                    <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+                        <div className="text-sm text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                            Page <span className="font-medium text-slate-900 dark:text-slate-100">{table.getState().pagination.pageIndex + 1}</span> of{" "}
+                            <span className="font-medium text-slate-900 dark:text-slate-100">{table.getPageCount()}</span>
+                        </div>
 
-                    <div className="flex items-center space-x-6 lg:space-x-8">
                         <div className="flex items-center space-x-2 shrink-0">
-                            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">Rows per page</p>
+                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 whitespace-nowrap">Rows per page</p>
                             <select
-                                className="h-9 w-20 rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 cursor-pointer"
+                                className="h-9 w-20 rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 cursor-pointer transition-all"
                                 value={table.getState().pagination.pageSize}
                                 onChange={e => {
                                     table.setPageSize(Number(e.target.value))
@@ -221,23 +287,23 @@ export function DataTable({
                                 ))}
                             </select>
                         </div>
+                    </div>
 
-                        <div className="flex items-center space-x-2">
-                            <button
-                                className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 disabled:pointer-events-none disabled:opacity-50 border border-slate-200 bg-white shadow-sm hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-800 dark:hover:text-slate-50 h-8 px-3"
-                                onClick={() => table.previousPage()}
-                                disabled={!table.getCanPreviousPage()}
-                            >
-                                Previous
-                            </button>
-                            <button
-                                className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 disabled:pointer-events-none disabled:opacity-50 border border-slate-200 bg-white shadow-sm hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-800 dark:hover:text-slate-50 h-8 px-3"
-                                onClick={() => table.nextPage()}
-                                disabled={!table.getCanNextPage()}
-                            >
-                                Next
-                            </button>
-                        </div>
+                    <div className="flex items-center justify-center gap-2 w-full md:w-auto">
+                        <button
+                            className="flex-1 md:flex-none inline-flex items-center justify-center rounded-xl text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:pointer-events-none disabled:opacity-30 border border-slate-200 bg-white shadow-sm hover:bg-slate-50 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-900 dark:hover:border-slate-700 h-10 px-6 active:scale-95"
+                            onClick={() => table.previousPage()}
+                            disabled={!table.getCanPreviousPage()}
+                        >
+                            Previous
+                        </button>
+                        <button
+                            className="flex-1 md:flex-none inline-flex items-center justify-center rounded-xl text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:pointer-events-none disabled:opacity-30 border border-slate-200 bg-white shadow-sm hover:bg-slate-50 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-900 dark:hover:border-slate-700 h-10 px-6 active:scale-95"
+                            onClick={() => table.nextPage()}
+                            disabled={!table.getCanNextPage()}
+                        >
+                            Next
+                        </button>
                     </div>
                 </div>
             )}

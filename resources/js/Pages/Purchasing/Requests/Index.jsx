@@ -8,15 +8,12 @@ import Drawer from '@/Components/UI/Drawer';
 import PdfPreviewModal from '@/Components/UI/PdfPreviewModal';
 import CreatePurchaseOrder from '@/Pages/Purchasing/Orders/Create';
 import {
-    Table, TableBody, TableCell, TableHead, TableHeader, TableRow
-} from '@/Components/UI/Table';
-import {
     ClipboardList, Plus, CheckCircle, XCircle, Trash2, ChevronDown, ChevronRight,
     Briefcase, Calendar, User, PhilippinePeso, AlertTriangle, Package, ShoppingCart,
-    MoreVertical, Printer, Eye, Search
+    MoreVertical, Printer, Eye, Search, TrendingUp, TrendingDown
 } from 'lucide-react';
+import DataTable from '@/Components/UI/DataTable';
 import { toast } from 'sonner';
-import { TrendingUp, TrendingDown } from 'lucide-react';
 
 const VARIANCE_THRESHOLD = 5;
 
@@ -146,6 +143,78 @@ export default function PurchaseRequestsIndex() {
         });
     };
 
+    const columns = React.useMemo(() => [
+        {
+            accessorKey: 'id',
+            header: '#',
+            cell: ({ row }) => (
+                <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-500">
+                        {row.original.id}
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="font-bold text-slate-900 dark:text-white uppercase tracking-tight leading-none mb-1">
+                            {row.original.project?.name || 'No Project'}
+                        </span>
+                        <span className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
+                            <Briefcase size={10} /> {row.original.request_number}
+                        </span>
+                    </div>
+                </div>
+            )
+        },
+        {
+            accessorKey: 'material_name',
+            header: 'Material Name',
+            cell: ({ row }) => <span className="font-bold text-slate-900 dark:text-white">{row.original.material_name || 'N/A'}</span>
+        },
+        {
+            id: 'requester',
+            header: 'Requester / Date',
+            cell: ({ row }) => (
+                <div className="flex flex-col">
+                    <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
+                        <User size={12} className="text-slate-400" />
+                        {row.original.requester?.name}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
+                        <Calendar size={12} className="text-slate-400" />
+                        {new Date(row.original.created_at).toLocaleDateString()}
+                    </div>
+                </div>
+            )
+        },
+        {
+            accessorKey: 'status',
+            header: () => <div className="text-center">Status</div>,
+            cell: ({ row }) => <div className="text-center"><StatusBadge status={row.original.status} /></div>
+        },
+        {
+            id: 'actions',
+            header: () => <div className="text-right pr-2">Actions</div>,
+            cell: ({ row }) => (
+                <div className="flex justify-end gap-2 pr-2">
+                    <button
+                        onClick={() => { setSelectedPr(row.original); setShowDrawer(true); }}
+                        className="p-1.5 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg transition-colors"
+                        title="View Details"
+                    >
+                        <Eye size={16} />
+                    </button>
+                    {can('delete purchase requests') && row.original.status === 'PENDING' && (
+                        <button
+                            onClick={() => setDeleteTarget(row.original)}
+                            className="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-lg transition-colors"
+                            title="Delete Request"
+                        >
+                            <Trash2 size={16} />
+                        </button>
+                    )}
+                </div>
+            )
+        }
+    ], [can]);
+
     return (
         <AuthenticatedLayout>
             <Head title="Purchase Requests" />
@@ -172,25 +241,25 @@ export default function PurchaseRequestsIndex() {
                     </div>
 
                     {/* Filters */}
-                    <div className="flex flex-col sm:flex-row gap-3 mb-5 items-center justify-between">
-                        <div className="flex items-center gap-3 w-full sm:w-auto">
-                            <div className="relative w-full sm:w-64">
+                    <div className="flex flex-col lg:flex-row gap-4 mb-6 items-stretch lg:items-center justify-between">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
+                            <div className="relative flex-1 sm:max-w-xs">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                                 <input
                                     type="text"
                                     placeholder="Search PR, Project, Purpose..."
                                     value={search}
                                     onChange={e => setSearch(e.target.value)}
-                                    className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-900 dark:text-white placeholder:text-slate-400"
+                                    className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-900 dark:text-white placeholder:text-slate-400 h-10"
                                 />
                             </div>
-                            <div className="relative w-full sm:w-auto">
+                            <div className="relative sm:w-auto">
                                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
                                 <input
                                     type="date"
                                     value={dateFilter}
                                     onChange={e => setDateFilter(e.target.value)}
-                                    className="w-full sm:w-auto pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 dark:text-slate-300"
+                                    className="w-full sm:w-auto pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 dark:text-slate-300 h-10"
                                 />
                                 {dateFilter && (
                                     <button
@@ -202,104 +271,24 @@ export default function PurchaseRequestsIndex() {
                                 )}
                             </div>
                         </div>
-                        <div className="w-full sm:w-auto text-right">
+                        <div className="flex items-center gap-2">
                             {can('manage purchase requests') && (
-                                <button onClick={() => setShowCreate(true)} className="w-full sm:w-auto bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-all shadow-lg shadow-violet-600/20 active:scale-95">
-                                    <Plus size={18} /> New Request
+                                <button onClick={() => setShowCreate(true)} className="flex-1 sm:flex-none bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white px-6 py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-all shadow-lg shadow-violet-600/20 active:scale-95 h-10">
+                                    <Plus size={18} /> <span className="whitespace-nowrap">New Request</span>
                                 </button>
                             )}
                         </div>
                     </div>
 
-                    <div className="overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="w-12 text-center">#</TableHead>
-                                    <TableHead>PR Number</TableHead>
-                                    <TableHead>Project</TableHead>
-                                    <TableHead>Requested By</TableHead>
-                                    <TableHead className="text-center">Status</TableHead>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead className="text-right">Est. Cost</TableHead>
-                                    <TableHead className="w-24 text-center">Details</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {list.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={8} className="h-48 text-center pt-10">
-                                            <ShoppingCart className="mx-auto mb-4 text-slate-300 dark:text-slate-600" size={48} />
-                                            <p className="text-slate-400 uppercase tracking-widest font-bold text-xs">No Sourcing Tasks Yet</p>
-                                            <p className="text-slate-400 text-xs mt-1">Approved material requests will appear here for sourcing.</p>
-                                        </TableCell>
-                                    </TableRow>
-                                ) : list.map((pr, idx) => (
-                                    <TableRow
-                                        key={pr.id}
-                                        className={`cursor-pointer transition-colors ${pr.status === 'PENDING'
-                                            ? 'bg-amber-50/50 hover:bg-amber-50 dark:bg-amber-500/5 dark:hover:bg-amber-500/10'
-                                            : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                                            }`}
-                                        onClick={() => { setSelectedPr(pr); setShowDrawer(true); }}
-                                    >
-                                        <TableCell className="text-center text-slate-400 font-mono text-xs">{idx + 1}</TableCell>
-                                        <TableCell>
-                                            <span className="font-mono font-bold text-blue-600 dark:text-blue-400">PR-{pr.id.toString().padStart(5, '0')}</span>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-2">
-                                                <Briefcase size={14} className="text-slate-400" />
-                                                <span className="font-semibold text-slate-900 dark:text-white">{pr.project?.name || 'N/A'}</span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-2">
-                                                <User size={14} className="text-slate-400" />
-                                                <span className="text-slate-600 dark:text-slate-300">{pr.requester?.name || 'N/A'}</span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-center"><StatusBadge status={pr.status} /></TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-1.5 text-slate-500 text-xs">
-                                                <Calendar size={12} />
-                                                {new Date(pr.request_date).toLocaleDateString()}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-right font-mono font-bold text-slate-900 dark:text-white">
-                                            <span className="text-[10px] text-slate-400 mr-1">₱</span>
-                                            {Number(pr.total_estimated_cost).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <button
-                                                className="p-1.5 text-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors inline-flex"
-                                            >
-                                                <Eye size={16} />
-                                            </button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                    {/* Pagination */}
-                    {paginationLinks.length > 0 && (
-                        <div className="bg-slate-50/80 dark:bg-slate-900/50 px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                            <span className="text-xs text-slate-500">
-                                Showing <span className="font-bold text-slate-900 dark:text-white">{requests.from || 0}</span> to <span className="font-bold text-slate-900 dark:text-white">{requests.to || 0}</span> of <span className="font-bold text-slate-900 dark:text-white">{requests.total || 0}</span> requests
-                            </span>
-                            <div className="flex gap-1">
-                                {paginationLinks.map((link, i) => (
-                                    <Link
-                                        key={i}
-                                        href={link.url || '#'}
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
-                                        className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${link.active ? 'bg-blue-600 text-white shadow-md' : link.url ? 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700' : 'text-slate-400 cursor-not-allowed opacity-50'}`}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                    <DataTable
+                        data={list}
+                        columns={columns}
+                        onRowClick={(pr) => { setSelectedPr(pr); setShowDrawer(true); }}
+                        searchPlaceholder="Search PR, Project, Purpose..."
+                        showSearch={false} // We have our own filters
+                        showPagination={true}
+                        paginationData={requests}
+                    />
                 </div>
 
                 {/* Delete Confirmation Modal */}

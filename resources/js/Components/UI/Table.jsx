@@ -8,7 +8,7 @@ function cn(...inputs) {
 }
 
 const Table = React.forwardRef(({ className, ...props }, ref) => (
-    <div className="relative w-full overflow-visible rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+    <div className="relative w-full overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
         <table
             ref={ref}
             className={cn("w-full caption-bottom text-sm", className)}
