@@ -64,6 +64,12 @@ class HandleInertiaRequests extends Middleware
                     \App\Models\PurchaseOrder::where('status', 'PENDING')->count() +
                     \App\Models\MaterialRequest::where('status', 'PENDING')->count()
                 ) : 0,
+                'warehouse' => $request->user() && $request->user()->hasRole(['admin', 'warehouse']) ? (
+                    \App\Models\SiteRelease::where('status', 'PENDING')->count() +
+                    \App\Models\MaterialReturn::where('status', 'PENDING')->count()
+                ) : 0,
+                'site_release' => $request->user() && $request->user()->hasRole(['admin', 'warehouse']) ? \App\Models\SiteRelease::where('status', 'PENDING')->count() : 0,
+                'material_returns' => $request->user() && $request->user()->hasRole(['admin', 'warehouse']) ? \App\Models\MaterialReturn::where('status', 'PENDING')->count() : 0,
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),

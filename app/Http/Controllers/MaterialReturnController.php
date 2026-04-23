@@ -46,7 +46,7 @@ class MaterialReturnController extends Controller
             return redirect()->back()->with('error', "Cannot return {$validated['quantity']} {$item->unit}. You only have {$item->quantity} {$item->unit} available on site.");
         }
 
-        DB::transaction(function () use ($validated, $item) {
+        $return = DB::transaction(function () use ($validated, $item) {
             $return = MaterialReturn::create([
                 'project_id' => $validated['project_id'],
                 'material_name' => $item->material_name,
@@ -62,6 +62,10 @@ class MaterialReturnController extends Controller
 
             return $return;
         });
+
+        // Notify Warehouse users
+        $warehouseUsers = \App\Models\User::role(['admin', 'warehouse'])->get();
+        \Illuminate\Support\Facades\Notification::send($warehouseUsers, new \App\Notifications\NewMaterialReturnSubmitted($return));
 
         return redirect()->back()->with('success', 'Material return submitted. Warehouse will confirm receipt.');
     }

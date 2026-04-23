@@ -43,8 +43,8 @@ export const NAVIGATION_CONFIG = [
             { label: 'Inventory', href: '/inventory', icon: <Layers />, permission: 'view inventory', matchPrefix: '/inventory', exactMatch: true },
             { label: 'Receiving', href: '/inventory/receiving', icon: <Inbox />, permission: 'view receiving', matchPrefix: '/inventory/receiving', exactMatch: true },
             { label: 'Deliveries', href: '/operations/deliveries', icon: <Truck />, anyPermission: ['view receiving', 'confirm site release'], matchPrefix: '/operations/deliveries' },
-            { label: 'Site Release', href: '/site-release', icon: <Truck />, permission: 'create site release', matchPrefix: '/site-release' },
-            { label: 'Material Returns', href: '/inventory/returns', icon: <RotateCcw />, permission: 'view inventory', matchPrefix: '/inventory/returns' },
+            { label: 'Site Release', href: '/site-release', icon: <Truck />, permission: 'create site release', matchPrefix: '/site-release', badgeKey: 'site_release' },
+            { label: 'Material Returns', href: '/inventory/returns', icon: <RotateCcw />, permission: 'view inventory', matchPrefix: '/inventory/returns', badgeKey: 'material_returns' },
         ],
     },
     {

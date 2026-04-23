@@ -133,6 +133,16 @@ class PurchaseOrderService
             ->where('status', SiteRelease::STATUS_AWAITING_APPROVAL)
             ->update(['status' => SiteRelease::STATUS_PENDING]);
 
+        // Notify Warehouse users about the pending releases
+        $warehouseUsers = User::role(['admin', 'warehouse'])->get();
+        $pendingReleases = SiteRelease::where('purchase_order_id', $order->id)
+            ->where('status', SiteRelease::STATUS_PENDING)
+            ->get();
+
+        foreach ($pendingReleases as $release) {
+            Notification::send($warehouseUsers, new \App\Notifications\NewSiteReleasePending($release));
+        }
+
         if ($order->requester) {
             $order->requester->notify(new \App\Notifications\PurchaseOrderApproved($order));
         }
