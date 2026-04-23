@@ -99,7 +99,7 @@ class PurchaseOrderService
             }
 
             // 5. Notify approvers
-            $approvers = User::role(['admin', 'finance'])->get();
+            $approvers = User::role(['admin', 'project_manager'])->get();
             if ($approvers->isNotEmpty()) {
                 Notification::send($approvers, new \App\Notifications\NewPurchaseOrderSubmitted($po));
             }
@@ -139,6 +139,7 @@ class PurchaseOrderService
             ->where('status', SiteRelease::STATUS_PENDING)
             ->get();
 
+        /** @var \App\Models\SiteRelease $release */
         foreach ($pendingReleases as $release) {
             Notification::send($warehouseUsers, new \App\Notifications\NewSiteReleasePending($release));
         }
