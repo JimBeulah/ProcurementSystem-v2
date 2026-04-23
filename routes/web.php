@@ -84,6 +84,7 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
         Route::post('/projects/{project}/material-requests', [MaterialRequestController::class, 'store'])->name('projects.material-requests.store')->middleware('can:create material requests');
         Route::post('/material-requests/{materialRequest}/approve', [MaterialRequestController::class, 'approve'])->name('material-requests.approve')->middleware('can:approve material requests');
         Route::post('/material-requests/{materialRequest}/reject', [MaterialRequestController::class, 'reject'])->name('material-requests.reject')->middleware('can:reject material requests');
+        Route::post('/material-requests/{materialRequest}/cancel', [MaterialRequestController::class, 'cancel'])->name('material-requests.cancel');
 
         // Site Engineer project-specific material returns view
         Route::get('/projects/{project}/material-returns', [ProjectController::class, 'materialReturns'])->name('projects.material-returns');

@@ -63,4 +63,15 @@ class MaterialRequestPolicy
     {
         return $user->hasAnyRole(['admin', 'project_manager']);
     }
+
+    /**
+     * Determine if the user can cancel their own material request.
+     * Allowed if the user is the requester and the status is PENDING.
+     */
+    public function cancel(User $user, MaterialRequest $materialRequest): bool
+    {
+        // Admins and PMs are already covered by before() returning true.
+        // For others (Site Engineers), check if they are the requester and it's pending.
+        return $materialRequest->requester_id === $user->id && $materialRequest->status === 'PENDING';
+    }
 }

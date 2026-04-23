@@ -7,6 +7,7 @@ import DataTable from '@/Components/UI/DataTable';
 import Select from '@/Components/UI/Select';
 import { Truck, Plus, Package, Box, AlertTriangle, Info, CheckCircle2, User, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
+import ConfirmationModal from '@/Components/UI/ConfirmationModal';
 
 export default function ProjectMaterialRequests() {
     const { project, materialRequests: initialMRs, boqItems, inventoryItems, flash, auth } = usePage().props;
@@ -19,6 +20,8 @@ export default function ProjectMaterialRequests() {
     // New additions for Drawer and DataTable
     const [selectedMr, setSelectedMr] = useState(null);
     const [showDrawer, setShowDrawer] = useState(false);
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const [mrToCancel, setMrToCancel] = useState(null);
 
     const columns = useMemo(() => [
         {
@@ -100,7 +103,7 @@ export default function ProjectMaterialRequests() {
     const usage = React.useMemo(() => {
         if (!selectedComponent) return { qty: 0, cost: 0 };
         return requests.reduce((acc, mr) => {
-            if (mr.status === 'REJECTED') return acc; // Ignore rejected
+            if (['REJECTED', 'CANCELLED'].includes(mr.status)) return acc; // Ignore inactive
             const item = mr.items?.find(i => i.boq_item_component_id === selectedComponent.id);
             if (item) {
                 acc.qty += Number(item.quantity);
@@ -528,9 +531,46 @@ export default function ProjectMaterialRequests() {
                                     </div>
                                 )}
                             </div>
+
+                            {/* Actions */}
+                            {selectedMr.can?.cancel && (
+                                <div className="flex justify-end pt-4 border-t border-slate-200 dark:border-slate-700">
+                                    <button
+                                        onClick={() => {
+                                            setMrToCancel(selectedMr);
+                                            setShowCancelModal(true);
+                                        }}
+                                        className="bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 px-4 py-2 rounded-lg text-xs font-bold transition-colors border border-red-200 dark:border-red-500/20"
+                                    >
+                                        Cancel Request
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     )}
                 </Drawer>
+
+                <ConfirmationModal
+                    isOpen={showCancelModal}
+                    onClose={() => setShowCancelModal(false)}
+                    onConfirm={() => {
+                        if (mrToCancel) {
+                            router.post(`/material-requests/${mrToCancel.id}/cancel`, {}, {
+                                onSuccess: () => {
+                                    setShowDrawer(false);
+                                    setShowCancelModal(false);
+                                    setMrToCancel(null);
+                                    toast.success('Material request cancelled successfully.');
+                                }
+                            });
+                        }
+                    }}
+                    title="Cancel Material Request"
+                    message={`Are you sure you want to cancel Material Request MR-${(mrToCancel?.id || '').toString().padStart(5, '0')}? This action cannot be undone.`}
+                    type="danger"
+                    confirmText="Yes, Cancel Request"
+                    cancelText="No, Keep it"
+                />
             </div>
         </AuthenticatedLayout>
     );

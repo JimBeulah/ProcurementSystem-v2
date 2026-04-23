@@ -39,7 +39,7 @@ class MaterialRequestService
 
             $previousRequestsCost = MaterialRequestItem::where('boq_item_component_id', $component->id)
                 ->whereHas('materialRequest', function ($q) {
-                    $q->where('status', '!=', 'REJECTED');
+                    $q->whereNotIn('status', ['REJECTED', 'CANCELLED']);
                 })
                 ->get()
                 ->sum(fn ($reqItem) => $reqItem->quantity * ($reqItem->material_unit_price + $reqItem->labor_unit_price));
@@ -135,6 +135,16 @@ class MaterialRequestService
             'status' => 'REJECTED',
             'approver_id' => Auth::id(),
             'remarks' => $remarks ?? $materialRequest->remarks,
+        ]);
+    }
+
+    /**
+     * Cancel a material request.
+     */
+    public function cancel(MaterialRequest $materialRequest): void
+    {
+        $materialRequest->update([
+            'status' => 'CANCELLED',
         ]);
     }
 }

@@ -27,7 +27,16 @@ class MaterialRequestController extends Controller
         $materialRequests = $project->materialRequests()
             ->with(['requester', 'items.boqItem', 'items.boqItemComponent'])
             ->orderBy('request_date', 'desc')
-            ->get();
+            ->get()
+            ->map(function ($mr) {
+                return array_merge($mr->toArray(), [
+                    'can' => [
+                        'cancel' => auth()->user()->can('cancel', $mr),
+                        'approve' => auth()->user()->can('approve', $mr),
+                        'reject' => auth()->user()->can('reject', $mr),
+                    ],
+                ]);
+            });
 
         $boqItems = BoqItem::where('project_id', $project->id)
             ->with('components')
@@ -110,5 +119,18 @@ class MaterialRequestController extends Controller
         $this->service->reject($materialRequest, $request->input('remarks'));
 
         return redirect()->back()->with('success', "Material Request MR-{$materialRequest->id} rejected.");
+    }
+
+    public function cancel(MaterialRequest $materialRequest): RedirectResponse
+    {
+        $this->authorize('cancel', $materialRequest);
+
+        if ($materialRequest->status !== 'PENDING') {
+            return redirect()->back()->with('error', 'Only pending requests can be cancelled.');
+        }
+
+        $this->service->cancel($materialRequest);
+
+        return redirect()->back()->with('success', "Material Request MR-{$materialRequest->id} has been cancelled.");
     }
 }
