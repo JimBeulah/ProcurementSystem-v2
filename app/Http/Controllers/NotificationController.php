@@ -29,4 +29,14 @@ class NotificationController extends Controller
 
         return back();
     }
+
+    /**
+     * Delete all notifications for the authenticated user.
+     */
+    public function clearAll()
+    {
+        auth()->user()->notifications()->delete();
+
+        return back();
+    }
 }

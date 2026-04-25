@@ -28,6 +28,17 @@ export default function Header({ user, onMenuClick }) {
         e.preventDefault();
         e.stopPropagation();
         router.post(route('notifications.read', { notification: id }), {}, {
+            preserveScroll: true,
+            onSuccess: () => {
+                // The notification will automatically disappear because the backend 
+                // now only sends unread notifications.
+            }
+        });
+    };
+
+    const handleClearAll = (e) => {
+        e.preventDefault();
+        router.post(route('notifications.clear-all'), {}, {
             preserveScroll: true
         });
     };
@@ -169,14 +180,24 @@ export default function Header({ user, onMenuClick }) {
                                     >
                                         <div className="p-4 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
                                             <h3 className="text-sm font-semibold text-foreground tracking-tight">Notifications</h3>
-                                            {auth?.notifications_count > 0 && (
-                                                <button
-                                                    onClick={handleMarkAllAsRead}
-                                                    className="text-[11px] text-blue-600 hover:text-blue-700 font-medium"
-                                                >
-                                                    Mark all read
-                                                </button>
-                                            )}
+                                            <div className="flex gap-3">
+                                                {auth?.notifications?.length > 0 && (
+                                                    <button
+                                                        onClick={handleMarkAllAsRead}
+                                                        className="text-[11px] text-blue-600 hover:text-blue-700 font-semibold"
+                                                    >
+                                                        Mark all read
+                                                    </button>
+                                                )}
+                                                {auth?.notifications?.length > 0 && (
+                                                    <button
+                                                        onClick={handleClearAll}
+                                                        className="text-[11px] text-muted-foreground hover:text-red-500 font-medium"
+                                                    >
+                                                        Clear
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                         <div className="max-h-[300px] overflow-y-auto overscroll-contain">
                                             {auth?.notifications?.length > 0 ? (
@@ -198,10 +219,10 @@ export default function Header({ user, onMenuClick }) {
                                                             {!notification.read_at && (
                                                                 <button
                                                                     onClick={(e) => handleMarkAsRead(e, notification.id)}
-                                                                    className="opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-600 transition-all"
+                                                                    className="p-1.5 rounded-lg bg-blue-500/10 text-blue-600 hover:bg-blue-500 hover:text-white transition-all shadow-sm"
                                                                     title="Mark as read"
                                                                 >
-                                                                    <Check size={14} />
+                                                                    <Check size={14} strokeWidth={3} />
                                                                 </button>
                                                             )}
                                                             {!notification.read_at && (

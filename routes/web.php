@@ -36,6 +36,7 @@ Route::middleware(['auth'])->group(function () {
     // Notifications
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+    Route::post('/notifications/clear-all', [NotificationController::class, 'clearAll'])->name('notifications.clear-all');
 });
 
 Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
