@@ -3,9 +3,9 @@
 @section('title', 'Purchase Order - PO-' . str_pad($purchaseOrder->id, 5, '0', STR_PAD_LEFT))
 
 @section('watermark')
-    @if(strtoupper($purchaseOrder->status) === 'APPROVED' || strtoupper($purchaseOrder->status) === 'COMPLETED')
+    @if(strtoupper($purchaseOrder->status->value) === 'APPROVED' || strtoupper($purchaseOrder->status->value) === 'COMPLETED')
         <div class="watermark" style="color: #16a34a; opacity: 0.06;">APPROVED</div>
-    @elseif(strtoupper($purchaseOrder->status) === 'DECLINED')
+    @elseif(strtoupper($purchaseOrder->status->value) === 'DECLINED')
         <div class="watermark">DECLINED</div>
     @else
         <div class="watermark" style="color: #d97706; opacity: 0.05;">UNOFFICIAL COPY</div>
@@ -20,7 +20,7 @@
             <td style="border: none; width: 50%;">
                 <strong>PO Number:</strong> PO-{{ str_pad($purchaseOrder->id, 5, '0', STR_PAD_LEFT) }}<br>
                 <strong>Order Date:</strong> {{ \Carbon\Carbon::parse($purchaseOrder->order_date)->format('M d, Y') }}<br>
-                <strong>Status:</strong> {{ ucfirst(strtolower($purchaseOrder->status)) }}
+                <strong>Status:</strong> {{ ucfirst(strtolower($purchaseOrder->status->value)) }}
             </td>
             <td style="border: none; width: 50%; text-align: right;">
                 <strong>Project:</strong> {{ $purchaseOrder->project->name ?? 'N/A' }}<br>
@@ -98,7 +98,7 @@
         <div class="signature-box" style="float: right;">
             <strong>Approved By:</strong>
             <div class="signature-line">
-                @if(strtoupper($purchaseOrder->status) === 'APPROVED' || strtoupper($purchaseOrder->status) === 'COMPLETED')
+                @if(strtoupper($purchaseOrder->status->value) === 'APPROVED' || strtoupper($purchaseOrder->status->value) === 'COMPLETED')
                     <span class="signature-status">Approved via System</span>
                 @endif
             </div>

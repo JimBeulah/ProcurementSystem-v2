@@ -78,17 +78,18 @@ class FinanceFormController extends Controller
             'receipt_number' => 'required|string|max:255',
             'receipt_date' => 'required|date',
             'receipt_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'receipt_url' => 'nullable|string',
             'liquidation_remarks' => 'nullable|string|max:1000',
         ]);
 
         if ($request->hasFile('receipt_file')) {
             $path = $request->file('receipt_file')->store('receipts', 'public');
             $validated['receipt_path'] = $path;
-        } elseif ($request->filled('receipt_url')) {
-            $validated['receipt_path'] = $request->input('receipt_url');
+        } elseif (!empty($validated['receipt_url'])) {
+            $validated['receipt_path'] = $validated['receipt_url'];
         }
 
-        unset($validated['receipt_file']);
+        unset($validated['receipt_file'], $validated['receipt_url']);
 
         try {
             $this->service->liquidateDisbursement($disbursement, $validated);

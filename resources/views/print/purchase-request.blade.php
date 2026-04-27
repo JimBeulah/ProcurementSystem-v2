@@ -3,9 +3,9 @@
 @section('title', 'Purchase Request - PR-' . str_pad($purchaseRequest->id, 5, '0', STR_PAD_LEFT))
 
 @section('watermark')
-    @if(strtoupper($purchaseRequest->status) === 'APPROVED' || strtoupper($purchaseRequest->status) === 'COMPLETED')
+    @if(strtoupper($purchaseRequest->status->value) === 'APPROVED' || strtoupper($purchaseRequest->status->value) === 'COMPLETED')
         <div class="watermark" style="color: #16a34a; opacity: 0.06;">APPROVED</div>
-    @elseif(strtoupper($purchaseRequest->status) === 'DECLINED')
+    @elseif(strtoupper($purchaseRequest->status->value) === 'DECLINED')
         <div class="watermark">DECLINED</div>
     @else
         <div class="watermark" style="color: #d97706; opacity: 0.05;">UNOFFICIAL COPY</div>
@@ -20,7 +20,7 @@
             <td style="border: none; width: 50%;">
                 <strong>PR Number:</strong> PR-{{ str_pad($purchaseRequest->id, 5, '0', STR_PAD_LEFT) }}<br>
                 <strong>Date Created:</strong> {{ $purchaseRequest->created_at->format('M d, Y') }}<br>
-                <strong>Status:</strong> {{ ucfirst($purchaseRequest->status) }}
+                <strong>Status:</strong> {{ ucfirst(strtolower($purchaseRequest->status->value)) }}
             </td>
             <td style="border: none; width: 50%; text-align: right;">
                 <strong>Project:</strong> {{ $purchaseRequest->project->name ?? 'N/A' }}<br>
@@ -77,7 +77,7 @@
         <div class="signature-box">
             <strong>Verified By:</strong>
             <div class="signature-line">
-                @if(strtoupper($purchaseRequest->status) === 'APPROVED' || strtoupper($purchaseRequest->status) === 'COMPLETED')
+                @if(strtoupper($purchaseRequest->status->value) === 'APPROVED' || strtoupper($purchaseRequest->status->value) === 'COMPLETED')
                     <span class="signature-status">Approved via System</span>
                 @endif
             </div>
@@ -90,7 +90,7 @@
         <div class="signature-box" style="float: right;">
             <strong>Approved By:</strong>
             <div class="signature-line">
-                @if(strtoupper($purchaseRequest->status) === 'APPROVED' || strtoupper($purchaseRequest->status) === 'COMPLETED')
+                @if(strtoupper($purchaseRequest->status->value) === 'APPROVED' || strtoupper($purchaseRequest->status->value) === 'COMPLETED')
                     <span class="signature-status">Approved via System</span>
                 @endif
             </div>
