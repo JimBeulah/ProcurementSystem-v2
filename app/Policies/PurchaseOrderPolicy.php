@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\PurchaseOrderStatus;
 use App\Models\PurchaseOrder;
 use App\Models\User;
 
@@ -75,7 +76,7 @@ class PurchaseOrderPolicy
         // Procurement Officers can cancel their own PENDING or APPROVED orders
         // (But NOT partially delivered or completed ones)
         if ($user->hasRole('procurement_officer') &&
-            in_array($order->status, [PurchaseOrder::STATUS_PENDING, PurchaseOrder::STATUS_APPROVED]) &&
+            in_array($order->status, [PurchaseOrderStatus::PENDING, PurchaseOrderStatus::APPROVED]) &&
             $order->requester_id === $user->id) {
             return true;
         }

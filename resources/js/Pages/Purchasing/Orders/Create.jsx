@@ -66,7 +66,11 @@ export default function CreatePurchaseOrder({ onSuccess, supplierReturn: propSup
         if (items.length === 0) return;
         setSubmitting(true);
         // Strip estimated_unit_cost before sending — backend doesn't need it
-        const payload = items.map(({ estimated_unit_cost, ...rest }) => rest);
+        const payload = items.map(item => {
+            const newItem = { ...item };
+            delete newItem.estimated_unit_cost;
+            return newItem;
+        });
         router.post('/purchasing/orders', { ...formData, items: payload }, {
             onFinish: () => setSubmitting(false),
             onSuccess: () => {

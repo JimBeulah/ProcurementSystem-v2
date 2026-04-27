@@ -7,6 +7,8 @@ use App\Models\BoqItemComponent;
 use App\Models\Client;
 use App\Models\Project;
 use App\Models\User;
+use Database\Seeders\RolesAndPermissionsSeeder;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
@@ -18,12 +20,12 @@ class MaterialRequestBudgetTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class);
+        $this->withoutMiddleware(ValidateCsrfToken::class);
     }
 
     private function makeProjectWithComponent(): array
     {
-        $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+        $this->seed(RolesAndPermissionsSeeder::class);
         $user = User::factory()->create(['role' => 'site_engineer']);
         $user->assignRole('site_engineer');
 

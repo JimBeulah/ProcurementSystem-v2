@@ -13,8 +13,7 @@ import {
     Package,
     Users,
     Settings,
-    Banknote,
-    Send
+    Banknote
 } from 'lucide-react';
 
 export default function GlobalSearch({ isOpen, onClose }) {

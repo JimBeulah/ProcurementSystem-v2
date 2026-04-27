@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, ShoppingCart, Activity, CreditCard, ChevronDown, CheckCircle2, AlertCircle, PieChart, ArrowDownRight, ArrowUpRight } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight } from 'lucide-react';
 import { Card } from '@/Components/UI/Card';
 
 const formatCurrency = (amount) => {

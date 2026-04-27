@@ -6,7 +6,9 @@ use App\Models\Client;
 use App\Models\Disbursement;
 use App\Models\Project;
 use App\Models\PurchaseOrder;
+use App\Models\Supplier;
 use App\Models\User;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -19,7 +21,7 @@ class FinanceReportTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+        $this->seed(RolesAndPermissionsSeeder::class);
         $this->user = User::factory()->create(['role' => 'finance']);
         $this->user->assignRole('finance');
     }
@@ -47,8 +49,8 @@ class FinanceReportTest extends TestCase
         Client::factory()->count(1)->create();
         $project = Project::factory()->create(['budget' => 500000, 'name' => 'Test Project']);
 
-        $supplier = \App\Models\Supplier::factory()->create();
-        $user = \App\Models\User::factory()->create();
+        $supplier = Supplier::factory()->create();
+        $user = User::factory()->create();
 
         $po = PurchaseOrder::create([
             'project_id' => $project->id,

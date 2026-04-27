@@ -1,19 +1,14 @@
 import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, usePage, Link } from '@inertiajs/react';
-import { RotateCcw, Plus, X, CheckCircle, Clock, Inbox, Briefcase, ArrowLeft, PackageCheck } from 'lucide-react';
+import { RotateCcw, Plus, CheckCircle, Clock, Briefcase, ArrowLeft, PackageCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Combobox from '@/Components/UI/Combobox.jsx';
 import { usePermissions } from '@/Hooks/usePermissions';
 import DataTable from '@/Components/UI/DataTable';
 
-const STATUS_BADGE = {
-    PENDING: { cls: 'bg-amber-500/10 text-amber-600 border-amber-500/20', label: 'Pending Arrival' },
-    RECEIVED: { cls: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', label: 'Received by Warehouse' },
-};
-
 export default function ProjectMaterialReturns() {
-    const { project, returns, inventory, flash } = usePage().props;
+    const { project, returns, inventory } = usePage().props;
     const { can } = usePermissions();
     const [showForm, setShowForm] = useState(false);
     const [processing, setProcessing] = useState(null);

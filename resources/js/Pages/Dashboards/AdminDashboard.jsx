@@ -3,7 +3,7 @@ import { Head, Link } from '@inertiajs/react';
 import { Card } from '@/Components/UI/Card';
 import { WelcomeBanner } from '@/Components/UI/WelcomeBanner';
 import {
-    Package, UserCog, ShoppingCart, AlertCircle, ClipboardList, CheckCircle, TrendingUp, ShieldCheck, Database, Settings
+    Package, UserCog, ShoppingCart, AlertCircle, ClipboardList, CheckCircle, TrendingUp, Database, Settings
 } from 'lucide-react';
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 

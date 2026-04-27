@@ -2,7 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import { Card } from '@/Components/UI/Card';
 import { WelcomeBanner } from '@/Components/UI/WelcomeBanner';
-import { Package, Truck, ArrowDownCircle, TrendingUp, AlertCircle, RotateCcw } from 'lucide-react';
+import { Package, Truck, ArrowDownCircle, TrendingUp, RotateCcw } from 'lucide-react';
 
 export default function WarehouseDashboard({ stats }) {
     return (

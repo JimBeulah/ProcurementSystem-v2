@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import { usePage } from '@inertiajs/react';
 
 const ParticleCanvas = () => {
     const canvasRef = useRef(null);

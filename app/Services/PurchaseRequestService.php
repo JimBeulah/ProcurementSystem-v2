@@ -2,8 +2,17 @@
 
 namespace App\Services;
 
+use App\Enums\PurchaseOrderStatus;
+use App\Enums\PurchaseRequestStatus;
+use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
+use App\Models\User;
+use App\Notifications\NewPurchaseRequestSubmitted;
+use App\Notifications\PurchaseRequestApproved;
+use App\Notifications\PurchaseRequestReadyForSourcing;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 
 class PurchaseRequestService
 {
@@ -19,7 +28,7 @@ class PurchaseRequestService
             'project_id' => $validated['project_id'],
             'requester_id' => Auth::id(),
             'request_date' => now(),
-            'status' => 'PENDING',
+            'status' => PurchaseRequestStatus::PENDING,
             'purpose' => $validated['purpose'] ?? null,
             'remarks' => $validated['remarks'] ?? null,
             'total_estimated_cost' => $totalCost,
@@ -35,9 +44,9 @@ class PurchaseRequestService
             ]);
         }
 
-        $approvers = \App\Models\User::role(['admin', 'project_manager'])->get();
+        $approvers = User::role(['admin', 'project_manager'])->get();
         if ($approvers->isNotEmpty()) {
-            \Illuminate\Support\Facades\Notification::send($approvers, new \App\Notifications\NewPurchaseRequestSubmitted($pr));
+            Notification::send($approvers, new NewPurchaseRequestSubmitted($pr));
         }
 
         return $pr;
@@ -49,8 +58,8 @@ class PurchaseRequestService
     public function approve(PurchaseRequest $purchaseRequest): ?string
     {
         // Fix #5: Status Regression Guard
-        if ($purchaseRequest->status !== 'PENDING') {
-            throw new \Exception("Only PENDING requests can be approved. Current status: {$purchaseRequest->status}.");
+        if ($purchaseRequest->status !== PurchaseRequestStatus::PENDING) {
+            throw new \Exception("Only PENDING requests can be approved. Current status: {$purchaseRequest->status->label()}.");
         }
 
         // Fix #1: Four-eyes principle (PM only, per user instruction)
@@ -62,12 +71,12 @@ class PurchaseRequestService
         $warning = null;
         $project = $purchaseRequest->project;
         if ($project && $project->budget > 0) {
-            $totalCommitted = \App\Models\PurchaseOrder::where('project_id', $project->id)
-                ->whereNotIn('status', ['DECLINED', 'CANCELLED'])
+            $totalCommitted = PurchaseOrder::where('project_id', $project->id)
+                ->whereNotIn('status', [PurchaseOrderStatus::DECLINED, PurchaseOrderStatus::CANCELLED])
                 ->sum('total_amount');
 
-            $totalPending = \App\Models\PurchaseRequest::where('project_id', $project->id)
-                ->where('status', 'APPROVED')
+            $totalPending = PurchaseRequest::where('project_id', $project->id)
+                ->where('status', PurchaseRequestStatus::APPROVED)
                 ->sum('total_estimated_cost');
 
             $remaining = (float) $project->budget - (float) $totalCommitted - (float) $totalPending;
@@ -80,17 +89,17 @@ class PurchaseRequestService
         }
 
         $purchaseRequest->update([
-            'status' => 'APPROVED',
+            'status' => PurchaseRequestStatus::APPROVED,
             'approver_id' => Auth::id(),
         ]);
 
         if ($purchaseRequest->requester) {
-            $purchaseRequest->requester->notify(new \App\Notifications\PurchaseRequestApproved($purchaseRequest));
+            $purchaseRequest->requester->notify(new PurchaseRequestApproved($purchaseRequest));
         }
 
-        $procurementOfficers = \App\Models\User::role('procurement_officer')->get();
+        $procurementOfficers = User::role('procurement_officer')->get();
         if ($procurementOfficers->isNotEmpty()) {
-            \Illuminate\Support\Facades\Notification::send($procurementOfficers, new \App\Notifications\PurchaseRequestReadyForSourcing($purchaseRequest));
+            Notification::send($procurementOfficers, new PurchaseRequestReadyForSourcing($purchaseRequest));
         }
 
         return $warning;
@@ -102,12 +111,12 @@ class PurchaseRequestService
     public function decline(PurchaseRequest $purchaseRequest): void
     {
         // Fix #5: Status Regression Guard
-        if ($purchaseRequest->status !== 'PENDING') {
-            throw new \Exception("Only PENDING requests can be declined. Current status: {$purchaseRequest->status}.");
+        if ($purchaseRequest->status !== PurchaseRequestStatus::PENDING) {
+            throw new \Exception("Only PENDING requests can be declined. Current status: {$purchaseRequest->status->label()}.");
         }
 
         $purchaseRequest->update([
-            'status' => 'DECLINED',
+            'status' => PurchaseRequestStatus::DECLINED,
             'approver_id' => Auth::id(),
         ]);
     }
@@ -124,7 +133,7 @@ class PurchaseRequestService
         // We'll lazy load if they exist or just pass what we have
         $purchaseRequest->loadMissing(['requester', 'approver']);
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('print.purchase-request', [
+        $pdf = Pdf::loadView('print.purchase-request', [
             'purchaseRequest' => $purchaseRequest,
         ]);
 

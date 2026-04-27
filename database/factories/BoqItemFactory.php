@@ -2,11 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\BoqItem;
 use App\Models\Project;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\BoqItem>
+ * @extends Factory<BoqItem>
  */
 class BoqItemFactory extends Factory
 {

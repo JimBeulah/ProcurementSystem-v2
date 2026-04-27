@@ -2,11 +2,18 @@
 
 namespace App\Services;
 
+use App\Enums\PurchaseOrderStatus;
+use App\Enums\PurchaseRequestStatus;
+use App\Enums\SiteReleaseStatus;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
 use App\Models\PurchaseRequestItem;
 use App\Models\SiteRelease;
 use App\Models\User;
+use App\Notifications\NewPurchaseOrderSubmitted;
+use App\Notifications\NewSiteReleasePending;
+use App\Notifications\PurchaseOrderApproved;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
@@ -42,23 +49,20 @@ class PurchaseOrderService
             }
 
             // 1. Create the Purchase Order (the Fulfillment Plan)
-            // This is ALWAYS created so the manager can approve the sourcing.
             $po = PurchaseOrder::create([
                 'project_id' => $validated['project_id'],
                 'purchase_request_id' => $validated['purchase_request_id'] ?? null,
-                'supplier_id' => $validated['supplier_id'] ?? null, // Null for internal warehouse-only orders
+                'supplier_id' => $validated['supplier_id'] ?? null,
                 'requester_id' => $requesterId,
-                'status' => 'PENDING',
+                'status' => PurchaseOrderStatus::PENDING,
                 'remarks' => $validated['remarks'] ?? null,
                 'total_amount' => $totalAmount,
             ]);
 
             // 2. Process Warehouse Items by auto-generating Site Releases
             if (! empty($warehouseItems)) {
-                // Link the warehouse releases to the new PO for approval sync
                 $this->siteReleaseService->autoReleaseWarehouseItems($warehouseItems, $validated['project_id'], $requesterId, $po->id);
 
-                // Update ordered_quantity for items sourced from a PR
                 foreach ($warehouseItems as $item) {
                     if (! empty($item['purchase_request_item_id'])) {
                         $prItem = PurchaseRequestItem::find($item['purchase_request_item_id']);
@@ -71,7 +75,6 @@ class PurchaseOrderService
 
             // 3. Create PO Items for Supplier items
             foreach ($supplierItems as $item) {
-                // Update ordered_quantity for items sourced from a PR
                 if (! empty($item['purchase_request_item_id'])) {
                     $prItem = PurchaseRequestItem::find($item['purchase_request_item_id']);
                     if ($prItem instanceof PurchaseRequestItem) {
@@ -101,7 +104,7 @@ class PurchaseOrderService
             // 5. Notify approvers
             $approvers = User::role(['admin', 'project_manager'])->get();
             if ($approvers->isNotEmpty()) {
-                Notification::send($approvers, new \App\Notifications\NewPurchaseOrderSubmitted($po));
+                Notification::send($approvers, new NewPurchaseOrderSubmitted($po));
             }
 
             return $po->load(['items', 'project', 'supplier']);
@@ -113,39 +116,37 @@ class PurchaseOrderService
      */
     public function approve(PurchaseOrder $order, int $approverId): void
     {
-        // Fix #5: Status Regression Guard
-        if ($order->status !== 'PENDING') {
-            throw new \Exception("Only PENDING orders can be approved. Current status: {$order->status}.");
+        if ($order->status !== PurchaseOrderStatus::PENDING) {
+            throw new \Exception("Only PENDING orders can be approved. Current status: {$order->status->label()}.");
         }
 
-        // Fix #1: Four-eyes principle (PM restricted, Admin allowed)
         if (Auth::user()->hasRole('project_manager') && $order->requester_id === $approverId) {
             throw new \Exception('Project Managers cannot approve their own purchase orders. Please ask another manager or an admin.');
         }
 
         $order->update([
-            'status' => 'APPROVED',
+            'status' => PurchaseOrderStatus::APPROVED,
             'approver_id' => $approverId,
         ]);
 
         // Release associated warehouse items from "Awaiting Approval"
         SiteRelease::where('purchase_order_id', $order->id)
-            ->where('status', SiteRelease::STATUS_AWAITING_APPROVAL)
-            ->update(['status' => SiteRelease::STATUS_PENDING]);
+            ->where('status', SiteReleaseStatus::AWAITING_APPROVAL)
+            ->update(['status' => SiteReleaseStatus::PENDING]);
 
         // Notify Warehouse users about the pending releases
         $warehouseUsers = User::role(['admin', 'warehouse'])->get();
         $pendingReleases = SiteRelease::where('purchase_order_id', $order->id)
-            ->where('status', SiteRelease::STATUS_PENDING)
+            ->where('status', SiteReleaseStatus::PENDING)
             ->get();
 
-        /** @var \App\Models\SiteRelease $release */
+        /** @var SiteRelease $release */
         foreach ($pendingReleases as $release) {
-            Notification::send($warehouseUsers, new \App\Notifications\NewSiteReleasePending($release));
+            Notification::send($warehouseUsers, new NewSiteReleasePending($release));
         }
 
         if ($order->requester) {
-            $order->requester->notify(new \App\Notifications\PurchaseOrderApproved($order));
+            $order->requester->notify(new PurchaseOrderApproved($order));
         }
     }
 
@@ -154,14 +155,13 @@ class PurchaseOrderService
      */
     public function decline(PurchaseOrder $order, ?string $remarks = null): void
     {
-        // Fix #5: Status Regression Guard
-        if ($order->status !== 'PENDING') {
-            throw new \Exception("Only PENDING orders can be declined. Current status: {$order->status}.");
+        if ($order->status !== PurchaseOrderStatus::PENDING) {
+            throw new \Exception("Only PENDING orders can be declined. Current status: {$order->status->label()}.");
         }
 
         DB::transaction(function () use ($order, $remarks) {
             $order->update([
-                'status' => 'DECLINED',
+                'status' => PurchaseOrderStatus::DECLINED,
                 'remarks' => $remarks ?? $order->remarks,
             ]);
 
@@ -180,13 +180,11 @@ class PurchaseOrderService
             $warehouseReleases = SiteRelease::where('purchase_order_id', $order->id)->get();
             /** @var SiteRelease $release */
             foreach ($warehouseReleases as $release) {
-                if ($release->status === SiteRelease::STATUS_AWAITING_APPROVAL) {
-                    // Return stock to inventory
+                if ($release->status === SiteReleaseStatus::AWAITING_APPROVAL) {
                     if ($release->inventoryItem) {
                         $release->inventoryItem->increment('quantity', (float) $release->quantity_released);
                     }
 
-                    // Return quantity to PR item
                     if ($release->purchase_request_item_id) {
                         $prItem = $release->purchaseRequestItem;
                         if ($prItem instanceof PurchaseRequestItem) {
@@ -195,7 +193,7 @@ class PurchaseOrderService
                         }
                     }
 
-                    $release->update(['status' => SiteRelease::STATUS_CANCELLED]);
+                    $release->update(['status' => SiteReleaseStatus::CANCELLED]);
                 }
             }
 
@@ -216,7 +214,7 @@ class PurchaseOrderService
     {
         DB::transaction(function () use ($order, $remarks) {
             $order->update([
-                'status' => 'CANCELLED',
+                'status' => PurchaseOrderStatus::CANCELLED,
                 'remarks' => $remarks,
             ]);
 
@@ -237,12 +235,10 @@ class PurchaseOrderService
             $warehouseReleases = SiteRelease::where('purchase_order_id', $order->id)->get();
             /** @var SiteRelease $release */
             foreach ($warehouseReleases as $release) {
-                // Return stock to inventory
                 if ($release->inventoryItem) {
                     $release->inventoryItem->increment('quantity', (float) $release->quantity_released);
                 }
 
-                // Return quantity to PR item
                 if ($release->purchase_request_item_id) {
                     $prItem = $release->purchaseRequestItem;
                     if ($prItem instanceof PurchaseRequestItem) {
@@ -251,7 +247,7 @@ class PurchaseOrderService
                     }
                 }
 
-                $release->update(['status' => SiteRelease::STATUS_CANCELLED]);
+                $release->update(['status' => SiteReleaseStatus::CANCELLED]);
             }
 
             // 3. Update PR status
@@ -283,12 +279,11 @@ class PurchaseOrderService
         }
 
         if ($allFulfilled) {
-            $pr->update(['status' => 'COMPLETED']);
+            $pr->update(['status' => PurchaseRequestStatus::COMPLETED]);
         } elseif ($someFulfilled) {
-            $pr->update(['status' => 'PARTIAL']);
+            $pr->update(['status' => PurchaseRequestStatus::PARTIAL]);
         } else {
-            // Revert to APPROVED if everything was cancelled
-            $pr->update(['status' => 'APPROVED']);
+            $pr->update(['status' => PurchaseRequestStatus::APPROVED]);
         }
     }
 
@@ -309,17 +304,13 @@ class PurchaseOrderService
      */
     public function generatePdf(PurchaseOrder $order)
     {
-        // Load relationships needed for the PDF
         $order->load(['project', 'supplier', 'items.purchaseRequestItem']);
-
-        // Lazy load requester and approver
         $order->loadMissing(['requester', 'approver']);
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('print.purchase-order', [
+        $pdf = Pdf::loadView('print.purchase-order', [
             'purchaseOrder' => $order,
         ]);
 
-        // Secure the PDF: Enforce printing only, prevent copy/paste, modification, and assembly
         $pdf->setEncryption('', config('app.key'), ['print']);
 
         return $pdf;

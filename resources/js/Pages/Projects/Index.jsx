@@ -4,12 +4,10 @@ import { Head, usePage, useForm } from '@inertiajs/react';
 import { usePermissions } from '@/Hooks/usePermissions';
 import Modal from '@/Components/UI/Modal';
 import ConfirmationModal from '@/Components/UI/ConfirmationModal';
-import Select from '@/Components/UI/Select';
 import ProjectMetrics from '@/Components/Projects/ProjectMetrics';
 import ProjectTable from '@/Components/Projects/ProjectTable';
 import ProjectGrid from '@/Components/Projects/ProjectGrid';
 import ProjectForm from '@/Components/Projects/ProjectForm';
-import { Plus, Search, LayoutGrid, List as ListIcon, Building2, Layers, UserCog } from 'lucide-react';
 
 export default function ProjectsIndex() {
     const { projects: initialProjects, clients, siteEngineers, auth } = usePage().props;
@@ -20,8 +18,8 @@ export default function ProjectsIndex() {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [editingProject, setEditingProject] = useState(null);
     const [projectToDelete, setProjectToDelete] = useState(null);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [viewMode, setViewMode] = useState('table');
+    const searchQuery = '';
+    const viewMode = 'table';
 
     const initialFormData = {
         name: '', 

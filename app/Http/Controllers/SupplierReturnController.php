@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSupplierReturnRequest;
+use App\Models\Material;
 use App\Models\Project;
 use App\Models\PurchaseOrder;
 use App\Models\Supplier;
@@ -38,7 +39,7 @@ class SupplierReturnController extends Controller
 
         $projects = Project::where('status', 'ACTIVE')->orderBy('name')->get();
         $suppliers = Supplier::orderBy('name')->get();
-        $materials = \App\Models\Material::orderBy('name')->get();
+        $materials = Material::orderBy('name')->get();
 
         return Inertia::render('Purchasing/SupplierReturns/Index', [
             'returns' => $returns,

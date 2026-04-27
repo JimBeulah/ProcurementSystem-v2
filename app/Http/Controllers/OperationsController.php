@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\PurchaseOrder;
+use App\Models\ReceivingItem;
 use App\Models\SiteRelease;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -63,7 +64,7 @@ class OperationsController extends Controller
                 'status' => $po->status,
                 'created_at' => $po->updated_at->diffForHumans(),
                 'items' => $po->items->map(function ($item) use ($po) {
-                    $received = \App\Models\ReceivingItem::whereHas('receivingReport', function ($q) use ($po) {
+                    $received = ReceivingItem::whereHas('receivingReport', function ($q) use ($po) {
                         $q->where('purchase_order_id', $po->id);
                     })
                         ->where('material_name', $item->material_name)

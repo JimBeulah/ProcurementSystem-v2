@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -15,11 +17,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property float $estimated_total_cost
  * @property string|null $remarks
  * @property-read float $remaining_quantity
- * @property-read \App\Models\PurchaseRequest $purchaseRequest
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\PurchaseOrderItem[] $purchaseOrderItems
+ * @property-read PurchaseRequest $purchaseRequest
+ * @property-read Collection|PurchaseOrderItem[] $purchaseOrderItems
  *
  * @mixin \Eloquent
- * @mixin \Illuminate\Database\Eloquent\Builder
+ * @mixin Builder
  */
 class PurchaseRequestItem extends Model
 {

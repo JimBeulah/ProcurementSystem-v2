@@ -5,7 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreBoqComponentRequest;
 use App\Http\Requests\StoreBoqItemRequest;
 use App\Models\BoqItem;
+use App\Models\BoqItemComponent;
+use App\Models\Material;
 use App\Models\Project;
+use App\Models\Unit;
+use App\Services\BoqService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,7 +17,7 @@ use Inertia\Response;
 
 class BoqController extends Controller
 {
-    public function __construct(protected \App\Services\BoqService $boqService) {}
+    public function __construct(protected BoqService $boqService) {}
 
     public function index(Project $project): Response
     {
@@ -27,8 +31,8 @@ class BoqController extends Controller
             ->orderBy('id')
             ->get();
 
-        $materials = \App\Models\Material::orderBy('name')->get();
-        $units = \App\Models\Unit::orderBy('name')->get();
+        $materials = Material::orderBy('name')->get();
+        $units = Unit::orderBy('name')->get();
 
         return Inertia::render('Projects/Boq', [
             'project' => $project,
@@ -174,7 +178,7 @@ class BoqController extends Controller
         return redirect()->back()->with('success', 'Resource added successfully.');
     }
 
-    public function updateComponent(StoreBoqComponentRequest $request, Project $project, \App\Models\BoqItemComponent $boqComponent): RedirectResponse
+    public function updateComponent(StoreBoqComponentRequest $request, Project $project, BoqItemComponent $boqComponent): RedirectResponse
     {
         // Enforce project ownership via relation check
         if ($boqComponent->boqItem->project_id !== $project->id) {
@@ -190,7 +194,7 @@ class BoqController extends Controller
         return redirect()->back()->with('success', 'Resource updated successfully.');
     }
 
-    public function destroyComponent(Project $project, \App\Models\BoqItemComponent $boqComponent): RedirectResponse
+    public function destroyComponent(Project $project, BoqItemComponent $boqComponent): RedirectResponse
     {
         if ($boqComponent->boqItem->project_id !== $project->id) {
             abort(403, 'Component does not belong to this project.');

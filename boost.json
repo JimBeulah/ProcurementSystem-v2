@@ -4,5 +4,8 @@
     ],
     "mcp": true,
     "nightwatch_mcp": false,
+    "packages": [
+        "spatie/laravel-permission"
+    ],
     "sail": false
 }

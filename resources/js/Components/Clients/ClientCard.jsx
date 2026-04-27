@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card } from '@/Components/UI/Card';
-import { Building2, FileText, ChevronRight, Clock, Edit2, Trash2, Users } from 'lucide-react';
+import { Building2, ChevronRight, Edit2, Trash2, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export function ClientCard({ client, onEdit, onDelete }) {

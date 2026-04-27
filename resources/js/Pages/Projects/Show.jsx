@@ -2,13 +2,12 @@ import React from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
-    Briefcase, ClipboardList, Truck, ShoppingCart, ArrowRight,
-    MapPin, Building, PhilippinePeso, Calendar, Activity, Command, RotateCcw,
-    ExternalLink, Plus, Info, Ruler, Wallet, FileText, ChevronRight
+    Briefcase, ClipboardList, Truck, ShoppingCart,
+    MapPin, Building, PhilippinePeso, Calendar, Activity, RotateCcw,
+    Plus, Info, Ruler, Wallet, FileText
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Card } from '@/Components/UI/Card';
-import { StatCard } from '@/Components/UI/StatCard';
 import MagneticGridBackground from '@/Components/UI/MagneticGridBackground';
 import { cn } from '@/Utils/cn';
 

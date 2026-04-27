@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\SiteReleaseStatus;
 use App\Models\InventoryItem;
 use App\Models\SiteRelease;
 use Illuminate\Support\Facades\Auth;
@@ -24,7 +25,7 @@ class SiteReleaseService
             'unit' => $item->unit,
             'purpose' => $validated['purpose'] ?? null,
             'release_date' => now(),
-            'status' => SiteRelease::STATUS_RECEIVED, // If issued to workers, it's immediately "received" by them
+            'status' => SiteReleaseStatus::RECEIVED, // If issued to workers, it's immediately "received" by them
         ]);
 
         $item->decrement('quantity', $validated['quantity_released']);
@@ -42,7 +43,7 @@ class SiteReleaseService
         $userId = $userId ?? Auth::id();
 
         $siteRelease->update([
-            'status' => SiteRelease::STATUS_RECEIVED,
+            'status' => SiteReleaseStatus::RECEIVED,
             'received_by_id' => $userId,
             'received_date' => now(),
             'quantity_received' => $qtyReceived,
@@ -98,7 +99,7 @@ class SiteReleaseService
                     'unit' => $wItem['unit'] ?? 'pcs',
                     'purpose' => 'Auto-sourced from warehouse stock',
                     'release_date' => now(),
-                    'status' => SiteRelease::STATUS_AWAITING_APPROVAL, // Wait for manager approval
+                    'status' => SiteReleaseStatus::AWAITING_APPROVAL, // Wait for manager approval
                 ]);
 
                 // Deduct from warehouse stock immediately to reserve it
@@ -113,7 +114,7 @@ class SiteReleaseService
     public function dispatch(SiteRelease $siteRelease, int $userId): void
     {
         $siteRelease->update([
-            'status' => SiteRelease::STATUS_IN_TRANSIT,
+            'status' => SiteReleaseStatus::IN_TRANSIT,
             'released_by_id' => $userId, // The officer who dispatched it
             'release_date' => now(),
         ]);

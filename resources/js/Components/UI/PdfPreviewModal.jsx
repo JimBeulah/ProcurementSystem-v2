@@ -1,6 +1,6 @@
 import React from 'react';
 import Modal from './Modal';
-import { X, Download, Printer as PrinterIcon } from 'lucide-react';
+import { Download } from 'lucide-react';
 
 export default function PdfPreviewModal({ isOpen, onClose, url, title }) {
     if (!url) return null;

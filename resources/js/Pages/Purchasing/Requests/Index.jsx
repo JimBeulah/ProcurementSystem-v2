@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { usePermissions } from '@/Hooks/usePermissions';
 import Modal from '@/Components/UI/Modal';
 import ConfirmationModal from '@/Components/UI/ConfirmationModal';
@@ -8,12 +8,11 @@ import Drawer from '@/Components/UI/Drawer';
 import PdfPreviewModal from '@/Components/UI/PdfPreviewModal';
 import CreatePurchaseOrder from '@/Pages/Purchasing/Orders/Create';
 import {
-    ClipboardList, Plus, CheckCircle, XCircle, Trash2, ChevronDown, ChevronRight,
-    Briefcase, Calendar, User, PhilippinePeso, AlertTriangle, Package, ShoppingCart,
-    MoreVertical, Printer, Eye, Search, TrendingUp, TrendingDown
+    Plus, CheckCircle, XCircle, Trash2,
+    Briefcase, Calendar, User, Package, ShoppingCart,
+    Printer, Eye, Search, TrendingUp, TrendingDown
 } from 'lucide-react';
 import DataTable from '@/Components/UI/DataTable';
-import { toast } from 'sonner';
 
 const VARIANCE_THRESHOLD = 5;
 
@@ -36,9 +35,8 @@ function StatusBadge({ status }) {
 }
 
 export default function PurchaseRequestsIndex() {
-    const { requests, projects, filters, flash } = usePage().props;
+    const { requests, projects, filters } = usePage().props;
     const list = requests?.data || [];
-    const paginationLinks = requests?.links || [];
     const { can } = usePermissions();
 
     const [showCreate, setShowCreate] = useState(false);

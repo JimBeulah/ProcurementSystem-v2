@@ -2,8 +2,16 @@
 
 namespace App\Services;
 
+use App\Models\Disbursement;
+use App\Models\FinancialTransaction;
+use App\Models\InventoryItem;
+use App\Models\MaterialRequest;
+use App\Models\MaterialReturn;
 use App\Models\Project;
 use App\Models\PurchaseOrder;
+use App\Models\PurchaseRequest;
+use App\Models\SiteRelease;
+use App\Models\SupplierInvoice;
 use App\Models\User;
 use Carbon\Carbon;
 
@@ -46,8 +54,8 @@ class DashboardService
             'totalOrders' => PurchaseOrder::count(),
             'alerts' => PurchaseOrder::where('status', 'DECLINED')->count(),
             'totalUsers' => User::count(),
-            'pendingPRs' => \App\Models\PurchaseRequest::where('status', 'PENDING')->count(),
-            'totalInvoices' => \App\Models\SupplierInvoice::count(),
+            'pendingPRs' => PurchaseRequest::where('status', 'PENDING')->count(),
+            'totalInvoices' => SupplierInvoice::count(),
             'ordersByStatus' => $ordersByStatus,
             'spendAnalysis' => $spendAnalysis,
         ];
@@ -62,7 +70,7 @@ class DashboardService
         $materialRequestsOverTime = $months->map(function ($date) {
             return [
                 'name' => $date->format('M'),
-                'requests' => \App\Models\MaterialRequest::whereBetween('created_at', [
+                'requests' => MaterialRequest::whereBetween('created_at', [
                     $date->copy()->startOfMonth(),
                     $date->copy()->endOfMonth(),
                 ])->count(),
@@ -89,9 +97,9 @@ class DashboardService
 
         return [
             'activeProjects' => Project::where('status', 'ACTIVE')->count(),
-            'pendingMRs' => \App\Models\MaterialRequest::where('status', 'PENDING')->count(),
+            'pendingMRs' => MaterialRequest::where('status', 'PENDING')->count(),
             'pendingPOs' => PurchaseOrder::where('status', 'PENDING')->count(),
-            'approvedThisMonth' => \App\Models\MaterialRequest::where('status', 'APPROVED')
+            'approvedThisMonth' => MaterialRequest::where('status', 'APPROVED')
                 ->whereMonth('updated_at', now()->month)->count(),
             'materialRequestsOverTime' => $materialRequestsOverTime,
             'spendAnalysis' => $spendAnalysis,
@@ -101,7 +109,7 @@ class DashboardService
     public function getProcurementOfficerDashboardStats(): array
     {
         return [
-            'pendingPRs' => \App\Models\PurchaseRequest::where('status', 'PENDING')->count(),
+            'pendingPRs' => PurchaseRequest::where('status', 'PENDING')->count(),
             'totalOrders' => PurchaseOrder::count(),
             'deliveredOrders' => PurchaseOrder::where('status', 'DELIVERED')->count(),
         ];
@@ -110,20 +118,20 @@ class DashboardService
     public function getWarehouseDashboardStats(): array
     {
         return [
-            'inventoryItems' => \App\Models\InventoryItem::count(),
-            'pendingReceiving' => \App\Models\PurchaseOrder::whereIn('status', ['APPROVED', 'PARTIALLY DELIVERED'])->count(),
-            'pendingReturns' => \App\Models\MaterialReturn::where('status', 'PENDING')->count(),
-            'siteReleases' => \App\Models\SiteRelease::count(),
+            'inventoryItems' => InventoryItem::count(),
+            'pendingReceiving' => PurchaseOrder::whereIn('status', ['APPROVED', 'PARTIALLY DELIVERED'])->count(),
+            'pendingReturns' => MaterialReturn::where('status', 'PENDING')->count(),
+            'siteReleases' => SiteRelease::count(),
         ];
     }
 
     public function getFinanceDashboardStats(): array
     {
         return [
-            'pendingInvoices' => \App\Models\SupplierInvoice::where('status', 'PENDING')->count(),
-            'pendingDisbursements' => \App\Models\Disbursement::where('status', 'PENDING')->count(),
-            'totalInvoicedAmount' => (float) \App\Models\SupplierInvoice::sum('total_amount'),
-            'reportsCount' => \App\Models\FinancialTransaction::count(),
+            'pendingInvoices' => SupplierInvoice::where('status', 'PENDING')->count(),
+            'pendingDisbursements' => Disbursement::where('status', 'PENDING')->count(),
+            'totalInvoicedAmount' => (float) SupplierInvoice::sum('total_amount'),
+            'reportsCount' => FinancialTransaction::count(),
         ];
     }
 
@@ -131,15 +139,15 @@ class DashboardService
     {
         $projectIds = Project::where('site_engineer_id', $user->id)->pluck('id');
 
-        $pendingSiteReleases = \App\Models\SiteRelease::whereIn('status', ['IN_TRANSIT', 'PENDING'])->count();
+        $pendingSiteReleases = SiteRelease::whereIn('status', ['IN_TRANSIT', 'PENDING'])->count();
         $pendingPOs = PurchaseOrder::whereIn('status', ['APPROVED', 'PARTIALLY DELIVERED'])
             ->whereIn('project_id', $projectIds)
             ->count();
 
         return [
             'activeProjects' => Project::where('status', 'ACTIVE')->count(),
-            'myMRs' => \App\Models\MaterialRequest::where('requester_id', $user->id)->count(),
-            'pendingMRs' => \App\Models\MaterialRequest::where('requester_id', $user->id)->where('status', 'PENDING')->count(),
+            'myMRs' => MaterialRequest::where('requester_id', $user->id)->count(),
+            'pendingMRs' => MaterialRequest::where('requester_id', $user->id)->where('status', 'PENDING')->count(),
             'pendingSiteReleases' => $pendingSiteReleases + $pendingPOs,
         ];
     }

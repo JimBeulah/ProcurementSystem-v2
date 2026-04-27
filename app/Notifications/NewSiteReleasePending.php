@@ -27,7 +27,7 @@ class NewSiteReleasePending extends Notification
         return [
             'message' => "New dispatch request: {$this->siteRelease->quantity_released} {$this->siteRelease->unit} of {$materialName} for {$projectName} is ready for release.",
             'url' => route('inventory.site-release.index', [], false),
-            'type' => 'site_release'
+            'type' => 'site_release',
         ];
     }
 }

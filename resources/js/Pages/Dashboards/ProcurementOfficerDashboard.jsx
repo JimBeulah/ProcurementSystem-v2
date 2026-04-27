@@ -3,7 +3,7 @@ import { Head } from '@inertiajs/react';
 import { Card } from '@/Components/UI/Card';
 import { WelcomeBanner } from '@/Components/UI/WelcomeBanner';
 import {
-    ShoppingCart, FileText, Clock, CheckCircle, TrendingUp, Truck
+    ShoppingCart, FileText, CheckCircle, TrendingUp, Truck
 } from 'lucide-react';
 
 export default function ProcurementOfficerDashboard({ stats }) {

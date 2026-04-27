@@ -2,13 +2,14 @@
 
 namespace Database\Factories;
 
+use App\Models\MaterialRequest;
 use App\Models\Project;
 use App\Models\User;
 use App\Models\Warehouse;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\MaterialRequest>
+ * @extends Factory<MaterialRequest>
  */
 class MaterialRequestFactory extends Factory
 {

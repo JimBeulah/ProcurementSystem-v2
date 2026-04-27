@@ -1,9 +1,9 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { Card } from '@/Components/UI/Card';
 import { WelcomeBanner } from '@/Components/UI/WelcomeBanner';
 import {
-    FileText, ShoppingCart, Clock, Package, TrendingUp, CheckCircle, BarChart3, Activity
+    FileText, ShoppingCart, Clock, Package, TrendingUp, CheckCircle, Activity
 } from 'lucide-react';
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 

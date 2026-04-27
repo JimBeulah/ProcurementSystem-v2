@@ -2,20 +2,11 @@
 
 namespace App\Models;
 
+use App\Enums\SiteReleaseStatus;
 use Illuminate\Database\Eloquent\Model;
 
 class SiteRelease extends Model
 {
-    const STATUS_AWAITING_APPROVAL = 'AWAITING_APPROVAL';
-
-    const STATUS_PENDING = 'PENDING';
-
-    const STATUS_IN_TRANSIT = 'IN_TRANSIT';
-
-    const STATUS_RECEIVED = 'RECEIVED';
-
-    const STATUS_CANCELLED = 'CANCELLED';
-
     protected $fillable = [
         'inventory_item_id',
         'purchase_order_id',
@@ -41,6 +32,7 @@ class SiteRelease extends Model
             'quantity_received' => 'decimal:2',
             'release_date' => 'datetime',
             'received_date' => 'datetime',
+            'status' => SiteReleaseStatus::class,
         ];
     }
 

@@ -78,11 +78,11 @@ class Project extends Model
     public function scopeForUser($query, $user)
     {
         if ($user && $user->hasRole('site_engineer')) {
-            return $query->where(function($q) use ($user) {
+            return $query->where(function ($q) use ($user) {
                 $q->where('site_engineer_id', $user->id)
-                  ->orWhereHas('teamMembers', function($sq) use ($user) {
-                      $sq->where('user_id', $user->id);
-                  });
+                    ->orWhereHas('teamMembers', function ($sq) use ($user) {
+                        $sq->where('user_id', $user->id);
+                    });
             });
         }
 

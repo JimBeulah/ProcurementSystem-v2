@@ -7,11 +7,10 @@ import Modal from '@/Components/UI/Modal';
 import ConfirmationModal from '@/Components/UI/ConfirmationModal';
 import { DataTable } from '@/Components/UI/DataTable';
 import Dropdown from '@/Components/Dropdown';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
-    Users, Plus, Search, Building2, FileText, Filter,
-    TrendingUp, ShieldCheck, MoreVertical,
-    CreditCard, Loader2, Edit2, Trash2, Factory
+    Users, Plus, Building2,
+    TrendingUp, MoreVertical,
+    Loader2, Edit2, Trash2
 } from 'lucide-react';
 
 export default function ClientsIndex() {

@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Disbursement;
+use App\Models\PurchaseOrder;
+use App\Models\ReceivingReport;
+use App\Models\Supplier;
 use App\Models\SupplierInvoice;
+use App\Models\User;
 use App\Services\ReportService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -24,11 +28,11 @@ class FinanceController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $suppliers = \App\Models\Supplier::orderBy('name')->get();
-        $orders = \App\Models\PurchaseOrder::with('supplier')
+        $suppliers = Supplier::orderBy('name')->get();
+        $orders = PurchaseOrder::with('supplier')
             ->whereDoesntHave('invoices')
             ->get();
-        $grns = \App\Models\ReceivingReport::with('purchaseOrder')->get();
+        $grns = ReceivingReport::with('purchaseOrder')->get();
 
         return Inertia::render('Finance/Invoices/Index', [
             'invoices' => $invoices,
@@ -44,12 +48,12 @@ class FinanceController extends Controller
             ->orderBy('payment_date', 'desc')
             ->get();
 
-        $orders = \App\Models\PurchaseOrder::with('supplier')
+        $orders = PurchaseOrder::with('supplier')
             ->where('status', 'APPROVED')
             ->whereDoesntHave('disbursements')
             ->get();
 
-        $users = \App\Models\User::where('role', 'procurement_officer')
+        $users = User::where('role', 'procurement_officer')
             ->where('is_active', true)
             ->orderBy('name')
             ->get();

@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePurchaseRequestRequest;
+use App\Models\InventoryItem;
+use App\Models\Material;
 use App\Models\Project;
 use App\Models\PurchaseRequest;
+use App\Models\Supplier;
 use App\Services\PurchaseRequestService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
@@ -57,8 +60,8 @@ class PurchaseRequestController extends Controller
             'requests' => $requests,
             'projects' => $projects,
             'filters' => request()->only(['search', 'date', 'status']),
-            'suppliers' => Inertia::lazy(fn () => \App\Models\Supplier::orderBy('name')->get()),
-            'materials' => Inertia::lazy(fn () => \App\Models\Material::orderBy('name')->get()),
+            'suppliers' => Inertia::lazy(fn () => Supplier::orderBy('name')->get()),
+            'materials' => Inertia::lazy(fn () => Material::orderBy('name')->get()),
             'purchaseRequest' => Inertia::lazy(fn () => PurchaseRequest::with('items.purchaseOrderItems')->find(request('prId'))),
             'inventoryMatches' => Inertia::lazy(function () {
                 $prId = request('prId');
@@ -69,7 +72,7 @@ class PurchaseRequestController extends Controller
                 $inventoryMatches = [];
                 if ($pr && $pr->items) {
                     foreach ($pr->items as $item) {
-                        $matches = \App\Models\InventoryItem::where('quantity', '>', 0)
+                        $matches = InventoryItem::where('quantity', '>', 0)
                             ->whereNull('project_id')
                             ->where('material_name', 'LIKE', '%'.$item->item_description.'%')
                             ->get(['id', 'material_name', 'quantity', 'unit', 'project_id'])

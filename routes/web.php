@@ -11,6 +11,7 @@ use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\FinanceFormController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\MaterialRequestController;
+use App\Http\Controllers\MaterialReturnController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OperationsController;
 use App\Http\Controllers\ProfileController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\PurchaseRequestController;
 use App\Http\Controllers\ReceivingController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SiteReleaseController;
+use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\SupplierReturnController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -105,10 +107,10 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
 
     // Suppliers
     Route::middleware(['can:view suppliers'])->group(function () {
-        Route::get('/purchasing/suppliers', [App\Http\Controllers\SupplierController::class, 'index'])->name('purchasing.suppliers.index');
-        Route::post('/purchasing/suppliers', [App\Http\Controllers\SupplierController::class, 'store'])->name('purchasing.suppliers.store')->middleware('can:manage suppliers');
-        Route::put('/purchasing/suppliers/{supplier}', [App\Http\Controllers\SupplierController::class, 'update'])->name('purchasing.suppliers.update')->middleware('can:manage suppliers');
-        Route::patch('/purchasing/suppliers/{supplier}/toggle-active', [App\Http\Controllers\SupplierController::class, 'toggleActive'])->name('purchasing.suppliers.toggle-active')->middleware('can:manage suppliers');
+        Route::get('/purchasing/suppliers', [SupplierController::class, 'index'])->name('purchasing.suppliers.index');
+        Route::post('/purchasing/suppliers', [SupplierController::class, 'store'])->name('purchasing.suppliers.store')->middleware('can:manage suppliers');
+        Route::put('/purchasing/suppliers/{supplier}', [SupplierController::class, 'update'])->name('purchasing.suppliers.update')->middleware('can:manage suppliers');
+        Route::patch('/purchasing/suppliers/{supplier}/toggle-active', [SupplierController::class, 'toggleActive'])->name('purchasing.suppliers.toggle-active')->middleware('can:manage suppliers');
     });
 
     // Purchase Requests
@@ -165,9 +167,9 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
     Route::post('/site-release', [SiteReleaseController::class, 'store'])->name('site-release.store')->middleware('can:create site release');
 
     // Material Returns (Site → Warehouse)
-    Route::get('/inventory/returns', [\App\Http\Controllers\MaterialReturnController::class, 'index'])->name('material-returns.index')->middleware('can:view inventory');
-    Route::post('/inventory/returns', [\App\Http\Controllers\MaterialReturnController::class, 'store'])->name('material-returns.store')->middleware('can:view site release');
-    Route::post('/inventory/returns/{materialReturn}/receive', [\App\Http\Controllers\MaterialReturnController::class, 'receive'])->name('material-returns.receive')->middleware('can:manage inventory');
+    Route::get('/inventory/returns', [MaterialReturnController::class, 'index'])->name('material-returns.index')->middleware('can:view inventory');
+    Route::post('/inventory/returns', [MaterialReturnController::class, 'store'])->name('material-returns.store')->middleware('can:view site release');
+    Route::post('/inventory/returns/{materialReturn}/receive', [MaterialReturnController::class, 'receive'])->name('material-returns.receive')->middleware('can:manage inventory');
 
     // Supplier Returns (Wrong Purchase / Return-to-Vendor)
     Route::middleware(['can:view purchase orders'])->group(function () {

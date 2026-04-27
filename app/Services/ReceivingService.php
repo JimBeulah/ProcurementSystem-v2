@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\PurchaseOrderStatus;
 use App\Models\InventoryItem;
 use App\Models\PurchaseOrder;
 use App\Models\ReceivingItem;
@@ -232,11 +233,11 @@ class ReceivingService
             }
         }
 
-        $newStatus = PurchaseOrder::STATUS_APPROVED; // Default
+        $newStatus = PurchaseOrderStatus::APPROVED; // Default
         if ($allComplete) {
-            $newStatus = PurchaseOrder::STATUS_COMPLETED;
+            $newStatus = PurchaseOrderStatus::COMPLETED;
         } elseif ($anyReceived) {
-            $newStatus = PurchaseOrder::STATUS_PARTIALLY_DELIVERED;
+            $newStatus = PurchaseOrderStatus::PARTIALLY_DELIVERED;
         }
 
         $po->update(['status' => $newStatus]);

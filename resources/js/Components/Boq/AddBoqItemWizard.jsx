@@ -34,7 +34,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
     }, []);
 
     // Validation
-    const validateStep = (s) => {
+    const validateStep = useCallback((s) => {
         const errs = {};
         if (s === 0) {
             if (!item.itemDescription.trim()) errs.itemDescription = 'Description is required';
@@ -43,17 +43,17 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
         }
         setErrors(errs);
         return Object.keys(errs).length === 0;
-    };
+    }, [item]);
 
-    const handleNext = () => {
+    const handleNext = useCallback(() => {
         if (validateStep(step)) {
             setStep(prev => Math.min(prev + 1, 2));
         }
-    };
+    }, [step, validateStep]);
 
     const handleBack = () => setStep(prev => Math.max(prev - 1, 0));
 
-    const handleSubmit = async () => {
+    const handleSubmit = useCallback(async () => {
         if (!validateStep(0)) { setStep(0); return; }
         setSubmitting(true);
 
@@ -86,11 +86,11 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                 resetForm();
                 onClose();
             }
-        } catch (error) {
+        } catch {
             setSubmitting(false);
             // Keep modal open and let user fix errors
         }
-    };
+    }, [item, batchMode, onSubmit, onClose, resetForm, validateStep]);
 
     // Auto-focus description on open
     useEffect(() => {

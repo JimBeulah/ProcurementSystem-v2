@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, usePage, router } from '@inertiajs/react';
-import { ShieldCheck, CheckCircle, XCircle, Clock, FileText, User, Building2, Calendar, ClipboardList, TrendingUp } from 'lucide-react';
+import { Head, usePage, router, usePoll } from '@inertiajs/react';
+import { ShieldCheck, CheckCircle, XCircle, Clock, FileText, User, Building2, ClipboardList, TrendingUp } from 'lucide-react';
 import { usePermissions } from '@/Hooks/usePermissions';
 import ConfirmationModal from '@/Components/UI/ConfirmationModal';
 import DataTable from '@/Components/UI/DataTable';
@@ -24,6 +24,10 @@ const TabBtn = ({ id, label, count, activeTab, setTab }) => (
 export default function ApprovalsIndex() {
     const { pendingPos, pendingMrs } = usePage().props;
     const { can } = usePermissions();
+    
+    // Poll for new requests every 15 seconds
+    usePoll(15000);
+
     const pos = pendingPos || [];
     const mrs = pendingMrs || [];
     const [tab, setTab] = useState('mr');

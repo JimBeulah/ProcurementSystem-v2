@@ -1,10 +1,9 @@
 import React from 'react';
 import {
     Building2, ShoppingCart, FileText, CreditCard, Package,
-    Users, Hexagon, X, Briefcase, Shield, ArrowDownCircle,
-    ChevronDown, Truck, PieChart, ChevronLeft, ChevronRight,
-    LayoutDashboard, ClipboardList, FileSearch, Factory, Receipt, UserCog, Inbox, ShieldCheck, ScrollText, RotateCcw,
-    Layers, Settings, CircleDashed, ArrowLeftRight
+    Users, Briefcase, Shield, Truck, PieChart,
+    ClipboardList, Factory, Receipt, UserCog, Inbox, ShieldCheck, ScrollText, RotateCcw,
+    Layers, ArrowLeftRight
 } from 'lucide-react';
 
 /**

@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 export default function Pagination({ links, meta }) {
     if (!links || !meta || meta.last_page === 1) return null;
 
-    const { current_page, last_page, from, to, total } = meta;
+    const { from, to, total } = meta;
 
     return (
         <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-transparent border-t border-slate-200 dark:border-slate-700 sm:px-6">

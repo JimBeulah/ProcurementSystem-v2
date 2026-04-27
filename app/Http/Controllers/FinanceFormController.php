@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreDisbursementRequest;
 use App\Http\Requests\StoreInvoiceRequest;
+use App\Models\Disbursement;
 use App\Models\PurchaseOrder;
 use App\Models\ReceivingReport;
 use App\Models\Supplier;
+use App\Models\SupplierInvoice;
+use App\Models\User;
 use App\Services\FinanceService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -49,7 +52,7 @@ class FinanceFormController extends Controller
             ->where('status', 'APPROVED')
             ->get();
 
-        $users = \App\Models\User::where('is_active', true)->orderBy('name')->get();
+        $users = User::where('is_active', true)->orderBy('name')->get();
 
         return Inertia::render('Finance/Disbursements/Create', [
             'orders' => $orders,
@@ -68,7 +71,7 @@ class FinanceFormController extends Controller
         }
     }
 
-    public function liquidate(Request $request, \App\Models\Disbursement $disbursement): RedirectResponse
+    public function liquidate(Request $request, Disbursement $disbursement): RedirectResponse
     {
         $validated = $request->validate([
             'actual_amount' => 'required|numeric|min:0',
@@ -94,7 +97,7 @@ class FinanceFormController extends Controller
         }
     }
 
-    public function validateInvoice(\App\Models\SupplierInvoice $invoice): RedirectResponse
+    public function validateInvoice(SupplierInvoice $invoice): RedirectResponse
     {
         try {
             $this->service->validateInvoice($invoice);

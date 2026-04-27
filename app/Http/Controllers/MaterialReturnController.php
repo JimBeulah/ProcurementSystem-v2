@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\InventoryItem;
 use App\Models\MaterialReturn;
 use App\Models\Project;
+use App\Models\User;
+use App\Notifications\NewMaterialReturnSubmitted;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -64,8 +67,8 @@ class MaterialReturnController extends Controller
         });
 
         // Notify Warehouse users
-        $warehouseUsers = \App\Models\User::role(['admin', 'warehouse'])->get();
-        \Illuminate\Support\Facades\Notification::send($warehouseUsers, new \App\Notifications\NewMaterialReturnSubmitted($return));
+        $warehouseUsers = User::role(['admin', 'warehouse'])->get();
+        Notification::send($warehouseUsers, new NewMaterialReturnSubmitted($return));
 
         return redirect()->back()->with('success', 'Material return submitted. Warehouse will confirm receipt.');
     }

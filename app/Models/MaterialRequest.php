@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use App\Enums\MaterialRequestStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
+/**
+ * @property MaterialRequestStatus $status
+ */
 class MaterialRequest extends Model
 {
     use HasFactory, LogsActivity, SoftDeletes;
@@ -33,6 +37,7 @@ class MaterialRequest extends Model
     {
         return [
             'request_date' => 'datetime',
+            'status' => MaterialRequestStatus::class,
         ];
     }
 

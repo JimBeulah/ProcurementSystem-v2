@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage, router } from '@inertiajs/react';
 import { CreditCard, Plus, ArrowUpRight, Save, Receipt, CheckCircle2, Eye, FileText, Calendar, User, Wallet } from 'lucide-react';

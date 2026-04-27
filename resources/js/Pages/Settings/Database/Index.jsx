@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { Database, Download, Upload, RefreshCw, AlertTriangle, ShieldAlert, CheckCircle2, X } from 'lucide-react';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SecondaryButton from '@/Components/SecondaryButton';
@@ -12,7 +12,7 @@ export default function DatabaseManagement() {
     const [confirmingImport, setConfirmingImport] = useState(false);
     const fileInput = useRef();
 
-    const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
+    const { data, setData, post, processing, errors, reset } = useForm({
         database_file: null,
     });
 

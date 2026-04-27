@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { ScrollText, User, Clock, Tag, ChevronLeft, ChevronRight, ArrowLeftRight, Filter, X } from 'lucide-react';
 import { DataTable } from '@/Components/UI/DataTable';
-import TextInput from '@/Components/TextInput';
 
-// ... (EVENT_BADGE, EventBadge, PropertyChanges, getModelName remain the same) ...
 
 const EVENT_BADGE = {
     created: { label: 'Created', classes: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' },
@@ -80,7 +78,7 @@ export default function ActivityLogsIndex({ logs }) {
         router.get(
             '/activity-logs',
             // Omit empty strings to clean up the URL
-            Object.fromEntries(Object.entries(newFilters).filter(([_, v]) => v !== '')),
+            Object.fromEntries(Object.entries(newFilters).filter(([, v]) => v !== '')),
             { preserveState: true, preserveScroll: true, replace: true }
         );
     };

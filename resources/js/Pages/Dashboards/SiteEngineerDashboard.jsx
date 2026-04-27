@@ -2,7 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import { Card } from '@/Components/UI/Card';
 import { WelcomeBanner } from '@/Components/UI/WelcomeBanner';
-import { Briefcase, FileText, Truck, TrendingUp, Package, ChevronRight } from 'lucide-react';
+import { Briefcase, FileText, Truck, TrendingUp, ChevronRight } from 'lucide-react';
 
 export default function SiteEngineerDashboard({ stats }) {
 

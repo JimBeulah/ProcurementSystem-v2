@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, usePage } from '@inertiajs/react';
 import { usePermissions } from '@/Hooks/usePermissions';
@@ -16,7 +16,7 @@ export const SPRING_TRANSITION = {
     restDelta: 0.001,
 };
 
-export default function Sidebar({ user, isOpen, isCollapsed, onClose, toggleCollapse }) {
+export default function Sidebar({ isOpen, isCollapsed, onClose, toggleCollapse }) {
     const { url, props } = usePage();
     const { sidebar_badges = {} } = props;
     const { can, hasRole } = usePermissions();

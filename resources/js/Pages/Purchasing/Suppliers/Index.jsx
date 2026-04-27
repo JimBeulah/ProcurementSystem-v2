@@ -5,7 +5,6 @@ import { usePermissions } from '@/Hooks/usePermissions';
 import { Briefcase, Plus, MoreVertical, Edit2, Slash, CheckCircle } from 'lucide-react';
 import Modal from '@/Components/UI/Modal';
 import ConfirmationModal from '@/Components/UI/ConfirmationModal';
-import { toast } from 'sonner';
 import { DataTable } from '@/Components/UI/DataTable';
 import Dropdown from '@/Components/Dropdown';
 
@@ -144,7 +143,7 @@ export default function SuppliersIndex() {
                 setIsEditModalOpen(false);
                 setFormData({ name: '', contact_person: '', email: '', phone: '', address: '' });
             },
-            onError: (err) => {
+            onError: () => {
                 // If it's a validation error, standard Inertia handling will show it.
                 // We only log if it's unexpected or handled specifically.
             },

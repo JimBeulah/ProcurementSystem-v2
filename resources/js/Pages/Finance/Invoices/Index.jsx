@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage, router } from '@inertiajs/react';
-import { Receipt, Plus, CheckCircle2, Save, Eye, Box, Hammer, FileText, ArrowRight } from 'lucide-react';
+import { Receipt, Plus, CheckCircle2, Save, Eye, Box, Hammer, FileText } from 'lucide-react';
 import Modal from '@/Components/UI/Modal';
 import Combobox from '@/Components/UI/Combobox';
 import ConfirmationModal from '@/Components/UI/ConfirmationModal';

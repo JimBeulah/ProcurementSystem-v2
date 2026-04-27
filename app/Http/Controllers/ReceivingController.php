@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PurchaseOrderStatus;
 use App\Http\Requests\StoreReceivingRequest;
+use App\Models\Project;
 use App\Models\PurchaseOrder;
+use App\Models\ReceivingReport;
 use App\Services\ReceivingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,11 +21,11 @@ class ReceivingController extends Controller
 
     public function index(): Response
     {
-        $query = \App\Models\ReceivingReport::with(['purchaseOrder.supplier', 'purchaseOrder.project', 'items'])
+        $query = ReceivingReport::with(['purchaseOrder.supplier', 'purchaseOrder.project', 'items'])
             ->orderBy('received_date', 'desc');
 
         if (auth()->user()->hasRole('site_engineer')) {
-            $projectIds = \App\Models\Project::where('site_engineer_id', auth()->id())->pluck('id');
+            $projectIds = Project::where('site_engineer_id', auth()->id())->pluck('id');
             $query->whereHas('purchaseOrder', function ($q) use ($projectIds) {
                 $q->whereIn('project_id', $projectIds);
             });
@@ -36,10 +39,10 @@ class ReceivingController extends Controller
     public function create(Request $request): Response
     {
         $query = PurchaseOrder::with(['supplier', 'items'])
-            ->whereIn('status', [PurchaseOrder::STATUS_APPROVED, PurchaseOrder::STATUS_PARTIALLY_DELIVERED]);
+            ->whereIn('status', [PurchaseOrderStatus::APPROVED, PurchaseOrderStatus::PARTIALLY_DELIVERED]);
 
         if (auth()->user()->hasRole('site_engineer')) {
-            $projectIds = \App\Models\Project::where('site_engineer_id', auth()->id())->pluck('id');
+            $projectIds = Project::where('site_engineer_id', auth()->id())->pluck('id');
             $query->whereIn('project_id', $projectIds);
         }
 
@@ -66,7 +69,7 @@ class ReceivingController extends Controller
     public function autoReceive(Request $request, PurchaseOrder $purchaseOrder): RedirectResponse
     {
         try {
-            if ($purchaseOrder->status !== PurchaseOrder::STATUS_APPROVED && $purchaseOrder->status !== PurchaseOrder::STATUS_PARTIALLY_DELIVERED) {
+            if ($purchaseOrder->status !== PurchaseOrderStatus::APPROVED && $purchaseOrder->status !== PurchaseOrderStatus::PARTIALLY_DELIVERED) {
                 return redirect()->back()->with('error', 'Only approved or partially delivered POs can be received.');
             }
 

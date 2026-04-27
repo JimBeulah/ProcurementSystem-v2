@@ -5,16 +5,19 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Client;
+use App\Models\InventoryItem;
+use App\Models\MaterialReturn;
 use App\Models\Project;
 use App\Models\User;
 use App\Services\ProjectService;
+use App\Services\ReportService;
 use Inertia\Inertia;
 
 class ProjectController extends Controller
 {
     public function __construct(
         protected ProjectService $service,
-        protected \App\Services\ReportService $reportService
+        protected ReportService $reportService
     ) {}
 
     public function index()
@@ -55,12 +58,12 @@ class ProjectController extends Controller
     {
         $this->authorize('view', $project);
 
-        $returns = \App\Models\MaterialReturn::with(['returnedBy', 'receivedBy'])
+        $returns = MaterialReturn::with(['returnedBy', 'receivedBy'])
             ->where('project_id', $project->id)
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $inventory = \App\Models\InventoryItem::where('project_id', $project->id)
+        $inventory = InventoryItem::where('project_id', $project->id)
             ->where('quantity', '>', 0)
             ->orderBy('material_name', 'asc')
             ->get();

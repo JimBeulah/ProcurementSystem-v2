@@ -137,29 +137,28 @@ function UserModal({ user, onClose }) {
 // ---------- Page ----------
 export default function UsersIndex() {
     const { users, auth } = usePage().props;
-    const list = users || [];
     const [modal, setModal] = useState(null); // null | 'add' | { user object }
     const [roleFilter, setRoleFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, user: null });
 
     const filteredUsers = React.useMemo(() => {
-        return list.filter(u => {
+        return (users || []).filter(u => {
             const roleMatch = roleFilter === 'all' || u.role === roleFilter;
             const statusMatch = statusFilter === 'all' || (statusFilter === 'active' ? u.is_active : !u.is_active);
             return roleMatch && statusMatch;
         });
-    }, [list, roleFilter, statusFilter]);
+    }, [users, roleFilter, statusFilter]);
 
-    const handleToggleActive = (user) => {
+    const handleToggleActive = React.useCallback((user) => {
         router.patch(route('users.toggle-active', user.id), {}, {
             preserveScroll: true,
         });
-    };
+    }, []);
 
-    const handleResetPassword = (user) => {
+    const handleResetPassword = React.useCallback((user) => {
         setConfirmModal({ isOpen: true, user });
-    };
+    }, []);
 
     const executeResetPassword = () => {
         if (!confirmModal.user) return;
@@ -287,7 +286,7 @@ export default function UsersIndex() {
                 );
             },
         },
-    ], [auth, setModal, handleResetPassword, handleToggleActive]);
+    ], [auth?.user?.id, handleResetPassword, handleToggleActive]);
 
     return (
         <AuthenticatedLayout>
@@ -330,9 +329,9 @@ export default function UsersIndex() {
                 {/* Stats row */}
                 <div className="grid grid-cols-3 gap-4">
                     {[
-                        { label: 'Total Users', value: list.length, color: 'text-slate-900 dark:text-white' },
-                        { label: 'Active', value: list.filter(u => u.is_active).length, color: 'text-emerald-500' },
-                        { label: 'Inactive', value: list.filter(u => !u.is_active).length, color: 'text-red-500' },
+                        { label: 'Total Users', value: (users || []).length, color: 'text-slate-900 dark:text-white' },
+                        { label: 'Active', value: (users || []).filter(u => u.is_active).length, color: 'text-emerald-500' },
+                        { label: 'Inactive', value: (users || []).filter(u => !u.is_active).length, color: 'text-red-500' },
                     ].map(stat => (
                         <div key={stat.label} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center shadow-sm">
                             <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>

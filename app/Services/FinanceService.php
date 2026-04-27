@@ -3,8 +3,11 @@
 namespace App\Services;
 
 use App\Models\Disbursement;
+use App\Models\FinancialTransaction;
+use App\Models\PurchaseOrder;
 use App\Models\SupplierInvoice;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class FinanceService
 {
@@ -25,16 +28,16 @@ class FinanceService
      */
     public function processDisbursement(array $validated): Disbursement
     {
-        return \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
+        return DB::transaction(function () use ($validated) {
             // Check overpayment risk against Purchase Order
             if (! empty($validated['purchase_order_id'])) {
-                $po = \App\Models\PurchaseOrder::find($validated['purchase_order_id']);
+                $po = PurchaseOrder::find($validated['purchase_order_id']);
                 if ($po) {
                     if ($po->status !== 'APPROVED') {
                         throw new \Exception('Disbursement cannot be processed. Purchase Order must be APPROVED.');
                     }
 
-                    $existingDisbursed = \App\Models\Disbursement::where('purchase_order_id', $po->id)
+                    $existingDisbursed = Disbursement::where('purchase_order_id', $po->id)
                         ->where('status', '!=', 'CANCELLED')
                         ->sum('amount');
                     if (($existingDisbursed + $validated['amount']) > $po->total_amount) {
@@ -55,7 +58,7 @@ class FinanceService
                 $projectId = $disbursement->purchaseOrder->project_id;
             }
 
-            \App\Models\FinancialTransaction::create([
+            FinancialTransaction::create([
                 'project_id' => $projectId,
                 'date' => now(),
                 'type' => 'DISBURSEMENT',
@@ -83,7 +86,7 @@ class FinanceService
             throw new \Exception('Already liquidated');
         }
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($disbursement, $data) {
+        DB::transaction(function () use ($disbursement, $data) {
             $actualAmount = $data['actual_amount'] ?? $disbursement->amount;
 
             $disbursement->update(array_merge($data, [
@@ -118,7 +121,7 @@ class FinanceService
                     $projectId = $disbursement->purchaseOrder->project_id;
                 }
 
-                \App\Models\FinancialTransaction::create([
+                FinancialTransaction::create([
                     'project_id' => $projectId,
                     'date' => now(),
                     'type' => 'REFUND',

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ConfirmReceiptRequest;
+use App\Http\Requests\StoreSiteReleaseRequest;
 use App\Models\InventoryItem;
 use App\Models\SiteRelease;
 use App\Services\SiteReleaseService;
@@ -58,7 +59,7 @@ class SiteReleaseController extends Controller
         );
     }
 
-    public function store(\App\Http\Requests\StoreSiteReleaseRequest $request): RedirectResponse
+    public function store(StoreSiteReleaseRequest $request): RedirectResponse
     {
         $validated = $request->validated();
         $item = InventoryItem::findOrFail($validated['inventory_item_id']);

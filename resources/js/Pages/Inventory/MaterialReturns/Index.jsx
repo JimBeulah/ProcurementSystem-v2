@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { usePermissions } from '@/Hooks/usePermissions';
-import { RotateCcw, PackageCheck, CheckCircle, Clock, Inbox, MapPin, User, Info } from 'lucide-react';
+import { RotateCcw, PackageCheck, CheckCircle, Clock, MapPin, User, Info } from 'lucide-react';
 import DataTable from '@/Components/UI/DataTable';
 import Drawer from '@/Components/UI/Drawer';
 
@@ -13,7 +13,6 @@ const STATUS_BADGE = {
 
 export default function MaterialReturnsIndex({ returns }) {
     const { can } = usePermissions();
-    const { flash } = usePage().props;
     const [processing, setProcessing] = useState(null);
     const [selectedReturn, setSelectedReturn] = useState(null);
 

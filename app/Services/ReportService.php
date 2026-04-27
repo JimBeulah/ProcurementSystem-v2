@@ -9,6 +9,7 @@ namespace App\Services;
 use App\Models\FinancialTransaction;
 use App\Models\Project;
 use App\Models\PurchaseOrder;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Collection;
 
 class ReportService
@@ -174,7 +175,7 @@ class ReportService
     {
         $data = $this->getFinancialReportsData($projectId);
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('print.finance-report', [
+        $pdf = Pdf::loadView('print.finance-report', [
             'data' => $data,
             'isProjectView' => $projectId !== null,
         ]);

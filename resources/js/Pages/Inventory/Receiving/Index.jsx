@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ClipboardCheck, Plus, Package, Truck, Calendar, User, FileText, MapPin } from 'lucide-react';
+import { ClipboardCheck, Plus, Truck, Calendar, FileText, MapPin } from 'lucide-react';
 import DataTable from '@/Components/UI/DataTable';
 import Drawer from '@/Components/UI/Drawer';
 

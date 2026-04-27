@@ -7,10 +7,12 @@ use App\Models\Material;
 use App\Models\Project;
 use App\Models\PurchaseOrder;
 use App\Models\Supplier;
+use App\Models\SupplierReturn;
 use App\Services\InventoryMatchingService;
 use App\Services\PurchaseOrderService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -34,7 +36,7 @@ class PurchaseOrderController extends Controller
         // Handle pre-filling from a Supplier Return
         $supplierReturn = null;
         if ($request->query('returnId')) {
-            $supplierReturn = \App\Models\SupplierReturn::with(['project', 'items', 'supplier'])
+            $supplierReturn = SupplierReturn::with(['project', 'items', 'supplier'])
                 ->find($request->query('returnId'));
         }
 
@@ -72,7 +74,7 @@ class PurchaseOrderController extends Controller
         // Handle pre-filling from a Supplier Return
         $supplierReturn = null;
         if ($request->query('returnId')) {
-            $supplierReturn = \App\Models\SupplierReturn::with(['project', 'items', 'supplier'])
+            $supplierReturn = SupplierReturn::with(['project', 'items', 'supplier'])
                 ->find($request->query('returnId'));
         }
 
@@ -91,7 +93,7 @@ class PurchaseOrderController extends Controller
     public function store(StorePurchaseOrderRequest $request): RedirectResponse
     {
         $this->authorize('create', PurchaseOrder::class);
-        $po = $this->service->create($request->validated(), \Illuminate\Support\Facades\Auth::id());
+        $po = $this->service->create($request->validated(), Auth::id());
 
         if (! $po) {
             // Means 100% of the requested items were sourced from the internal warehouse
@@ -106,7 +108,7 @@ class PurchaseOrderController extends Controller
     {
         try {
             $this->authorize('approve', $order);
-            $this->service->approve($order, \Illuminate\Support\Facades\Auth::id());
+            $this->service->approve($order, Auth::id());
 
             return redirect()->back()->with('success', 'Purchase order approved successfully.');
         } catch (\Exception $e) {

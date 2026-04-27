@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\MaterialRequestStatus;
+use App\Enums\PurchaseRequestStatus;
 use App\Models\BoqItemComponent;
 use App\Models\MaterialRequest;
 use App\Models\MaterialRequestItem;
@@ -21,14 +23,18 @@ class MaterialRequestService
     {
         $overBudgetItems = [];
 
+        $componentIds = collect($items)->pluck('boq_item_component_id')->filter()->unique();
+        $components = BoqItemComponent::with('boqItem')->findMany($componentIds)->keyBy('id');
+
         foreach ($items as $item) {
-            if (empty($item['boq_item_component_id'])) {
+            $componentId = $item['boq_item_component_id'] ?? null;
+            if (! $componentId || ! $components->has($componentId)) {
                 continue;
             }
 
-            $component = BoqItemComponent::with('boqItem')->find($item['boq_item_component_id']);
+            $component = $components->get($componentId);
 
-            if (! $component || ! $component->boqItem) {
+            if (! $component->boqItem) {
                 continue;
             }
 
@@ -39,7 +45,7 @@ class MaterialRequestService
 
             $previousRequestsCost = MaterialRequestItem::where('boq_item_component_id', $component->id)
                 ->whereHas('materialRequest', function ($q) {
-                    $q->whereNotIn('status', ['REJECTED', 'CANCELLED']);
+                    $q->whereNotIn('status', [MaterialRequestStatus::REJECTED, MaterialRequestStatus::CANCELLED]);
                 })
                 ->get()
                 ->sum(fn ($reqItem) => $reqItem->quantity * ($reqItem->material_unit_price + $reqItem->labor_unit_price));
@@ -58,28 +64,30 @@ class MaterialRequestService
      */
     public function create(Project $project, array $validated): MaterialRequest
     {
-        $mr = MaterialRequest::create([
-            'project_id' => $project->id,
-            'requester_id' => Auth::id(),
-            'request_date' => now(),
-            'status' => 'PENDING',
-            'remarks' => $validated['remarks'] ?? null,
-        ]);
-
-        foreach ($validated['items'] as $item) {
-            MaterialRequestItem::create([
-                'material_request_id' => $mr->id,
-                'boq_item_id' => $item['boq_item_id'] ?? null,
-                'boq_item_component_id' => $item['boq_item_component_id'] ?? null,
-                'item_description' => $item['item_description'],
-                'unit' => $item['unit'],
-                'quantity' => $item['quantity'],
-                'material_unit_price' => $item['material_unit_price'] ?? 0,
-                'labor_unit_price' => $item['labor_unit_price'] ?? 0,
+        return DB::transaction(function () use ($project, $validated) {
+            $mr = MaterialRequest::create([
+                'project_id' => $project->id,
+                'requester_id' => Auth::id(),
+                'request_date' => now(),
+                'status' => MaterialRequestStatus::PENDING,
+                'remarks' => $validated['remarks'] ?? null,
             ]);
-        }
 
-        return $mr;
+            foreach ($validated['items'] as $item) {
+                MaterialRequestItem::create([
+                    'material_request_id' => $mr->id,
+                    'boq_item_id' => $item['boq_item_id'] ?? null,
+                    'boq_item_component_id' => $item['boq_item_component_id'] ?? null,
+                    'item_description' => $item['item_description'],
+                    'unit' => $item['unit'],
+                    'quantity' => $item['quantity'],
+                    'material_unit_price' => $item['material_unit_price'] ?? 0,
+                    'labor_unit_price' => $item['labor_unit_price'] ?? 0,
+                ]);
+            }
+
+            return $mr;
+        });
     }
 
     /**
@@ -90,7 +98,7 @@ class MaterialRequestService
     {
         return DB::transaction(function () use ($materialRequest) {
             $materialRequest->update([
-                'status' => 'APPROVED',
+                'status' => MaterialRequestStatus::APPROVED,
                 'approver_id' => Auth::id(),
             ]);
 
@@ -105,7 +113,7 @@ class MaterialRequestService
                 'requester_id' => $materialRequest->requester_id,
                 'approver_id' => Auth::id(),
                 'request_date' => now(),
-                'status' => 'APPROVED',
+                'status' => PurchaseRequestStatus::APPROVED,
                 'purpose' => 'Generated from MR-'.str_pad($materialRequest->id, 5, '0', STR_PAD_LEFT),
                 'remarks' => $materialRequest->remarks,
                 'total_estimated_cost' => $totalCost,
@@ -132,7 +140,7 @@ class MaterialRequestService
     public function reject(MaterialRequest $materialRequest, ?string $remarks = null): void
     {
         $materialRequest->update([
-            'status' => 'REJECTED',
+            'status' => MaterialRequestStatus::REJECTED,
             'approver_id' => Auth::id(),
             'remarks' => $remarks ?? $materialRequest->remarks,
         ]);
@@ -144,7 +152,7 @@ class MaterialRequestService
     public function cancel(MaterialRequest $materialRequest): void
     {
         $materialRequest->update([
-            'status' => 'CANCELLED',
+            'status' => MaterialRequestStatus::CANCELLED,
         ]);
     }
 }

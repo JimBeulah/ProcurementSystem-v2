@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage, router } from '@inertiajs/react';
-import { PieChart, PhilippinePeso, TrendingUp, Activity, BarChart3, ChevronDown, CheckCircle2, AlertCircle, ShoppingCart, CreditCard, Printer } from 'lucide-react';
+import { PieChart, PhilippinePeso, TrendingUp, Activity, BarChart3, ShoppingCart, Printer } from 'lucide-react';
 import IncomeStatement from '@/Components/Finance/IncomeStatement';
 import PdfPreviewModal from '@/Components/UI/PdfPreviewModal';
 

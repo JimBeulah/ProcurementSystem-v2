@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 use Spatie\Activitylog\Models\Activity;
 
 class ActivityLogController extends Controller
 {
-    public function index(\Illuminate\Http\Request $request): \Inertia\Response
+    public function index(Request $request): Response
     {
         $query = Activity::with(['causer', 'subject'])->latest();
 

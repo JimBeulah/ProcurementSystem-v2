@@ -2,31 +2,35 @@
 
 namespace App\Models;
 
+use App\Enums\PurchaseRequestStatus;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * @property int $id
- * @property \Illuminate\Support\Carbon $request_date
+ * @property Carbon $request_date
  * @property int $project_id
  * @property int $requester_id
  * @property int|null $approver_id
- * @property string $status
+ * @property PurchaseRequestStatus $status
  * @property string $purpose
  * @property string|null $remarks
  * @property float $total_estimated_cost
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \App\Models\Project $project
- * @property-read \App\Models\User $requester
- * @property-read \App\Models\User|null $approver
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\PurchaseRequestItem[] $items
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Project $project
+ * @property-read User $requester
+ * @property-read User|null $approver
+ * @property-read Collection|PurchaseRequestItem[] $items
  *
  * @mixin \Eloquent
- * @mixin \Illuminate\Database\Eloquent\Builder
+ * @mixin Builder
  */
 class PurchaseRequest extends Model
 {
@@ -55,6 +59,7 @@ class PurchaseRequest extends Model
     {
         return [
             'request_date' => 'datetime',
+            'status' => PurchaseRequestStatus::class,
             'total_estimated_cost' => 'decimal:2',
         ];
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreMaterialRequestRequest;
 use App\Models\BoqItem;
+use App\Models\InventoryItem;
 use App\Models\MaterialRequest;
 use App\Models\Project;
 use App\Services\MaterialRequestService;
@@ -42,7 +43,7 @@ class MaterialRequestController extends Controller
             ->with('components')
             ->get();
 
-        $inventoryItems = \App\Models\InventoryItem::whereNull('project_id')
+        $inventoryItems = InventoryItem::whereNull('project_id')
             ->with('warehouse')
             ->get();
 

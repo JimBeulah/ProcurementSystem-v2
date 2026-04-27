@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, usePage } from '@inertiajs/react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { usePermissions } from '@/Hooks/usePermissions';
 
 export default function SubNavigationTabs({ items }) {

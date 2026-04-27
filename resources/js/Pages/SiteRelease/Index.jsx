@@ -3,23 +3,11 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, usePage } from '@inertiajs/react';
 import Modal from '@/Components/UI/Modal';
 import { 
-    Package, 
-    Search, 
-    MapPin, 
-    ArrowRightCircle, 
-    Clock, 
-    User, 
-    AlertTriangle, 
-    CheckCircle2, 
-    Truck,
-    Info,
-    LayoutList,
-    History
+    Clock, Truck, CheckCircle2, LayoutList, History, Search, MapPin, User, Info 
 } from 'lucide-react';
-import { toast } from 'sonner';
 
 export default function SiteReleaseIndex() {
-    const { pendingReleases = [], recentReleases = [], auth } = usePage().props;
+    const { pendingReleases = [], recentReleases = [] } = usePage().props;
     const [search, setSearch] = useState('');
     const [activeTab, setActiveTab] = useState('queue');
     const [dispatchModal, setDispatchModal] = useState({ open: false, release: null });

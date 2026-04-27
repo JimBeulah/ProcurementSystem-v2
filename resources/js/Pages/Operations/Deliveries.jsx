@@ -25,7 +25,7 @@ export default function Deliveries() {
     const [itemRejections, setItemRejections] = useState({});
     const [receiptRemarks, setReceiptRemarks] = useState('');
 
-    const openDelivery = (item) => {
+    const openDelivery = React.useCallback((item) => {
         if (confirming) return;
         if (item.type === 'purchase_order' && item.items?.length) {
             const init = {};
@@ -41,7 +41,7 @@ export default function Deliveries() {
             setReceiptRemarks('');
         }
         setSelectedDelivery(item);
-    };
+    }, [confirming]);
 
     const closeDrawer = () => {
         if (confirming) return;
@@ -252,7 +252,7 @@ export default function Deliveries() {
             },
             baseAction
         ];
-    }, [activeTab, confirming]);
+    }, [activeTab, confirming, openDelivery]);
 
 
     return (

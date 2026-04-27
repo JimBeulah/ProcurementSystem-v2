@@ -7,7 +7,7 @@ import Drawer from '@/Components/UI/Drawer';
 
 export default function InventoryIndex() {
     const { inventory } = usePage().props;
-    const items = inventory || [];
+    const items = React.useMemo(() => inventory || [], [inventory]);
     const [activeTab, setActiveTab] = useState('all'); // 'all', 'warehouse', 'projects'
     const [selectedItem, setSelectedReport] = useState(null);
 

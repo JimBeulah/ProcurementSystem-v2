@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, usePage } from '@inertiajs/react';
 import Drawer from '@/Components/UI/Drawer';
@@ -10,8 +10,8 @@ import ConfirmationModal from '@/Components/UI/ConfirmationModal';
 import { useBoqCalculations } from '@/Hooks/useBoqCalculations';
 import { downloadBoqTemplate, parseBoqCsv } from '@/Utils/boqFileUtils';
 import {
-    ClipboardList, Plus, RefreshCcw, Upload, FileDown, Search, Layers, 
-    Trash2, AlertTriangle, Pencil, Box, Hammer, Truck, Info, Car,
+    Plus, RefreshCcw, Upload, FileDown, Search, Layers, 
+    Trash2, Pencil, Box, Hammer, Truck, Info, Car,
     TrendingUp
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -102,7 +102,7 @@ export default function ProjectBoq() {
     const handleUpdateItem = (e) => {
         e.preventDefault();
         setLoading(true);
-        const { components, ...payload } = editItem;
+        const { ...payload } = editItem;
         router.put(`/projects/${project.id}/boq/${editItem.id}`, payload, {
             onSuccess: () => {
                 setEditItem(null);
@@ -146,7 +146,7 @@ export default function ProjectBoq() {
                     setResourceModal({ ...resourceModal, open: false });
                     setLoading(false);
                 },
-                onError: (errors) => {
+                onError: () => {
                     setLoading(false);
                 }
             });
@@ -156,7 +156,7 @@ export default function ProjectBoq() {
                     setResourceModal({ ...resourceModal, open: false });
                     setLoading(false);
                 },
-                onError: (errors) => {
+                onError: () => {
                     setLoading(false);
                 }
             });
@@ -187,7 +187,7 @@ export default function ProjectBoq() {
                     onError: () => { setLoading(false); }
                 });
             }
-        } catch (error) {
+        } catch {
             toast.error('Failed to parse CSV');
         }
         e.target.value = '';

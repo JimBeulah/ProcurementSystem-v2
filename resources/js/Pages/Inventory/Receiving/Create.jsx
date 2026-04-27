@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, Save, PackageCheck } from 'lucide-react';
@@ -6,10 +6,25 @@ import { ArrowLeft, Save, PackageCheck } from 'lucide-react';
 export default function CreateReceiving() {
     const { purchaseOrders, selectedPoId } = usePage().props;
 
-    const [selectedPo, setSelectedPo] = useState('');
+    const [selectedPo, setSelectedPo] = useState(selectedPoId?.toString() || '');
     const [deliveryNote, setDeliveryNote] = useState('');
     const [notes, setNotes] = useState('');
-    const [items, setItems] = useState([]);
+    
+    const [items, setItems] = useState(() => {
+        if (!selectedPoId) return [];
+        const po = (purchaseOrders || []).find(p => p.id.toString() === selectedPoId.toString());
+        return po?.items?.map(item => ({
+            id: item.id,
+            material_name: item.material_name,
+            description: item.description || '',
+            ordered_quantity: item.quantity,
+            unit_price: item.unit_price,
+            unit: item.unit,
+            quantity_received: item.quantity, // default to full receipt
+            status: 'ACCEPTED'
+        })) || [];
+    });
+
     const [submitting, setSubmitting] = useState(false);
 
     const handlePoChange = React.useCallback((id) => {
@@ -30,12 +45,6 @@ export default function CreateReceiving() {
             setItems([]);
         }
     }, [purchaseOrders]);
-
-    useEffect(() => {
-        if (selectedPoId) {
-            handlePoChange(selectedPoId.toString());
-        }
-    }, [selectedPoId, handlePoChange]);
 
     const toggleReject = (idx) => {
         const newItems = [...items];

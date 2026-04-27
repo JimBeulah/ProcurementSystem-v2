@@ -24,7 +24,7 @@ class NewMaterialReturnSubmitted extends Notification
         return [
             'message' => "New material return: {$this->materialReturn->quantity} {$this->materialReturn->unit} of {$this->materialReturn->material_name} from {$this->materialReturn->project->name} has been submitted.",
             'url' => route('inventory.material-returns.index', [], false),
-            'type' => 'material_return'
+            'type' => 'material_return',
         ];
     }
 }
