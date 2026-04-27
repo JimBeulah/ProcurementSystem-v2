@@ -7,7 +7,7 @@ import SecondaryButton from '@/Components/SecondaryButton';
 import DangerButton from '@/Components/DangerButton';
 import Modal from '@/Components/Modal';
 
-export default function DatabaseManagement() {
+export default function DatabaseManagement({ is_vercel }) {
     const [confirmingReset, setConfirmingReset] = useState(false);
     const [confirmingImport, setConfirmingImport] = useState(false);
     const fileInput = useRef();
@@ -59,6 +59,34 @@ export default function DatabaseManagement() {
                     <p className="text-slate-500">Maintain, backup, and restore your system data.</p>
                 </header>
 
+                {is_vercel && (
+                    <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 rounded-2xl p-6 flex gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 shrink-0">
+                            <AlertTriangle size={24} />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-amber-800 dark:text-amber-400 mb-1">Vercel Environment Limitations</h3>
+                            <p className="text-amber-700 dark:text-amber-300 text-sm leading-relaxed">
+                                You are running on Vercel Serverless. Direct database backups and restores via the web interface are disabled 
+                                because the required tools (<code className="font-mono bg-amber-100 dark:bg-amber-900/50 px-1 rounded">pg_dump</code> and <code className="font-mono bg-amber-100 dark:bg-amber-900/50 px-1 rounded">psql</code>) 
+                                are not available in this environment.
+                            </p>
+                            <div className="mt-4 flex gap-4">
+                                <a 
+                                    href="https://console.neon.tech/" 
+                                    target="_blank" 
+                                    className="text-amber-900 dark:text-amber-100 text-xs font-bold underline flex items-center gap-1"
+                                >
+                                    Open Neon Console
+                                </a>
+                                <p className="text-amber-700 dark:text-amber-400 text-xs italic">
+                                    Use the Neon Console to manage backups and direct SQL imports.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 <div className="grid grid-cols-1 gap-6">
                     {/* Backup Section */}
                     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm">
@@ -71,9 +99,16 @@ export default function DatabaseManagement() {
                                 <p className="text-slate-500 text-sm mb-4">
                                     Download a full backup of your database in .sql format. You should perform backups regularly to prevent data loss.
                                 </p>
-                                <PrimaryButton onClick={handleBackup} className="flex items-center gap-2">
+                                <PrimaryButton 
+                                    onClick={handleBackup} 
+                                    className="flex items-center gap-2"
+                                    disabled={is_vercel}
+                                >
                                     <Download size={16} /> Download Backup
                                 </PrimaryButton>
+                                {is_vercel && (
+                                    <p className="text-xs text-slate-400 mt-2 italic">Feature not available on Vercel.</p>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -112,11 +147,15 @@ export default function DatabaseManagement() {
                                     )}
 
                                     <div className="flex items-center gap-3">
-                                        <SecondaryButton onClick={handleImportClick} disabled={processing}>
+                                        <SecondaryButton onClick={handleImportClick} disabled={processing || is_vercel}>
                                             <Upload size={16} className="mr-2" />
                                             {data.database_file ? 'Confirm Restore' : 'Select SQL File'}
                                         </SecondaryButton>
                                         
+                                        {is_vercel && (
+                                            <p className="text-xs text-slate-400 italic">Feature not available on Vercel.</p>
+                                        )}
+
                                         {errors.database_file && (
                                             <span className="text-xs text-red-500">{errors.database_file}</span>
                                         )}

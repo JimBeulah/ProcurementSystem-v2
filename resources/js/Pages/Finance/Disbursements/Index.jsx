@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage, router } from '@inertiajs/react';
-import { CreditCard, Plus, ArrowUpRight, Save, Receipt, CheckCircle2, Eye, FileText, Calendar, User, Wallet } from 'lucide-react';
+import { CreditCard, Plus, ArrowUpRight, Save, Receipt, CheckCircle2, Eye, FileText, Calendar, User, Wallet, Loader2 } from 'lucide-react';
+import { useBlobUpload } from '@/Hooks/useBlobUpload';
 import Modal from '@/Components/UI/Modal';
 import Combobox from '@/Components/UI/Combobox';
 import DataTable from '@/Components/UI/DataTable';
 import Drawer from '@/Components/UI/Drawer';
 
 export default function DisbursementsIndex() {
-    const { payments, orders, users } = usePage().props;
+    const { payments, orders, users, is_vercel } = usePage().props;
+    const { uploadFile, isUploading } = useBlobUpload();
     const list = payments || [];
     const poList = orders || [];
     const userList = users || [];
@@ -157,30 +159,58 @@ export default function DisbursementsIndex() {
         });
     };
 
-    const handleLiquidateSubmit = (e) => {
+    const handleLiquidateSubmit = async (e) => {
         e.preventDefault();
 
-        const formData = new FormData();
-        formData.append('actual_amount', actualAmount);
-        formData.append('receipt_number', receiptNumber);
-        formData.append('receipt_date', receiptDate);
-        if (receiptFile) formData.append('receipt_file', receiptFile);
-        formData.append('liquidation_remarks', remarks);
+        const payload = {
+            actual_amount: actualAmount,
+            receipt_number: receiptNumber,
+            receipt_date: receiptDate,
+            liquidation_remarks: remarks,
+        };
 
-        router.post(route('finance.disbursements.liquidate', selectedPayment.id), formData, {
+        if (receiptFile) {
+            if (is_vercel) {
+                try {
+                    const url = await uploadFile(receiptFile);
+                    payload.receipt_url = url;
+                } catch (err) {
+                    // Error is handled by hook/console
+                    return;
+                }
+            } else {
+                // Local multipart upload
+                const formData = new FormData();
+                Object.entries(payload).forEach(([k, v]) => formData.append(k, v));
+                formData.append('receipt_file', receiptFile);
+                
+                router.post(route('finance.disbursements.liquidate', selectedPayment.id), formData, {
+                    onSuccess: () => {
+                        setIsLiquidateOpen(false);
+                        resetLiquidation();
+                    }
+                });
+                return;
+            }
+        }
+
+        router.post(route('finance.disbursements.liquidate', selectedPayment.id), payload, {
             onSuccess: () => {
                 setIsLiquidateOpen(false);
-                setReceiptNumber('');
-                setActualAmount(0);
-                setReceiptFile(null);
-                setRemarks('');
-                setSelectedPayment(null);
-                if (viewItem && viewItem.id === selectedPayment.id) {
-                    // Update the drawer state if open
-                    router.reload({ only: ['payments'] }); // Refresh list to get updated data
-                }
+                resetLiquidation();
             }
         });
+    };
+
+    const resetLiquidation = () => {
+        setReceiptNumber('');
+        setActualAmount(0);
+        setReceiptFile(null);
+        setRemarks('');
+        setSelectedPayment(null);
+        if (viewItem && selectedPayment && viewItem.id === selectedPayment.id) {
+            router.reload({ only: ['payments'] });
+        }
     };
 
     const inputCls = "w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white focus:outline-none focus:border-red-500";
@@ -309,7 +339,7 @@ export default function DisbursementsIndex() {
                                         )}
                                         {viewItem.receipt_path && (
                                             <a
-                                                href={`/storage/${viewItem.receipt_path}`}
+                                                href={viewItem.receipt_path.startsWith('http') ? viewItem.receipt_path : `/storage/${viewItem.receipt_path}`}
                                                 target="_blank"
                                                 className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors"
                                             >
@@ -429,8 +459,13 @@ export default function DisbursementsIndex() {
                         </div>
 
                         <div className="pt-2">
-                            <button type="submit" className="bg-green-600 hover:bg-green-500 text-white px-8 py-2.5 rounded-lg font-bold flex items-center gap-2 w-full justify-center transition-colors">
-                                <CheckCircle2 size={18} /> Submit Liquidation
+                            <button 
+                                type="submit" 
+                                disabled={isUploading}
+                                className="bg-green-600 hover:bg-green-500 text-white px-8 py-2.5 rounded-lg font-bold flex items-center gap-2 w-full justify-center transition-colors disabled:opacity-50"
+                            >
+                                {isUploading ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
+                                {isUploading ? 'Uploading to Vercel...' : 'Submit Liquidation'}
                             </button>
                         </div>
                     </form>

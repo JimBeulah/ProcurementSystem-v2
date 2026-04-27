@@ -12,7 +12,9 @@ class DatabaseManagementController extends Controller
 {
     public function index()
     {
-        return Inertia::render('Settings/Database/Index');
+        return Inertia::render('Settings/Database/Index', [
+            'is_vercel' => env('VERCEL') || env('BLOB_READ_WRITE_TOKEN'),
+        ]);
     }
 
     protected function getBinaryPath($binary)
@@ -47,10 +49,12 @@ class DatabaseManagementController extends Controller
         }
 
         $filename = 'backup-'.date('Y-m-d-H-i-s').'.sql';
-        $path = storage_path('app/backups/'.$filename);
+        $isVercel = env('VERCEL') || env('BLOB_READ_WRITE_TOKEN');
+        $baseDir = $isVercel ? '/tmp' : storage_path('app/backups');
+        $path = $baseDir . '/' . $filename;
 
-        if (! file_exists(storage_path('app/backups'))) {
-            mkdir(storage_path('app/backups'), 0755, true);
+        if (!$isVercel && !file_exists($baseDir)) {
+            mkdir($baseDir, 0755, true);
         }
 
         if ($connection === 'mysql') {
@@ -65,6 +69,7 @@ class DatabaseManagementController extends Controller
                 escapeshellarg($config['database']),
                 escapeshellarg($path)
             );
+            $binary = 'mysqldump';
         } else {
             $pgdump = $this->getBinaryPath('pg_dump');
             $env = array_merge($_SERVER, getenv(), ['PGPASSWORD' => $config['password']]);
@@ -77,6 +82,14 @@ class DatabaseManagementController extends Controller
                 escapeshellarg($config['database']),
                 escapeshellarg($path)
             );
+            $binary = 'pg_dump';
+        }
+
+        $binaryPath = $this->getBinaryPath($binary);
+        
+        // Simple check for binary availability in non-windows environments
+        if (PHP_OS_FAMILY !== 'Windows' && empty(shell_exec("which $binaryPath"))) {
+            return back()->with('error', "The '$binary' binary was not found on this server. This feature is not available on Vercel serverless functions. Please use the database console (e.g., Neon Console) for backups.");
         }
 
         $process = Process::fromShellCommandline($command, null, $env);
@@ -103,8 +116,15 @@ class DatabaseManagementController extends Controller
         }
 
         $file = $request->file('database_file');
-        $path = $file->storeAs('temp', 'import.sql');
-        $fullPath = storage_path('app/'.$path);
+        $isVercel = env('VERCEL') || env('BLOB_READ_WRITE_TOKEN');
+        
+        if ($isVercel) {
+            $fullPath = '/tmp/import.sql';
+            move_uploaded_file($file->getRealPath(), $fullPath);
+        } else {
+            $path = $file->storeAs('temp', 'import.sql');
+            $fullPath = storage_path('app/'.$path);
+        }
 
         if ($connection === 'mysql') {
             $mysql = $this->getBinaryPath('mysql');
@@ -118,6 +138,7 @@ class DatabaseManagementController extends Controller
                 escapeshellarg($config['database']),
                 escapeshellarg($fullPath)
             );
+            $binary = 'mysql';
         } else {
             $psql = $this->getBinaryPath('psql');
             $env = array_merge($_SERVER, getenv(), ['PGPASSWORD' => $config['password']]);
@@ -132,12 +153,24 @@ class DatabaseManagementController extends Controller
                 escapeshellarg($config['database']),
                 escapeshellarg($fullPath)
             );
+            $binary = 'psql';
+        }
+
+        $binaryPath = $this->getBinaryPath($binary);
+
+        // Simple check for binary availability in non-windows environments
+        if (PHP_OS_FAMILY !== 'Windows' && empty(shell_exec("which $binaryPath"))) {
+            return back()->with('error', "The '$binary' binary was not found on this server. This feature is not available on Vercel serverless functions. Please use the database console (e.g., Neon Console) for imports.");
         }
 
         $process = Process::fromShellCommandline($command, null, $env);
         $process->run();
 
-        Storage::delete($path);
+        if (!$isVercel) {
+            Storage::delete($path);
+        } else {
+            @unlink($fullPath);
+        }
 
         if (! $process->isSuccessful()) {
             return back()->with('error', 'Import failed: '.$process->getErrorOutput());

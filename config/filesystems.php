@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('FILESYSTEM_DISK', 'local'),
+    'default' => env('FILESYSTEM_DISK', env('VERCEL') ? 'vercel' : 'public'),
 
     /*
     |--------------------------------------------------------------------------
@@ -45,6 +45,13 @@ return [
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
+        ],
+
+        'vercel' => [
+            'driver' => 'local',
+            'root' => '/tmp', // Vercel only allows writing to /tmp
+            'url' => env('APP_URL').'/storage',
+            'visibility' => 'public',
         ],
 
         's3' => [

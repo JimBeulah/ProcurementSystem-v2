@@ -41,6 +41,7 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
+            'is_vercel' => env('VERCEL') || env('BLOB_READ_WRITE_TOKEN'),
             'auth' => [
                 'user' => $request->user(),
                 'permissions' => $request->user() ? $request->user()->getAllPermissions()->pluck('name') : [],

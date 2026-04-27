@@ -21,6 +21,7 @@ use App\Http\Controllers\PurchaseRequestController;
 use App\Http\Controllers\ReceivingController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\SiteReleaseController;
+use App\Http\Controllers\StorageController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\SupplierReturnController;
 use App\Http\Controllers\UserController;
@@ -39,6 +40,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
     Route::post('/notifications/clear-all', [NotificationController::class, 'clearAll'])->name('notifications.clear-all');
+
+    // Storage
+    Route::get('/storage/token', [StorageController::class, 'getVercelToken'])->name('storage.token');
 });
 
 Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
