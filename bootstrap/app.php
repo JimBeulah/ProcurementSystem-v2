@@ -32,7 +32,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'password.changed' => EnsurePasswordIsChanged::class,
         ]);
 
-        //
+        $middleware->preventRequestForgery(except: [
+            '/storage/upload',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

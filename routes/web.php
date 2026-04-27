@@ -42,7 +42,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/notifications/clear-all', [NotificationController::class, 'clearAll'])->name('notifications.clear-all');
 
     // Storage
-    Route::get('/storage/token', [StorageController::class, 'getVercelToken'])->name('storage.token');
+    Route::post('/storage/upload', [StorageController::class, 'handleUpload'])->name('storage.upload');
 });
 
 Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
