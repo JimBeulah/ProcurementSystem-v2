@@ -3,16 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class StorageController extends Controller
 {
     /**
-     * Get a token for Vercel Blob upload.
-     * Only for authenticated users.
-     */
-    /**
-     * Handle Vercel Blob upload protocol.
+     * Handle file upload to Vercel Blob via server-side API.
      */
     public function handleUpload(Request $request)
     {
@@ -25,50 +22,37 @@ class StorageController extends Controller
             return response()->json(['error' => 'Vercel Blob token not configured'], 500);
         }
 
-        $body = $request->json()->all();
-        $type = $body['type'] ?? '';
-
-        if ($type === 'blob.generate-client-token') {
-            $payload = $body['payload'];
-            $pathname = $payload['pathname'];
-            
-            $clientToken = $this->generateClientToken($token, $pathname);
-
-            return response()->json([
-                'type' => 'blob.generate-client-token',
-                'clientToken' => $clientToken,
-            ]);
+        if (!$request->hasFile('file')) {
+            return response()->json(['error' => 'No file provided'], 400);
         }
 
-        return response()->json(['error' => 'Invalid event type'], 400);
-    }
-
-    /**
-     * Generate a Vercel Blob client token from a read-write token.
-     * Replicates the logic in @vercel/blob client SDK.
-     */
-    private function generateClientToken(string $readWriteToken, string $pathname): string
-    {
-        $parts = explode('_', $readWriteToken);
-        // Vercel Blob tokens look like: vercel_blob_rw_<storeId>_<token>
-        // Index 0: vercel, 1: blob, 2: rw, 3: storeId, 4+: token
-        $storeId = $parts[3] ?? '';
+        $file = $request->file('file');
+        $filename = time() . '-' . $file->getClientOriginalName();
         
-        // Reconstruct the token secret part (everything after the storeId)
-        $tokenSecret = implode('_', array_slice($parts, 4));
+        try {
+            // Upload directly to Vercel Blob REST API
+            // Documentation: https://vercel.com/docs/storage/vercel-blob/rest-api
+            $response = Http::withToken($token)
+                ->withHeaders([
+                    'x-api-version' => '7',
+                ])
+                ->withBody(file_get_contents($file->getRealPath()), $file->getMimeType())
+                ->put("https://blob.vercel-storage.com/" . $filename . "?access=public");
 
-        $validUntil = (time() + 3600) * 1000; // 1 hour in milliseconds
+            if ($response->failed()) {
+                Log::error('Vercel Blob upload failed: ' . $response->body());
+                return response()->json(['error' => 'Vercel API error: ' . $response->status()], 500);
+            }
 
-        $payloadData = [
-            'pathname' => $pathname,
-            'validUntil' => $validUntil,
-        ];
-
-        $encodedPayload = base64_encode(json_encode($payloadData));
-        $signature = hash_hmac('sha256', $encodedPayload, $tokenSecret);
-        
-        $tokenData = base64_encode($signature . '.' . $encodedPayload);
-        
-        return "vercel_blob_client_{$storeId}_{$tokenData}";
+            $data = $response->json();
+            
+            return response()->json([
+                'url' => $data['url'],
+                'pathname' => $data['pathname'],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Vercel Blob Exception: ' . $e->getMessage());
+            return response()->json(['error' => 'Server error during upload'], 500);
+        }
     }
 }

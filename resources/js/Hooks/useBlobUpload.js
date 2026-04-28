@@ -1,27 +1,31 @@
 import { useState } from 'react';
-import { upload } from '@vercel/blob/client';
+import axios from 'axios';
 
 export const useBlobUpload = () => {
     const [isUploading, setIsUploading] = useState(false);
     const [progress, setProgress] = useState(0);
 
-    const uploadFile = async (file, options = {}) => {
+    const uploadFile = async (file) => {
         setIsUploading(true);
         setProgress(0);
 
         try {
-            const blob = await upload(file.name, file, {
-                access: 'public',
-                handleUploadUrl: route('storage.upload'),
-                ...options,
-                onUploadProgress: (p) => {
-                    setProgress(p.percentage);
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await axios.post(route('storage.upload'), formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+                onUploadProgress: (progressEvent) => {
+                    const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    setProgress(percentCompleted);
                 }
             });
 
-            return blob.url;
+            return response.data.url;
         } catch (error) {
-            console.error('Blob upload failed:', error);
+            console.error('Blob upload failed:', error.response?.data || error.message);
             throw error;
         } finally {
             setIsUploading(false);
