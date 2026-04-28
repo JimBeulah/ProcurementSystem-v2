@@ -84,59 +84,65 @@ class FinanceService
     {
         // Prevent Double Liquidation
         if ($disbursement->is_liquidated) {
+            \Log::warning("Attempted to liquidate already liquidated disbursement ID: {$disbursement->id}");
             throw new \Exception('Already liquidated');
         }
 
-        DB::transaction(function () use ($disbursement, $data) {
-            $actualAmount = $data['actual_amount'] ?? $disbursement->amount;
+        try {
+            DB::transaction(function () use ($disbursement, $data) {
+                $actualAmount = $data['actual_amount'] ?? $disbursement->amount;
 
-            $disbursement->update(array_merge($data, [
-                'actual_amount' => $actualAmount,
-                'is_liquidated' => true,
-                'liquidated_at' => now(),
-                'status' => 'LIQUIDATED',
-            ]));
+                $disbursement->update(array_merge($data, [
+                    'actual_amount' => $actualAmount,
+                    'is_liquidated' => true,
+                    'liquidated_at' => now(),
+                    'status' => 'LIQUIDATED',
+                ]));
 
-            $change = $disbursement->amount - $actualAmount;
+                $change = $disbursement->amount - $actualAmount;
 
-            // Automatically record an invoice for audit and reporting
-            if ($disbursement->purchase_order_id) {
-                $po = $disbursement->purchaseOrder;
-                if ($po && $po->supplier_id) {
-                    SupplierInvoice::create([
-                        'invoice_number' => $data['receipt_number'],
-                        'invoice_date' => $data['receipt_date'],
-                        'supplier_id' => $po->supplier_id,
-                        'purchase_order_id' => $po->id,
-                        'total_amount' => $actualAmount,
-                        'status' => 'PENDING',
-                        'recorded_by_id' => Auth::id(),
+                // Automatically record an invoice for audit and reporting
+                if ($disbursement->purchase_order_id) {
+                    $po = $disbursement->purchaseOrder;
+                    if ($po && $po->supplier_id) {
+                        SupplierInvoice::create([
+                            'invoice_number' => $data['receipt_number'],
+                            'invoice_date' => $data['receipt_date'],
+                            'supplier_id' => $po->supplier_id,
+                            'purchase_order_id' => $po->id,
+                            'total_amount' => $actualAmount,
+                            'status' => 'PENDING',
+                            'recorded_by_id' => Auth::id(),
+                        ]);
+                    }
+                }
+
+                // Record change returned into Ledger if actual spend was less than disbursed
+                if ($change > 0) {
+                    $projectId = null;
+                    if ($disbursement->purchase_order_id && $disbursement->purchaseOrder) {
+                        $projectId = $disbursement->purchaseOrder->project_id;
+                    }
+
+                    FinancialTransaction::create([
+                        'project_id' => $projectId,
+                        'date' => now(),
+                        'type' => 'REFUND',
+                        'category' => 'LIQUIDATION_RETURN',
+                        'description' => 'Change returned from disbursement liquidation (DISB-'.$disbursement->id.')',
+                        'amount' => $change,
+                        'reference' => 'DISB-REF-'.$disbursement->id,
+                        'metadata' => [
+                            'disbursement_id' => $disbursement->id,
+                            'purchase_order_id' => $disbursement->purchase_order_id,
+                        ],
                     ]);
                 }
-            }
-
-            // Record change returned into Ledger if actual spend was less than disbursed
-            if ($change > 0) {
-                $projectId = null;
-                if ($disbursement->purchase_order_id && $disbursement->purchaseOrder) {
-                    $projectId = $disbursement->purchaseOrder->project_id;
-                }
-
-                FinancialTransaction::create([
-                    'project_id' => $projectId,
-                    'date' => now(),
-                    'type' => 'REFUND',
-                    'category' => 'LIQUIDATION_RETURN',
-                    'description' => 'Change returned from disbursement liquidation (DISB-'.$disbursement->id.')',
-                    'amount' => $change,
-                    'reference' => 'DISB-REF-'.$disbursement->id,
-                    'metadata' => [
-                        'disbursement_id' => $disbursement->id,
-                        'purchase_order_id' => $disbursement->purchase_order_id,
-                    ],
-                ]);
-            }
-        });
+            });
+        } catch (\Exception $e) {
+            \Log::error("Liquidation failed for disbursement ID: {$disbursement->id}. Error: " . $e->getMessage());
+            throw $e;
+        }
     }
 
     /**

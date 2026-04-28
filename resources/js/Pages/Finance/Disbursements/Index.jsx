@@ -6,7 +6,7 @@ import { useBlobUpload } from '@/Hooks/useBlobUpload';
 import Modal from '@/Components/UI/Modal';
 import Combobox from '@/Components/UI/Combobox';
 import DataTable from '@/Components/UI/DataTable';
-import Drawer from '@/Components/UI/Drawer';
+import { toast } from 'sonner';
 
 export default function DisbursementsIndex() {
     const { payments, orders, users, is_vercel } = usePage().props;
@@ -164,6 +164,8 @@ export default function DisbursementsIndex() {
     const handleLiquidateSubmit = async (e) => {
         e.preventDefault();
 
+        if (isUploading) return;
+
         const payload = {
             actual_amount: actualAmount,
             receipt_number: receiptNumber,
@@ -177,7 +179,7 @@ export default function DisbursementsIndex() {
                     const url = await uploadFile(receiptFile);
                     payload.receipt_url = url;
                 } catch (err) {
-                    // Error is handled by hook/console
+                    toast.error('Failed to upload receipt to Vercel Blob. Please check your connection and try again.');
                     return;
                 }
             } else {
@@ -190,16 +192,22 @@ export default function DisbursementsIndex() {
                     onSuccess: () => {
                         setIsLiquidateOpen(false);
                         resetLiquidation();
+                        toast.success('Disbursement liquidated successfully.');
                     }
                 });
                 return;
             }
+        } else if (is_vercel) {
+            // Optional: You might want to require a file on Vercel if you expect one
+            // toast.error('Please upload a scan of the receipt.');
+            // return;
         }
 
         router.post(route('finance.disbursements.liquidate', selectedPayment.id), payload, {
             onSuccess: () => {
                 setIsLiquidateOpen(false);
                 resetLiquidation();
+                toast.success('Disbursement liquidated successfully.');
             }
         });
     };

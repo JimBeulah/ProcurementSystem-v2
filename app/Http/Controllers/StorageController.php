@@ -20,6 +20,11 @@ class StorageController extends Controller
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
+        $token = config('services.vercel_blob.token');
+        if (!$token) {
+            return response()->json(['error' => 'Vercel Blob token not configured'], 500);
+        }
+
         $body = $request->json()->all();
         $type = $body['type'] ?? '';
 
@@ -27,10 +32,7 @@ class StorageController extends Controller
             $payload = $body['payload'];
             $pathname = $payload['pathname'];
             
-            $clientToken = $this->generateClientToken(
-                config('services.vercel_blob.token'),
-                $pathname
-            );
+            $clientToken = $this->generateClientToken($token, $pathname);
 
             return response()->json([
                 'type' => 'blob.generate-client-token',
@@ -48,7 +50,12 @@ class StorageController extends Controller
     private function generateClientToken(string $readWriteToken, string $pathname): string
     {
         $parts = explode('_', $readWriteToken);
-        $storeId = $parts[2] ?? '';
+        // Vercel Blob tokens look like: vercel_blob_rw_<storeId>_<token>
+        // Index 0: vercel, 1: blob, 2: rw, 3: storeId, 4+: token
+        $storeId = $parts[3] ?? '';
+        
+        // Reconstruct the token secret part (everything after the storeId)
+        $tokenSecret = implode('_', array_slice($parts, 4));
 
         $validUntil = (time() + 3600) * 1000; // 1 hour in milliseconds
 
@@ -58,7 +65,7 @@ class StorageController extends Controller
         ];
 
         $encodedPayload = base64_encode(json_encode($payloadData));
-        $signature = hash_hmac('sha256', $encodedPayload, $readWriteToken);
+        $signature = hash_hmac('sha256', $encodedPayload, $tokenSecret);
         
         $tokenData = base64_encode($signature . '.' . $encodedPayload);
         
