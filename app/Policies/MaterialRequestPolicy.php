@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\MaterialRequestStatus;
 use App\Models\MaterialRequest;
 use App\Models\Project;
 use App\Models\User;
@@ -72,6 +73,6 @@ class MaterialRequestPolicy
     {
         // Admins and PMs are already covered by before() returning true.
         // For others (Site Engineers), check if they are the requester and it's pending.
-        return $materialRequest->requester_id === $user->id && $materialRequest->status === 'PENDING';
+        return $materialRequest->requester_id === $user->id && $materialRequest->status === MaterialRequestStatus::PENDING;
     }
 }

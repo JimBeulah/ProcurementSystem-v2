@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\MaterialRequestStatus;
 use App\Http\Requests\StoreMaterialRequestRequest;
 use App\Models\BoqItem;
 use App\Models\InventoryItem;
@@ -97,7 +98,7 @@ class MaterialRequestController extends Controller
     {
         $this->authorize('approve', $materialRequest);
 
-        if ($materialRequest->status !== 'PENDING') {
+        if ($materialRequest->status !== MaterialRequestStatus::PENDING) {
             return redirect()->back()->with('error', 'This request has already been processed.');
         }
 
@@ -113,7 +114,7 @@ class MaterialRequestController extends Controller
     {
         $this->authorize('reject', $materialRequest);
 
-        if ($materialRequest->status !== 'PENDING') {
+        if ($materialRequest->status !== MaterialRequestStatus::PENDING) {
             return redirect()->back()->with('error', 'This request has already been processed.');
         }
 
@@ -126,7 +127,7 @@ class MaterialRequestController extends Controller
     {
         $this->authorize('cancel', $materialRequest);
 
-        if ($materialRequest->status !== 'PENDING') {
+        if ($materialRequest->status !== MaterialRequestStatus::PENDING) {
             return redirect()->back()->with('error', 'Only pending requests can be cancelled.');
         }
 

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\PurchaseOrderStatus;
 use App\Models\Disbursement;
 use App\Models\FinancialTransaction;
 use App\Models\PurchaseOrder;
@@ -33,7 +34,7 @@ class FinanceService
             if (! empty($validated['purchase_order_id'])) {
                 $po = PurchaseOrder::find($validated['purchase_order_id']);
                 if ($po) {
-                    if ($po->status !== 'APPROVED') {
+                    if ($po->status !== PurchaseOrderStatus::APPROVED) {
                         throw new \Exception('Disbursement cannot be processed. Purchase Order must be APPROVED.');
                     }
 
