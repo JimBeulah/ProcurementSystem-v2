@@ -68,7 +68,9 @@ export default function DisbursementsIndex() {
             cell: ({ row }) => (
                 <div className="text-xs">
                     <span className="font-medium text-slate-700 dark:text-slate-300">{row.original.method}</span>
-                    <div className="text-slate-400 text-[10px]">Ref: {row.original.reference_number}</div>
+                    {row.original.reference_number && (
+                        <div className="text-slate-400 text-[10px]">Ref: {row.original.reference_number}</div>
+                    )}
                 </div>
             ),
         },
@@ -246,7 +248,9 @@ export default function DisbursementsIndex() {
                 title={
                     <div className="flex flex-col">
                         <span className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Disbursement Details</span>
-                        <span className="text-xs text-slate-500 font-mono">Ref: {viewItem?.reference_number}</span>
+                        {viewItem?.reference_number && (
+                            <span className="text-xs text-slate-500 font-mono">Ref: {viewItem.reference_number}</span>
+                        )}
                     </div>
                 }
             >
@@ -405,17 +409,28 @@ export default function DisbursementsIndex() {
                     </div>
                     <div>
                         <label className="text-xs text-slate-500 uppercase font-bold mb-1 block">Payment Method</label>
-                        <select className={inputCls} value={method} onChange={e => setMethod(e.target.value)}>
+                        <select className={inputCls} value={method} onChange={e => {
+                            setMethod(e.target.value);
+                            if (e.target.value === 'CASH') setReference('');
+                        }}>
                             <option value="CHECK">Check</option>
                             <option value="CASH">Cash</option>
                             <option value="BANK_TRANSFER">Bank Transfer</option>
                             <option value="GCASH">GCash</option>
                         </select>
                     </div>
-                    <div>
-                        <label className="text-xs text-slate-500 uppercase font-bold mb-1 block">Reference / Check No.</label>
-                        <input className={inputCls} value={reference} onChange={e => setReference(e.target.value)} required placeholder="e.g. C-123456" />
-                    </div>
+                    {method !== 'CASH' && (
+                        <div>
+                            <label className="text-xs text-slate-500 uppercase font-bold mb-1 block">Reference / Check No.</label>
+                            <input 
+                                className={inputCls} 
+                                value={reference} 
+                                onChange={e => setReference(e.target.value)} 
+                                required={method !== 'CASH'} 
+                                placeholder="e.g. C-123456" 
+                            />
+                        </div>
+                    )}
                     <div className="pt-2">
                         <button type="submit" className="bg-red-600 hover:bg-red-500 text-white px-8 py-2.5 rounded-lg font-bold flex items-center gap-2 w-full justify-center transition-colors">
                             <Save size={18} /> Process Disbursement
@@ -431,7 +446,9 @@ export default function DisbursementsIndex() {
                         <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-lg mb-4">
                             <div className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">Liquidating Payment</div>
                             <div className="text-lg font-bold text-slate-900 dark:text-white">₱{Number(selectedPayment.amount).toLocaleString()}</div>
-                            <div className="text-xs text-slate-500">Ref: {selectedPayment.reference_number}</div>
+                            {selectedPayment.reference_number && (
+                                <div className="text-xs text-slate-500">Ref: {selectedPayment.reference_number}</div>
+                            )}
                         </div>
 
                         <div>

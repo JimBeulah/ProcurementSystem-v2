@@ -18,7 +18,7 @@ class StoreDisbursementRequest extends FormRequest
             'received_by_id' => 'nullable|integer|exists:users,id',
             'amount' => 'required|numeric|min:0',
             'method' => 'required|string|max:100',
-            'reference_number' => 'required|string|max:255',
+            'reference_number' => 'required_unless:method,CASH|nullable|string|max:255',
         ];
     }
 }
