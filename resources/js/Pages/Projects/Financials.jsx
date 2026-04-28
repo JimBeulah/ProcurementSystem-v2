@@ -1,10 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
 import { Briefcase, ArrowLeft, Printer } from 'lucide-react';
 import IncomeStatement from '@/Components/Finance/IncomeStatement';
+import PdfPreviewModal from '@/Components/UI/PdfPreviewModal';
 
 export default function ProjectFinancials({ project, financialData }) {
+    const [previewUrl, setPreviewUrl] = useState(null);
+
+    const handlePrint = () => {
+        const url = route('finance.reports.print', { project_id: project.id });
+        setPreviewUrl(url);
+    };
+
     return (
         <AuthenticatedLayout>
             <Head title={`Financials - ${project.name}`} />
@@ -28,7 +36,7 @@ export default function ProjectFinancials({ project, financialData }) {
                     </div>
 
                     <button
-                        onClick={() => window.print()}
+                        onClick={handlePrint}
                         className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all shadow-sm active:scale-95"
                     >
                         <Printer size={18} /> Print Statement
@@ -40,22 +48,12 @@ export default function ProjectFinancials({ project, financialData }) {
                 </div>
             </div>
 
-            <style dangerouslySetInnerHTML={{
-                __html: `
-                @media print {
-                    header, nav, .no-print {
-                        display: none !important;
-                    }
-                    body {
-                        background: white !important;
-                    }
-                    .max-w-7xl {
-                        max-width: 100% !important;
-                        padding: 0 !important;
-                        margin: 0 !important;
-                    }
-                }
-            `}} />
+            <PdfPreviewModal
+                isOpen={!!previewUrl}
+                onClose={() => setPreviewUrl(null)}
+                url={previewUrl}
+                title={`Financial Report - ${project.name}`}
+            />
         </AuthenticatedLayout>
     );
 }

@@ -81,8 +81,15 @@ class FinanceController extends Controller
     public function print(Request $request)
     {
         $projectId = $request->input('project_id');
-        $pdf = $this->reportService->generatePdf($projectId);
 
+        if ($projectId) {
+            $project = \App\Models\Project::findOrFail($projectId);
+            $this->authorize('view', $project);
+        } else {
+            $this->authorize('view financial reports');
+        }
+
+        $pdf = $this->reportService->generatePdf($projectId);
         $filename = $projectId ? 'Project-Report-'.$projectId : 'Aggregate-Finance-Report';
 
         return $pdf->stream($filename.'.pdf');

@@ -143,7 +143,7 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
     Route::get('/finance/invoices', [FinanceController::class, 'invoices'])->name('finance.invoices')->middleware('can:view invoices');
     Route::get('/finance/disbursements', [FinanceController::class, 'disbursements'])->name('finance.disbursements')->middleware('can:view disbursements');
     Route::get('/finance/reports', [FinanceController::class, 'reports'])->name('finance.reports')->middleware('can:view financial reports');
-    Route::get('/finance/reports/print', [FinanceController::class, 'print'])->name('finance.reports.print')->middleware('can:view financial reports');
+    Route::get('/finance/reports/print', [FinanceController::class, 'print'])->name('finance.reports.print');
 
     // Finance Actions
     Route::middleware(['can:manage invoices'])->group(function () {
