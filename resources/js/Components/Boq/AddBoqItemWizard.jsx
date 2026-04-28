@@ -33,6 +33,18 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
         setErrors({});
     }, []);
 
+    const formatWithCommas = (value) => {
+        if (value === null || value === undefined || value === '') return '';
+        const stringValue = value.toString();
+        const parts = stringValue.split('.');
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return parts.join('.');
+    };
+
+    const stripCommas = (value) => {
+        return value.toString().replace(/,/g, '');
+    };
+
     // Validation
     const validateStep = useCallback((s) => {
         const errs = {};
@@ -132,8 +144,12 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
         }));
     };
 
-    const updateComponent = (index, field, value) => {
+    const updateComponent = (index, field, rawValue) => {
         const newComponents = [...item.components];
+        const value = ['quantityFactor', 'clientUnitRate', 'altapilUnitRate', 'noOfPersons', 'hours'].includes(field) 
+            ? stripCommas(rawValue) 
+            : rawValue;
+            
         const comp = { ...newComponents[index], [field]: value };
 
         if (comp.resourceType !== 'MATERIAL') {
@@ -237,12 +253,15 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                         <div>
                             <label className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-black mb-1 block ml-1">Quantity</label>
                             <input
-                                type="number" step="0.01"
+                                type="text"
                                 className={`w-full bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl shadow-sm border rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all ${errors.quantity ? 'border-red-500/60 focus:ring-red-500/30' : 'border-slate-200/80 dark:border-slate-700/80'}`}
-                                value={item.quantity || ''}
+                                value={formatWithCommas(item.quantity)}
                                 onChange={e => {
-                                    setItem(prev => ({ ...prev, quantity: parseFloat(e.target.value) }));
-                                    if (errors.quantity) setErrors(prev => { const n = { ...prev }; delete n.quantity; return n; });
+                                    const stripped = stripCommas(e.target.value);
+                                    if (stripped === '' || /^\d*\.?\d*$/.test(stripped)) {
+                                        setItem(prev => ({ ...prev, quantity: stripped }));
+                                        if (errors.quantity) setErrors(prev => { const n = { ...prev }; delete n.quantity; return n; });
+                                    }
                                 }}
                             />
                             {errors.quantity && <p className="text-[10px] text-red-500 mt-1 font-bold">{errors.quantity}</p>}
@@ -334,23 +353,33 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                                             <div>
                                                 <label className="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-1 block text-center">P</label>
                                                 <input
-                                                    type="number"
+                                                    type="text"
                                                     title="No. of Persons"
                                                     placeholder="P"
                                                     className="w-full bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700/80 rounded shadow-sm p-1.5 text-xs text-slate-900 dark:text-white outline-none text-center focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
-                                                    value={comp.noOfPersons || ''}
-                                                    onChange={e => updateComponent(idx, 'noOfPersons', e.target.value)}
+                                                    value={formatWithCommas(comp.noOfPersons)}
+                                                    onChange={e => {
+                                                        const stripped = stripCommas(e.target.value);
+                                                        if (stripped === '' || /^\d*\.?\d*$/.test(stripped)) {
+                                                            updateComponent(idx, 'noOfPersons', stripped);
+                                                        }
+                                                    }}
                                                 />
                                             </div>
                                             <div>
                                                 <label className="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-1 block text-center">H</label>
                                                 <input
-                                                    type="number"
+                                                    type="text"
                                                     title="No. of Hours"
                                                     placeholder="H"
                                                     className="w-full bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700/80 rounded shadow-sm p-1.5 text-xs text-slate-900 dark:text-white outline-none text-center focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
-                                                    value={comp.hours || ''}
-                                                    onChange={e => updateComponent(idx, 'hours', e.target.value)}
+                                                    value={formatWithCommas(comp.hours)}
+                                                    onChange={e => {
+                                                        const stripped = stripCommas(e.target.value);
+                                                        if (stripped === '' || /^\d*\.?\d*$/.test(stripped)) {
+                                                            updateComponent(idx, 'hours', stripped);
+                                                        }
+                                                    }}
                                                 />
                                             </div>
                                         </>
@@ -358,31 +387,46 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                                     <div>
                                         <label className="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-1 block text-center">Factor</label>
                                         <input
-                                            type="number" step="0.0001"
+                                            type="text"
                                             placeholder="Qty Factor"
                                             className="w-full bg-slate-100/50 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 rounded shadow-sm p-1.5 text-xs text-slate-900 dark:text-white outline-none text-center focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-mono"
-                                            value={comp.quantityFactor || ''}
-                                            onChange={e => updateComponent(idx, 'quantityFactor', e.target.value)}
+                                            value={formatWithCommas(comp.quantityFactor)}
+                                            onChange={e => {
+                                                const stripped = stripCommas(e.target.value);
+                                                if (stripped === '' || /^\d*\.?\d*$/.test(stripped)) {
+                                                    updateComponent(idx, 'quantityFactor', stripped);
+                                                }
+                                            }}
                                         />
                                     </div>
                                     <div>
                                         <label className="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-1 block text-right pr-1">Client Rate</label>
                                         <input
-                                            type="number" step="0.01"
+                                            type="text"
                                             placeholder="0.00"
                                             className="w-full bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700/80 rounded shadow-sm p-1.5 text-xs text-slate-900 dark:text-white outline-none text-right focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-mono"
-                                            value={comp.clientUnitRate || ''}
-                                            onChange={e => updateComponent(idx, 'clientUnitRate', e.target.value)}
+                                            value={formatWithCommas(comp.clientUnitRate)}
+                                            onChange={e => {
+                                                const stripped = stripCommas(e.target.value);
+                                                if (stripped === '' || /^\d*\.?\d*$/.test(stripped)) {
+                                                    updateComponent(idx, 'clientUnitRate', stripped);
+                                                }
+                                            }}
                                         />
                                     </div>
                                     <div>
                                         <label className="text-[9px] text-blue-600 dark:text-blue-400 uppercase font-black mb-1 block text-right pr-1 drop-shadow-sm">Altapil Rate</label>
                                         <input
-                                            type="number" step="0.01"
+                                            type="text"
                                             placeholder="0.00"
                                             className="w-full bg-blue-50/50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700/50 rounded shadow-sm p-1.5 text-xs text-slate-900 dark:text-white outline-none text-right focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-mono font-bold"
-                                            value={comp.altapilUnitRate || ''}
-                                            onChange={e => updateComponent(idx, 'altapilUnitRate', e.target.value)}
+                                            value={formatWithCommas(comp.altapilUnitRate)}
+                                            onChange={e => {
+                                                const stripped = stripCommas(e.target.value);
+                                                if (stripped === '' || /^\d*\.?\d*$/.test(stripped)) {
+                                                    updateComponent(idx, 'altapilUnitRate', stripped);
+                                                }
+                                            }}
                                         />
                                     </div>
                                     <div className="flex items-end justify-center pt-[22px]">

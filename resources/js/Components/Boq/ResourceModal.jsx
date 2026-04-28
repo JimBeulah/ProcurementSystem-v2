@@ -14,6 +14,25 @@ export default function ResourceModal({
 }) {
     if (!data) return null;
 
+    const formatWithCommas = (value) => {
+        if (value === null || value === undefined || value === '') return '';
+        const stringValue = value.toString();
+        const parts = stringValue.split('.');
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return parts.join('.');
+    };
+
+    const stripCommas = (value) => {
+        return value.toString().replace(/,/g, '');
+    };
+
+    const handleNumericChange = (field, value) => {
+        const stripped = stripCommas(value);
+        if (stripped === '' || /^\d*\.?\d*$/.test(stripped)) {
+            setData({ ...data, [field]: stripped });
+        }
+    };
+
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={`${mode === 'add' ? 'Add' : 'Edit'} Resource`}>
             <form onSubmit={onSubmit} className="space-y-5">
@@ -66,11 +85,10 @@ export default function ResourceModal({
                         <div className="relative">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₱</span>
                             <input
-                                type="number"
-                                step="0.01"
+                                type="text"
                                 required
-                                value={data.client_unit_rate !== undefined ? data.client_unit_rate : (data.unit_rate || '')}
-                                onChange={e => setData({ ...data, client_unit_rate: e.target.value })}
+                                value={formatWithCommas(data.client_unit_rate !== undefined ? data.client_unit_rate : (data.unit_rate || ''))}
+                                onChange={e => handleNumericChange('client_unit_rate', e.target.value)}
                                 className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-8 pr-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all font-mono"
                             />
                         </div>
@@ -80,10 +98,9 @@ export default function ResourceModal({
                         <div className="relative">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-300">₱</span>
                             <input
-                                type="number"
-                                step="0.01"
-                                value={data.altapil_unit_rate || ''}
-                                onChange={e => setData({ ...data, altapil_unit_rate: e.target.value })}
+                                type="text"
+                                value={formatWithCommas(data.altapil_unit_rate)}
+                                onChange={e => handleNumericChange('altapil_unit_rate', e.target.value)}
                                 className="w-full bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-900/30 rounded-xl pl-8 pr-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-orange-500 transition-all font-mono"
                             />
                         </div>
@@ -96,11 +113,10 @@ export default function ResourceModal({
                                 Quantity Factor
                             </label>
                             <input
-                                type="number"
-                                step="0.0001"
+                                type="text"
                                 required
-                                value={data.quantity_factor || ''}
-                                onChange={e => setData({ ...data, quantity_factor: e.target.value })}
+                                value={formatWithCommas(data.quantity_factor)}
+                                onChange={e => handleNumericChange('quantity_factor', e.target.value)}
                                 className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all font-mono"
                             />
                         </div>
@@ -108,23 +124,21 @@ export default function ResourceModal({
                         <>
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">No. of Persons</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
+                                 <input
+                                    type="text"
                                     required
-                                    value={data.no_of_persons !== undefined ? data.no_of_persons : ''}
-                                    onChange={e => setData({ ...data, no_of_persons: e.target.value })}
+                                    value={formatWithCommas(data.no_of_persons !== undefined ? data.no_of_persons : '')}
+                                    onChange={e => handleNumericChange('no_of_persons', e.target.value)}
                                     className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all font-mono"
                                 />
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Hours</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
+                                 <input
+                                    type="text"
                                     required
-                                    value={data.hours !== undefined ? data.hours : ''}
-                                    onChange={e => setData({ ...data, hours: e.target.value })}
+                                    value={formatWithCommas(data.hours !== undefined ? data.hours : '')}
+                                    onChange={e => handleNumericChange('hours', e.target.value)}
                                     className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all font-mono"
                                 />
                             </div>

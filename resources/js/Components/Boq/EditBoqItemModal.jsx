@@ -12,6 +12,25 @@ export default function EditBoqItemModal({
 }) {
     if (!item) return null;
 
+    const formatWithCommas = (value) => {
+        if (value === null || value === undefined || value === '') return '';
+        const stringValue = value.toString();
+        const parts = stringValue.split('.');
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return parts.join('.');
+    };
+
+    const stripCommas = (value) => {
+        return value.toString().replace(/,/g, '');
+    };
+
+    const handleNumericChange = (field, value) => {
+        const stripped = stripCommas(value);
+        if (stripped === '' || /^\d*\.?\d*$/.test(stripped)) {
+            setItem({ ...item, [field]: stripped });
+        }
+    };
+
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Edit BOQ Item">
             <form onSubmit={onSubmit} className="space-y-5">
@@ -39,11 +58,10 @@ export default function EditBoqItemModal({
                     <div>
                         <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Quantity</label>
                         <input
-                            type="number"
-                            step="0.0001"
+                            type="text"
                             required
-                            value={item.quantity || ''}
-                            onChange={e => setItem({ ...item, quantity: e.target.value })}
+                            value={formatWithCommas(item.quantity)}
+                            onChange={e => handleNumericChange('quantity', e.target.value)}
                             className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all shadow-sm"
                         />
                     </div>
@@ -55,10 +73,9 @@ export default function EditBoqItemModal({
                             <div className="relative">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₱</span>
                                 <input
-                                    type="number"
-                                    step="0.01"
-                                    value={item.material_unit_price || ''}
-                                    onChange={e => setItem({ ...item, material_unit_price: e.target.value })}
+                                    type="text"
+                                    value={formatWithCommas(item.material_unit_price)}
+                                    onChange={e => handleNumericChange('material_unit_price', e.target.value)}
                                     className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-8 pr-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all shadow-sm"
                                 />
                             </div>
@@ -68,10 +85,9 @@ export default function EditBoqItemModal({
                             <div className="relative">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₱</span>
                                 <input
-                                    type="number"
-                                    step="0.01"
-                                    value={item.labor_unit_price || ''}
-                                    onChange={e => setItem({ ...item, labor_unit_price: e.target.value })}
+                                    type="text"
+                                    value={formatWithCommas(item.labor_unit_price)}
+                                    onChange={e => handleNumericChange('labor_unit_price', e.target.value)}
                                     className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-8 pr-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all shadow-sm"
                                 />
                             </div>

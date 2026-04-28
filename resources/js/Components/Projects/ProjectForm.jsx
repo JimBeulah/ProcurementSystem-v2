@@ -56,17 +56,29 @@ export default function ProjectForm({
                     <Select value={data.site_engineer_id} onChange={val => setData('site_engineer_id', val)} options={(siteEngineers || []).map(u => ({ value: u.id.toString(), label: u.name }))} placeholder="Unassigned" icon={UserCog} />
                     {errors.site_engineer_id && <div className="text-red-500 text-[10px] mt-1 uppercase font-bold">{errors.site_engineer_id}</div>}
                 </div>
-                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className={`md:col-span-2 ${isEditing ? 'grid grid-cols-1 sm:grid-cols-2' : ''} gap-4`}>
                     <div>
                         <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Project Type</label>
                         <Select value={data.project_type} onChange={val => setData('project_type', val)} options={[{ value: "BUILDING", label: "BUILDING" }, { value: "INFRASTRUCTURE", label: "INFRASTRUCTURE" }, { value: "MAINTENANCE", label: "MAINTENANCE" }]} icon={Layers} />
                         {errors.project_type && <div className="text-red-500 text-[10px] mt-1 uppercase font-bold">{errors.project_type}</div>}
                     </div>
-                    <div>
-                        <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Status</label>
-                        <Select value={data.status} onChange={val => setData('status', val)} options={[{ value: "ACTIVE", label: "ACTIVE" }, { value: "ON_HOLD", label: "ON HOLD" }, { value: "WARRANTY_PERIOD", label: "WARRANTY PERIOD" }, { value: "COMPLETED", label: "COMPLETED" }]} />
-                        {errors.status && <div className="text-red-500 text-[10px] mt-1 uppercase font-bold">{errors.status}</div>}
-                    </div>
+                    {isEditing && (
+                        <div>
+                            <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Status</label>
+                            <Select 
+                                value={data.status} 
+                                onChange={val => setData('status', val)} 
+                                options={[
+                                    { value: "PLANNING", label: "PLANNING" },
+                                    { value: "ACTIVE", label: "ACTIVE" }, 
+                                    { value: "ON_HOLD", label: "ON HOLD" }, 
+                                    { value: "WARRANTY_PERIOD", label: "WARRANTY PERIOD" }, 
+                                    { value: "COMPLETED", label: "COMPLETED" }
+                                ]} 
+                            />
+                            {errors.status && <div className="text-red-500 text-[10px] mt-1 uppercase font-bold">{errors.status}</div>}
+                        </div>
+                    )}
                 </div>
                 <div>
                     <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Budget (PhP)</label>
