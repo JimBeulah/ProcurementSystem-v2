@@ -17,10 +17,10 @@ export const downloadBoqTemplate = (project) => {
     ];
     const examples = [
         'ITEM,Concreting Works,lot,1.00,,,NO,,,,',
-        'RESOURCE,Portland Cement,,,,,MATERIAL,9.00,,230.00',
-        'RESOURCE,Washed Sand,,,,,MATERIAL,0.50,,850.00',
-        'RESOURCE,Foreman,,,,,LABOR,8.00,1.00,85.00',
-        'RESOURCE,Skilled Labor,,,,,LABOR,8.00,2.00,65.00'
+        'RESOURCE,Portland Cement,,,,,,MATERIAL,9.00,,230.00',
+        'RESOURCE,Washed Sand,,,,,,MATERIAL,0.50,,850.00',
+        'RESOURCE,Foreman,,,,,,LABOR,8.00,1.00,85.00',
+        'RESOURCE,Skilled Labor,,,,,,LABOR,8.00,2.00,65.00'
     ];
     const csvContent = [headers.join(','), ...instructions.map(i => `"${i}",,,,,,,,,,`), ...examples].join('\n');
     const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8' });
@@ -69,6 +69,7 @@ export const parseBoqCsv = (file) => {
                         currentItem.components.push({
                             resourceType: cols[7].toUpperCase(),
                             name: cols[1],
+                            unit: cols[2] || '',
                             quantityFactor: parseFloat(cols[8] || 0),
                             noOfPersons: parseFloat(cols[9] || 1),
                             hours: parseFloat(cols[8] || 0), // Use same col for hours if Labor
