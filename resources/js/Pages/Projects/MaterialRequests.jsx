@@ -86,7 +86,6 @@ export default function ProjectMaterialRequests() {
         router.post(`/projects/${project.id}/material-requests`, data, {
             onSuccess: () => { 
                 setShowModal(false); 
-                toast.success('Material request submitted successfully.');
             },
             onFinish: () => setSubmitting(false),
         });
@@ -161,7 +160,6 @@ export default function ProjectMaterialRequests() {
                                     setShowDrawer(false);
                                     setShowCancelModal(false);
                                     setMrToCancel(null);
-                                    toast.success('Material request cancelled successfully.');
                                 }
                             });
                         }
