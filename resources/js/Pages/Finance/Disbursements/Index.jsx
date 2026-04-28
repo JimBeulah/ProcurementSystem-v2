@@ -193,7 +193,6 @@ export default function DisbursementsIndex() {
                     onSuccess: () => {
                         setIsLiquidateOpen(false);
                         resetLiquidation();
-                        toast.success('Disbursement liquidated successfully.');
                     }
                 });
                 return;
@@ -208,7 +207,6 @@ export default function DisbursementsIndex() {
             onSuccess: () => {
                 setIsLiquidateOpen(false);
                 resetLiquidation();
-                toast.success('Disbursement liquidated successfully.');
             }
         });
     };
