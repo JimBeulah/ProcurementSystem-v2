@@ -62,7 +62,7 @@ export default function Dashboard() {
                             <div className="p-2">
                                 {(stats?.recentActivities || [
                                     { id: 1, title: 'New Purchase Order Created', code: 'PO-2026-001', time: 'Just now', type: 'po' },
-                                    { id: 2, title: 'Material Request Approved', code: 'MR-2026-005', time: '2h ago', type: 'mr' },
+                                    { id: 2, title: 'Resource Request Approved', code: 'RQ-2026-005', time: '2h ago', type: 'mr' },
                                     { id: 3, title: 'Delivery Received', code: 'RR-2026-003', time: '4h ago', type: 'delivery' },
                                     { id: 4, title: 'Invoice Processed', code: 'INV-2026-012', time: 'Yesterday', type: 'invoice' },
                                 ]).map((activity, index) => (

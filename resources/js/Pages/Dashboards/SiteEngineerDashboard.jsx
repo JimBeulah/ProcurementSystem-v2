@@ -12,7 +12,7 @@ export default function SiteEngineerDashboard({ stats }) {
             <div className="space-y-6">
                 <WelcomeBanner 
                     stats={{
-                        message: `You have ${stats?.pendingMRs || 0} material requests pending and ${stats?.pendingSiteReleases || 0} releases to confirm.`
+                        message: `You have ${stats?.pendingMRs || 0} resource requests pending and ${stats?.pendingSiteReleases || 0} releases to confirm.`
                     }} 
                 />
 
@@ -25,7 +25,7 @@ export default function SiteEngineerDashboard({ stats }) {
                         color="from-blue-500/10 to-transparent"
                     />
                     <StatCard
-                        title="My Material Requests"
+                        title="My Resource Requests"
                         value={stats?.myMRs?.toString() || '0'}
                         icon={<FileText className="text-orange-500" size={20} />}
                         trend={stats?.pendingMRs > 0 ? `${stats.pendingMRs} Pending` : undefined}
@@ -66,7 +66,7 @@ export default function SiteEngineerDashboard({ stats }) {
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                         {[
                             { label: 'My Projects', href: '/projects', icon: <Briefcase size={18} />, color: 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' },
-                            { label: 'Material Requests', href: '/projects', icon: <FileText size={18} />, color: 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' },
+                            { label: 'Resource Requests', href: '/projects', icon: <FileText size={18} />, color: 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400' },
                             { label: 'Site Releases', href: '/site-release', icon: <Truck size={18} />, color: 'bg-teal-50 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400' },
                         ].map((action) => (
                             <a key={action.label} href={action.href} className={`flex flex-col items-center gap-2 p-4 rounded-2xl ${action.color} hover:opacity-80 transition-opacity text-center`}>

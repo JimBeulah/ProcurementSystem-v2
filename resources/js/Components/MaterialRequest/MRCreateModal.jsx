@@ -117,7 +117,7 @@ export default function MRCreateModal({
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="New Material Request" maxWidth="max-w-6xl">
+        <Modal isOpen={isOpen} onClose={onClose} title="New Resource Request" maxWidth="max-w-6xl">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <div className="lg:col-span-5 flex flex-col gap-4">
                     <div className="bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-700 rounded-lg p-4">

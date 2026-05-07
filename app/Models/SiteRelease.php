@@ -8,9 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class SiteRelease extends Model
 {
     public const STATUS_AWAITING_APPROVAL = 'AWAITING_APPROVAL';
+
     public const STATUS_PENDING = 'PENDING';
+
     public const STATUS_IN_TRANSIT = 'IN_TRANSIT';
+
     public const STATUS_RECEIVED = 'RECEIVED';
+
     public const STATUS_CANCELLED = 'CANCELLED';
 
     protected $fillable = [

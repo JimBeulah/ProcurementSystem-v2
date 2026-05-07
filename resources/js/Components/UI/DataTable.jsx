@@ -63,6 +63,7 @@ export function DataTable({
         ];
     }, [columns, enableSelection]);
 
+    // eslint-disable-next-line react-hooks/incompatible-library
     const table = useReactTable({
         data,
         columns: tableColumns,

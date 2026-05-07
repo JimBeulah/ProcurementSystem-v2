@@ -85,7 +85,7 @@ class FinanceFormController extends Controller
         if ($request->hasFile('receipt_file')) {
             $path = $request->file('receipt_file')->store('receipts', 'public');
             $validated['receipt_path'] = $path;
-        } elseif (!empty($validated['receipt_url'])) {
+        } elseif (! empty($validated['receipt_url'])) {
             $validated['receipt_path'] = $validated['receipt_url'];
         }
 

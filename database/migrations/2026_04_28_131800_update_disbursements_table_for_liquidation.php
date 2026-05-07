@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -18,7 +18,7 @@ return new class extends Migration
         if (DB::getDriverName() === 'pgsql') {
             // Drop old check constraint
             DB::statement('ALTER TABLE disbursements DROP CONSTRAINT IF EXISTS disbursements_method_check');
-            
+
             // Re-add with expanded options
             DB::statement("ALTER TABLE disbursements ADD CONSTRAINT disbursements_method_check CHECK (method IN ('CASH', 'CHECK', 'ONLINE', 'BANK_TRANSFER', 'GCASH'))");
         }

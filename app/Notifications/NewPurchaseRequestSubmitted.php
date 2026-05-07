@@ -24,7 +24,7 @@ class NewPurchaseRequestSubmitted extends Notification
         $id = str_pad($this->purchaseRequest->id, 5, '0', STR_PAD_LEFT);
 
         return [
-            'message' => "A new Material Request (PR-{$id}) has been submitted and awaits your review.",
+            'message' => "A new Resource Request (RQ-{$id}) has been submitted and awaits your review.",
             'url' => route('purchasing.requests.index', [], false),
         ];
     }

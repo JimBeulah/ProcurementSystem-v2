@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Disbursement;
+use App\Models\Project;
 use App\Models\PurchaseOrder;
 use App\Models\ReceivingReport;
 use App\Models\Supplier;
@@ -83,7 +84,7 @@ class FinanceController extends Controller
         $projectId = $request->input('project_id');
 
         if ($projectId) {
-            $project = \App\Models\Project::findOrFail($projectId);
+            $project = Project::findOrFail($projectId);
             $this->authorize('view', $project);
         } else {
             $this->authorize('view financial reports');

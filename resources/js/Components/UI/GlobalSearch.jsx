@@ -167,7 +167,7 @@ export default function GlobalSearch({ isOpen, onClose }) {
                                                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-foreground hover:bg-black/[0.04] dark:hover:bg-white/[0.06] data-[selected='true']:bg-blue-600 data-[selected='true']:text-white cursor-pointer transition-colors group"
                                                 >
                                                     <FileText size={16} className="text-muted-foreground group-data-[selected='true']:text-white transition-colors" />
-                                                    Material Requests
+                                                    Resource Requests
                                                 </Command.Item>
                                             )}
                                             {hasPermission('view purchase requests') && (

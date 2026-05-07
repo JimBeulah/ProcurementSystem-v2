@@ -23,7 +23,7 @@ export default function MRDetailsDrawer({ isOpen, onClose, selectedMr, onCancel 
         <Drawer
             isOpen={isOpen}
             onClose={onClose}
-            title={`MR-${selectedMr.id.toString().padStart(5, '0')} Details`}
+            title={`RQ-${selectedMr.id.toString().padStart(5, '0')} Details`}
         >
             <div className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">

@@ -86,8 +86,8 @@ export default function ApprovalsIndex() {
     const mrColumns = useMemo(() => [
         {
             accessorKey: 'id',
-            header: 'MR No.',
-            cell: ({ row }) => <span className="font-bold text-slate-900 dark:text-white">MR-{row.original.id.toString().padStart(4, '0')}</span>,
+            header: 'RQ No.',
+            cell: ({ row }) => <span className="font-bold text-slate-900 dark:text-white">RQ-{row.original.id.toString().padStart(5, '0')}</span>,
         },
         {
             accessorKey: 'project.name',
@@ -198,7 +198,7 @@ export default function ApprovalsIndex() {
             <div className="max-w-7xl mx-auto space-y-6">
 
                 <div className="flex border-b border-slate-200 dark:border-slate-700">
-                    <TabBtn id="mr" label="Material Requests" count={mrs.length} activeTab={tab} setTab={setTab} />
+                    <TabBtn id="mr" label="Resource Requests" count={mrs.length} activeTab={tab} setTab={setTab} />
                     <TabBtn id="po" label="Purchase Orders" count={pos.length} activeTab={tab} setTab={setTab} />
                 </div>
 
@@ -243,7 +243,7 @@ export default function ApprovalsIndex() {
             <Drawer 
                 isOpen={isDrawerOpen} 
                 onClose={() => setIsDrawerOpen(false)} 
-                title={drawerType === 'mr' ? 'Material Request Details' : 'Purchase Order Details'}
+                title={drawerType === 'mr' ? 'Resource Request Details' : 'Purchase Order Details'}
             >
                 {selectedItem && (
                     <div className="space-y-5 pb-6">
@@ -253,7 +253,7 @@ export default function ApprovalsIndex() {
                                     <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400">
                                         {drawerType === 'mr' ? <ClipboardList size={18} /> : <FileText size={18} />}
                                     </div>
-                                    {drawerType === 'mr' ? 'MR' : 'PO'}-{selectedItem.id.toString().padStart(4, '0')}
+                                    {drawerType === 'mr' ? 'RQ' : 'PO'}-{selectedItem.id.toString().padStart(5, '0')}
                                 </h1>
                                 <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
                                     <Clock size={12} />

@@ -76,7 +76,7 @@ class MaterialRequestController extends Controller
                     ->withProperty('violations', $violations)
                     ->log('Material Request created with Budget Override.');
 
-                return redirect()->back()->with('success', 'Material request submitted successfully with Budget Override.');
+                return redirect()->back()->with('success', 'Resource request submitted successfully with Budget Override.');
             }
 
             $itemsList = implode('; ', $violations);
@@ -91,7 +91,7 @@ class MaterialRequestController extends Controller
 
         $this->service->create($project, $validated);
 
-        return redirect()->back()->with('success', 'Material request submitted successfully.');
+        return redirect()->back()->with('success', 'Resource request submitted successfully.');
     }
 
     public function approve(MaterialRequest $materialRequest): RedirectResponse
@@ -106,7 +106,7 @@ class MaterialRequestController extends Controller
 
         return redirect()->back()->with(
             'success',
-            "Material Request MR-{$materialRequest->id} approved and Purchase Request PR-".str_pad($pr->id, 5, '0', STR_PAD_LEFT).' generated.'
+            "Resource Request RQ-{$materialRequest->id} approved and Purchase Request PR-".str_pad($pr->id, 5, '0', STR_PAD_LEFT).' generated.'
         );
     }
 
@@ -120,7 +120,7 @@ class MaterialRequestController extends Controller
 
         $this->service->reject($materialRequest, $request->input('remarks'));
 
-        return redirect()->back()->with('success', "Material Request MR-{$materialRequest->id} rejected.");
+        return redirect()->back()->with('success', "Resource Request RQ-{$materialRequest->id} rejected.");
     }
 
     public function cancel(MaterialRequest $materialRequest): RedirectResponse
@@ -133,6 +133,6 @@ class MaterialRequestController extends Controller
 
         $this->service->cancel($materialRequest);
 
-        return redirect()->back()->with('success', "Material Request MR-{$materialRequest->id} has been cancelled.");
+        return redirect()->back()->with('success', "Resource Request RQ-{$materialRequest->id} has been cancelled.");
     }
 }

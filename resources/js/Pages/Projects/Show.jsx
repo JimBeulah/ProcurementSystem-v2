@@ -57,8 +57,8 @@ export default function ProjectShow() {
             hideForSiteEngineer: true,
         },
         {
-            title: 'Material Requests',
-            description: 'Request materials from warehouse or procurement tracking.',
+            title: 'Resource Requests',
+            description: 'Request resources (Materials, Labor, Equipment) from BOQ tracking.',
             icon: Truck,
             color: 'from-blue-500 to-indigo-500',
             iconColor: 'text-blue-600 dark:text-blue-400',
@@ -119,7 +119,7 @@ export default function ProjectShow() {
             hideForSiteEngineer: true
         },
         {
-            title: 'Material Requests',
+            title: 'Resource Requests',
             value: project.material_requests?.length || 0,
             icon: <Truck size={20} className="text-blue-600 dark:text-blue-400" />,
             color: 'from-blue-500 to-indigo-500'
@@ -331,7 +331,7 @@ export default function ProjectShow() {
                                         href={`/projects/${project.id}/material-requests`}
                                         className="flex items-center justify-between p-2.5 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition-all shadow-lg shadow-blue-500/20 group"
                                     >
-                                        <span className="text-[10px] font-black uppercase tracking-widest ml-1">New Material Request</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest ml-1">New Resource Request</span>
                                         <Plus size={14} className="group-hover:rotate-90 transition-transform" />
                                     </Link>
                                     {auth.user.role === 'admin' && (

@@ -14,7 +14,7 @@ export default function ProjectManagerDashboard({ stats }) {
             <div className="space-y-4 max-w-7xl mx-auto">
                 <WelcomeBanner 
                     stats={{
-                        message: `You have ${stats?.pendingMRs || 0} pending material requests awaiting your review.`
+                        message: `You have ${stats?.pendingMRs || 0} pending resource requests awaiting your review.`
                     }} 
                 />
 
@@ -27,7 +27,7 @@ export default function ProjectManagerDashboard({ stats }) {
                         accentColor="blue"
                     />
                     <ModernStatCard
-                        title="Pending MRs"
+                        title="Pending RQs"
                         value={stats?.pendingMRs?.toString() || '0'}
                         icon={<Clock size={20} />}
                         accentColor="orange"
@@ -132,7 +132,7 @@ export default function ProjectManagerDashboard({ stats }) {
                             <h3 className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100 mb-3">Quick Actions</h3>
                             <div className="grid grid-cols-2 gap-3">
                                 <ModernQuickAction href="/projects" icon={<Package size={20} />} label="Projects" brand="blue" />
-                                <ModernQuickAction href="/purchasing/approvals" icon={<FileText size={20} />} label="MR Approvals" brand="orange" />
+                                <ModernQuickAction href="/purchasing/approvals" icon={<FileText size={20} />} label="RQ Approvals" brand="orange" />
                                 <ModernQuickAction href="/purchasing/orders" icon={<ShoppingCart size={20} />} label="Purchase Orders" brand="indigo" />
                                 <ModernQuickAction href="/finance/reports" icon={<TrendingUp size={20} />} label="Reports" brand="emerald" />
                             </div>

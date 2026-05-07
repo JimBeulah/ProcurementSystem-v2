@@ -140,7 +140,7 @@ class FinanceService
                 }
             });
         } catch (\Exception $e) {
-            \Log::error("Liquidation failed for disbursement ID: {$disbursement->id}. Error: " . $e->getMessage());
+            \Log::error("Liquidation failed for disbursement ID: {$disbursement->id}. Error: ".$e->getMessage());
             throw $e;
         }
     }

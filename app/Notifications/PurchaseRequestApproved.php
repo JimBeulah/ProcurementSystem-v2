@@ -37,7 +37,7 @@ class PurchaseRequestApproved extends Notification
         $id = str_pad($this->purchaseRequest->id, 5, '0', STR_PAD_LEFT);
 
         return [
-            'message' => "Your Material Request (PR-{$id}) has been approved.",
+            'message' => "Your Resource Request (RQ-{$id}) has been approved.",
             'url' => route('purchasing.requests.index', [], false),
         ];
     }

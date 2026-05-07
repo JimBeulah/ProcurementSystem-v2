@@ -3,7 +3,6 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, usePage } from '@inertiajs/react';
 import DataTable from '@/Components/UI/DataTable';
 import { Truck, Plus, AlertTriangle, Info, User, Calendar } from 'lucide-react';
-import { toast } from 'sonner';
 import ConfirmationModal from '@/Components/UI/ConfirmationModal';
 import MRDetailsDrawer from '@/Components/MaterialRequest/MRDetailsDrawer';
 import MRCreateModal from '@/Components/MaterialRequest/MRCreateModal';
@@ -22,8 +21,8 @@ export default function ProjectMaterialRequests() {
     const columns = useMemo(() => [
         {
             accessorKey: 'id',
-            header: 'MR Number',
-            cell: info => <span className="font-mono font-bold text-blue-600 dark:text-blue-400">MR-{(info.getValue() || '').toString().padStart(5, '0')}</span>,
+            header: 'RQ Number',
+            cell: info => <span className="font-mono font-bold text-blue-600 dark:text-blue-400">RQ-{(info.getValue() || '').toString().padStart(5, '0')}</span>,
         },
         {
             accessorKey: 'requester.name',
@@ -98,15 +97,15 @@ export default function ProjectMaterialRequests() {
 
     return (
         <AuthenticatedLayout>
-            <Head title={`Material Requests - ${project.name}`} />
+            <Head title={`Resource Requests - ${project.name}`} />
 
             <div className="space-y-6 max-w-7xl mx-auto">
                 <header className="flex justify-between items-center pb-6 border-b border-slate-200 dark:border-slate-700">
                     <div>
                         <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                            <Truck className="text-blue-600" /> Material Requests
+                            <Truck className="text-blue-600" /> Resource Requests
                         </h1>
-                        <p className="text-slate-500">Request materials from warehouse or procurement.</p>
+                        <p className="text-slate-500">Request resources (Materials, Labor, Equipment) from BOQ tracking.</p>
                     </div>
                     {project.status === 'ACTIVE' ? (
                         <button onClick={() => setShowModal(true)} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors text-xs font-bold shadow-lg shadow-blue-600/20 active:scale-95">
@@ -164,8 +163,8 @@ export default function ProjectMaterialRequests() {
                             });
                         }
                     }}
-                    title="Cancel Material Request"
-                    message={`Are you sure you want to cancel Material Request MR-${(mrToCancel?.id || '').toString().padStart(5, '0')}? This action cannot be undone.`}
+                    title="Cancel Resource Request"
+                    message={`Are you sure you want to cancel Resource Request RQ-${(mrToCancel?.id || '').toString().padStart(5, '0')}? This action cannot be undone.`}
                     type="danger"
                     confirmText="Yes, Cancel Request"
                     cancelText="No, Keep it"

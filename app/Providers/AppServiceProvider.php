@@ -28,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
         // Ensure dompdf font directory exists on Vercel
         if (env('VERCEL')) {
             $fontPath = '/tmp/fonts';
-            if (!file_exists($fontPath)) {
+            if (! file_exists($fontPath)) {
                 mkdir($fontPath, 0755, true);
             }
         }

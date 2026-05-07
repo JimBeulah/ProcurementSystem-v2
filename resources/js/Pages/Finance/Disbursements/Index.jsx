@@ -39,7 +39,7 @@ export default function DisbursementsIndex() {
         setSelectedPayment(pay);
         setActualAmount(Number(pay.amount));
         setIsLiquidateOpen(true);
-    }, []);
+    }, [setSelectedPayment, setActualAmount, setIsLiquidateOpen]);
 
     const columns = React.useMemo(() => [
         {
@@ -179,7 +179,7 @@ export default function DisbursementsIndex() {
                 try {
                     const url = await uploadFile(receiptFile);
                     payload.receipt_url = url;
-                } catch (err) {
+                } catch {
                     toast.error('Failed to upload receipt to Vercel Blob. Please check your connection and try again.');
                     return;
                 }

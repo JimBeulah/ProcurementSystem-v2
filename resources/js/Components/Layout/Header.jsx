@@ -77,6 +77,11 @@ export default function Header({ user, onMenuClick }) {
     const breadcrumbs = segments.map((seg, i) => {
         let label = seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' ');
 
+        // Special case for material requests rename
+        if (seg === 'material-requests') {
+            label = 'Resource Requests';
+        }
+
         // If segment is numeric and matches project ID, use project name
         if (project && !isNaN(seg) && parseInt(seg) === project.id) {
             label = project.name;

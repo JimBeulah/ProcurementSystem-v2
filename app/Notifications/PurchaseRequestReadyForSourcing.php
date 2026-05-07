@@ -37,7 +37,7 @@ class PurchaseRequestReadyForSourcing extends Notification
         $id = str_pad($this->purchaseRequest->id, 5, '0', STR_PAD_LEFT);
 
         return [
-            'message' => "A new Material Request (PR-{$id}) has been approved and is ready for sourcing.",
+            'message' => "A new Resource Request (RQ-{$id}) has been approved and is ready for sourcing.",
             'url' => route('purchasing.requests.index', [], false),
         ];
     }

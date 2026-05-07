@@ -51,9 +51,9 @@ class DatabaseManagementController extends Controller
         $filename = 'backup-'.date('Y-m-d-H-i-s').'.sql';
         $isVercel = env('VERCEL') || env('BLOB_READ_WRITE_TOKEN');
         $baseDir = $isVercel ? '/tmp' : storage_path('app/backups');
-        $path = $baseDir . '/' . $filename;
+        $path = $baseDir.'/'.$filename;
 
-        if (!$isVercel && !file_exists($baseDir)) {
+        if (! $isVercel && ! file_exists($baseDir)) {
             mkdir($baseDir, 0755, true);
         }
 
@@ -86,7 +86,7 @@ class DatabaseManagementController extends Controller
         }
 
         $binaryPath = $this->getBinaryPath($binary);
-        
+
         // Simple check for binary availability in non-windows environments
         if (PHP_OS_FAMILY !== 'Windows' && empty(shell_exec("which $binaryPath"))) {
             return back()->with('error', "The '$binary' binary was not found on this server. This feature is not available on Vercel serverless functions. Please use the database console (e.g., Neon Console) for backups.");
@@ -117,7 +117,7 @@ class DatabaseManagementController extends Controller
 
         $file = $request->file('database_file');
         $isVercel = env('VERCEL') || env('BLOB_READ_WRITE_TOKEN');
-        
+
         if ($isVercel) {
             $fullPath = '/tmp/import.sql';
             move_uploaded_file($file->getRealPath(), $fullPath);
@@ -166,7 +166,7 @@ class DatabaseManagementController extends Controller
         $process = Process::fromShellCommandline($command, null, $env);
         $process->run();
 
-        if (!$isVercel) {
+        if (! $isVercel) {
             Storage::delete($path);
         } else {
             @unlink($fullPath);
