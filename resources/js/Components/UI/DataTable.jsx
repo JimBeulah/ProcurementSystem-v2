@@ -30,6 +30,7 @@ export function DataTable({
     customToolbar,
     leftToolbar,
     renderMobileRow, // Optional custom mobile row renderer
+    overflowVisible = false,
 }) {
     const [sorting, setSorting] = useState([]);
     const [globalFilter, setGlobalFilter] = useState('');
@@ -193,8 +194,8 @@ export function DataTable({
             </div>
 
             {/* Desktop Table View */}
-            <div className="hidden md:block overflow-x-auto">
-                <Table>
+            <div className={`hidden md:block ${overflowVisible ? 'overflow-visible' : 'overflow-x-auto'}`}>
+                <Table overflowVisible={overflowVisible}>
                 <TableHeader>
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>

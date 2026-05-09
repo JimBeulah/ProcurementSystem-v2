@@ -20,6 +20,7 @@ class UpdateUserRequest extends FormRequest
             'email' => ['nullable', 'email', 'max:255', "unique:users,email,{$userId}"],
             'username' => ['required', 'string', 'max:255', "unique:users,username,{$userId}", 'regex:/^\S+$/'],
             'role' => ['required', 'string', 'exists:roles,name'],
+            'is_active' => ['nullable', 'boolean'],
         ];
     }
 

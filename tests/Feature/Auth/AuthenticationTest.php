@@ -11,12 +11,6 @@ class AuthenticationTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->withoutMiddleware(ValidateCsrfToken::class);
-    }
-
     public function test_login_screen_can_be_rendered(): void
     {
         $response = $this->get('/login');
@@ -32,10 +26,6 @@ class AuthenticationTest extends TestCase
             'username' => $user->username,
             'password' => 'password',
         ]);
-
-        if (session('errors')) {
-            dump(session('errors')->getMessages());
-        }
 
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', absolute: false));

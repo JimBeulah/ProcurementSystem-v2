@@ -7,8 +7,11 @@ function cn(...inputs) {
     return twMerge(clsx(inputs));
 }
 
-const Table = React.forwardRef(({ className, ...props }, ref) => (
-    <div className="relative w-full overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+const Table = React.forwardRef(({ className, overflowVisible = false, ...props }, ref) => (
+    <div className={cn(
+        "relative w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm",
+        overflowVisible ? "overflow-visible" : "overflow-x-auto"
+    )}>
         <table
             ref={ref}
             className={cn("w-full caption-bottom text-sm", className)}

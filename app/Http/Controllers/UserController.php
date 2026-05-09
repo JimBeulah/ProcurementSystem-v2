@@ -33,12 +33,18 @@ class UserController extends Controller
     {
         $validated = $request->validated();
 
-        $user->update([
+        $userData = [
             'name' => $validated['name'],
             'email' => $validated['email'] ?? $user->email,
             'username' => strtolower($validated['username']),
             'role' => $validated['role'],
-        ]);
+        ];
+
+        if (isset($validated['is_active']) && $user->id !== auth()->id()) {
+            $userData['is_active'] = $validated['is_active'];
+        }
+
+        $user->update($userData);
 
         $user->syncRoles([$validated['role']]);
 

@@ -169,15 +169,12 @@ export default function Login({ status }) {
                         <div className="text-center pt-8">
                             <p className="text-[14px] text-slate-600">
                                 Don&apos;t have an account?{' '}
-                                <button
-                                    type="button"
-                                    onClick={() => toast.info('Please contact the Admin to create a new account.', {
-                                        description: 'New user registration is currently handled through official procurement channels.',
-                                    })}
+                                <Link
+                                    href={route('register')}
                                     className="font-semibold text-[#0066FF] hover:text-[#0052CC] transition-colors"
                                 >
                                     Create an account
-                                </button>
+                                </Link>
                             </p>
                         </div>
                     </div>

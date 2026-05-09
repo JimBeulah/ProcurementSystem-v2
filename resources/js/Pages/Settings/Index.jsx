@@ -1,7 +1,7 @@
 import React from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Settings, UserCog, Database, ChevronRight, Package, Shield, UserCircle } from 'lucide-react';
+import { Settings, UserCog, Database, ChevronRight, UserCircle } from 'lucide-react';
 
 export default function SettingsIndex() {
     const { auth } = usePage().props;
@@ -10,9 +10,6 @@ export default function SettingsIndex() {
     const menuItems = [
         { title: 'Account Settings', description: 'Update your profile information and change password.', icon: UserCircle, href: route('profile.edit'), color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
         { title: 'User Management', description: 'Manage system users, roles, and access permissions.', icon: UserCog, href: route('settings.users'), color: 'text-blue-500', bg: 'bg-blue-500/10', permission: 'manage users' },
-        { title: 'Workflows', description: 'Configure approval hierarchy and spending limits.', icon: Shield, href: route('settings.workflows'), color: 'text-emerald-500', bg: 'bg-emerald-500/10', permission: 'view settings' },
-        { title: 'Inventory Management', description: 'Configure inventory rules, stock alerts and valuation.', icon: Package, href: '#', color: 'text-amber-500', bg: 'bg-amber-500/10', permission: 'view settings' },
-        { title: 'System Configuration', description: 'General settings, company details, and localization.', icon: Settings, href: '#', color: 'text-cyan-500', bg: 'bg-cyan-500/10', permission: 'view settings' },
         { title: 'Backup & Recovery', description: 'Create database backups and restore system data.', icon: Database, href: route('settings.database.index'), color: 'text-emerald-500', bg: 'bg-emerald-500/10', adminOnly: true },
     ];
 
