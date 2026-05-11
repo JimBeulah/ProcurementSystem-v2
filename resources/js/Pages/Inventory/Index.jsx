@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, usePage, useForm } from '@inertiajs/react';
-import { Package, MapPin, Calendar, Box, Building2, ClipboardList, Plus } from 'lucide-react';
+import { Package, MapPin, Calendar, Box, Building2, ClipboardList, Plus, Pencil } from 'lucide-react';
 import DataTable from '@/Components/UI/DataTable';
 import Drawer from '@/Components/UI/Drawer';
 import Modal from '@/Components/UI/Modal';
@@ -19,12 +19,40 @@ export default function InventoryIndex() {
         unit: '',
     });
 
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingItem, setEditingItem] = useState(null);
+
+    const { data: editData, setData: setEditData, put: putEdit, processing: editProcessing, errors: editErrors, reset: resetEdit } = useForm({
+        material_name: '',
+        unit: '',
+    });
+
     const handleAddMaterial = (e) => {
         e.preventDefault();
         post(route('inventory.store'), {
             onSuccess: () => {
                 setIsModalOpen(false);
                 reset();
+            },
+        });
+    };
+
+    const handleEditClick = (item) => {
+        setEditingItem(item);
+        setEditData({
+            material_name: item.material_name,
+            unit: item.unit,
+        });
+        setIsEditModalOpen(true);
+    };
+
+    const handleEditSubmit = (e) => {
+        e.preventDefault();
+        putEdit(route('inventory.update', editingItem.id), {
+            onSuccess: () => {
+                setIsEditModalOpen(false);
+                setEditingItem(null);
+                resetEdit();
             },
         });
     };
@@ -115,6 +143,26 @@ export default function InventoryIndex() {
             cell: ({ row }) => (
                 <div className="text-slate-500 text-sm font-medium">
                     {row.original.unit}
+                </div>
+            )
+        },
+        {
+            id: 'actions',
+            header: () => <div className="text-right">Actions</div>,
+            cell: ({ row }) => (
+                <div className="text-right">
+                    {(auth?.roles?.includes('admin') || auth?.permissions?.includes('manage inventory')) && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation(); // Prevent row click (opens drawer)
+                                handleEditClick(row.original);
+                            }}
+                            className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                            title="Edit Material"
+                        >
+                            <Pencil size={14} />
+                        </button>
+                    )}
                 </div>
             )
         },
@@ -325,6 +373,52 @@ export default function InventoryIndex() {
                             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
                         >
                             {processing ? 'Adding...' : 'Add Material'}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
+
+            {/* Edit Modal */}
+            <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Material">
+                <form onSubmit={handleEditSubmit} className="space-y-4">
+                    <div>
+                        <label className="text-xs text-slate-500 uppercase font-bold mb-1 block">Material Name</label>
+                        <input
+                            type="text"
+                            className={`w-full bg-white dark:bg-slate-900 border rounded-lg p-2.5 text-sm ${editErrors.material_name ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'}`}
+                            value={editData.material_name}
+                            onChange={e => setEditData('material_name', e.target.value)}
+                            placeholder="Enter material name"
+                            required
+                        />
+                        {editErrors.material_name && <p className="text-xs text-red-500 mt-1">{editErrors.material_name}</p>}
+                    </div>
+                    <div>
+                        <label className="text-xs text-slate-500 uppercase font-bold mb-1 block">Unit</label>
+                        <input
+                            type="text"
+                            className={`w-full bg-white dark:bg-slate-900 border rounded-lg p-2.5 text-sm ${editErrors.unit ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'}`}
+                            value={editData.unit}
+                            onChange={e => setEditData('unit', e.target.value)}
+                            placeholder="pcs, bags, etc."
+                            required
+                        />
+                        {editErrors.unit && <p className="text-xs text-red-500 mt-1">{editErrors.unit}</p>}
+                    </div>
+                    <div className="flex justify-end gap-3 mt-6">
+                        <button
+                            type="button"
+                            onClick={() => setIsEditModalOpen(false)}
+                            className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={editProcessing}
+                            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
+                        >
+                            {editProcessing ? 'Saving...' : 'Save Changes'}
                         </button>
                     </div>
                 </form>

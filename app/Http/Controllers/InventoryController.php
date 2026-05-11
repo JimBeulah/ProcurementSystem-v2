@@ -45,4 +45,16 @@ class InventoryController extends Controller
 
         return redirect()->back()->with('success', 'Material added to inventory successfully.');
     }
+
+    public function update(Request $request, InventoryItem $inventoryItem)
+    {
+        $validated = $request->validate([
+            'material_name' => 'required|string|max:255',
+            'unit' => 'required|string|max:50',
+        ]);
+
+        $inventoryItem->update($validated);
+
+        return redirect()->back()->with('success', 'Material updated successfully.');
+    }
 }

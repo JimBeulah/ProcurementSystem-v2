@@ -133,6 +133,7 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
     // Inventory
     Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index')->middleware('can:view inventory');
     Route::post('/inventory', [InventoryController::class, 'store'])->name('inventory.store')->middleware('can:manage inventory');
+    Route::put('/inventory/{inventoryItem}', [InventoryController::class, 'update'])->name('inventory.update')->middleware('can:manage inventory');
 
     // Receiving / GRN
     Route::get('/inventory/receiving', [ReceivingController::class, 'index'])->name('receiving.index')->middleware('role_or_permission:site_engineer|view receiving');
