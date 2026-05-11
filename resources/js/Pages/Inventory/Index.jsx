@@ -1,15 +1,33 @@
 import React, { useState, useMemo } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, usePage } from '@inertiajs/react';
-import { Package, MapPin, Calendar, Box, Building2, ClipboardList } from 'lucide-react';
+import { Head, usePage, useForm } from '@inertiajs/react';
+import { Package, MapPin, Calendar, Box, Building2, ClipboardList, Plus } from 'lucide-react';
 import DataTable from '@/Components/UI/DataTable';
 import Drawer from '@/Components/UI/Drawer';
+import Modal from '@/Components/UI/Modal';
 
 export default function InventoryIndex() {
-    const { inventory } = usePage().props;
+    const { inventory, auth } = usePage().props;
     const items = React.useMemo(() => inventory || [], [inventory]);
     const [activeTab, setActiveTab] = useState('all'); // 'all', 'warehouse', 'projects'
     const [selectedItem, setSelectedReport] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const { data, setData, post, processing, errors, reset } = useForm({
+        material_name: '',
+        quantity: '',
+        unit: '',
+    });
+
+    const handleAddMaterial = (e) => {
+        e.preventDefault();
+        post(route('inventory.store'), {
+            onSuccess: () => {
+                setIsModalOpen(false);
+                reset();
+            },
+        });
+    };
 
     const tabs = React.useMemo(() => [
         { id: 'all', label: 'All Inventory', icon: ClipboardList },
@@ -122,6 +140,19 @@ export default function InventoryIndex() {
         <AuthenticatedLayout>
             <Head title="Inventory Tracker" />
             <div className="max-w-7xl mx-auto space-y-6">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Inventory Tracker</h1>
+                    {(auth?.roles?.includes('admin') || auth?.permissions?.includes('manage inventory')) && (
+                        <button
+                            onClick={() => setIsModalOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                        >
+                            <Plus size={16} />
+                            Add Material
+                        </button>
+                    )}
+                </div>
+
                 {/* Tabs Row */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="flex p-1 bg-slate-100 dark:bg-slate-800/60 rounded-xl overflow-x-auto w-full md:w-auto shadow-inner border border-slate-200 dark:border-slate-700">
@@ -238,6 +269,66 @@ export default function InventoryIndex() {
                     </div>
                 )}
             </Drawer>
+
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Add Material to Inventory">
+                <form onSubmit={handleAddMaterial} className="space-y-4">
+                    <div>
+                        <label className="text-xs text-slate-500 uppercase font-bold mb-1 block">Material Name</label>
+                        <input
+                            type="text"
+                            className={`w-full bg-white dark:bg-slate-900 border rounded-lg p-2.5 text-sm ${errors.material_name ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'}`}
+                            value={data.material_name}
+                            onChange={e => setData('material_name', e.target.value)}
+                            placeholder="Enter material name"
+                            required
+                        />
+                        {errors.material_name && <p className="text-xs text-red-500 mt-1">{errors.material_name}</p>}
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-xs text-slate-500 uppercase font-bold mb-1 block">Quantity</label>
+                            <input
+                                type="number"
+                                step="any"
+                                className={`w-full bg-white dark:bg-slate-900 border rounded-lg p-2.5 text-sm ${errors.quantity ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'}`}
+                                value={data.quantity}
+                                onChange={e => setData('quantity', e.target.value)}
+                                placeholder="0.00"
+                                required
+                            />
+                            {errors.quantity && <p className="text-xs text-red-500 mt-1">{errors.quantity}</p>}
+                        </div>
+                        <div>
+                            <label className="text-xs text-slate-500 uppercase font-bold mb-1 block">Unit</label>
+                            <input
+                                type="text"
+                                className={`w-full bg-white dark:bg-slate-900 border rounded-lg p-2.5 text-sm ${errors.unit ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'}`}
+                                value={data.unit}
+                                onChange={e => setData('unit', e.target.value)}
+                                placeholder="pcs, bags, etc."
+                                required
+                            />
+                            {errors.unit && <p className="text-xs text-red-500 mt-1">{errors.unit}</p>}
+                        </div>
+                    </div>
+                    <div className="flex justify-end gap-3 mt-6">
+                        <button
+                            type="button"
+                            onClick={() => setIsModalOpen(false)}
+                            className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={processing}
+                            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
+                        >
+                            {processing ? 'Adding...' : 'Add Material'}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
         </AuthenticatedLayout>
     );
 }

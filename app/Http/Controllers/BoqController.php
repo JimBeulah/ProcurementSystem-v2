@@ -31,13 +31,22 @@ class BoqController extends Controller
             ->orderBy('id')
             ->get();
 
-        $materials = Material::orderBy('name')->get();
+        $materialNames = Material::pluck('name')->toArray();
+        $inventoryNames = \App\Models\InventoryItem::pluck('material_name')->toArray();
+        
+        $allNames = array_unique(array_merge($materialNames, $inventoryNames));
+        sort($allNames);
+        
+        $materialSuggestions = collect($allNames)->map(function($name, $index) {
+            return ['id' => $index + 1, 'name' => $name];
+        });
+
         $units = Unit::orderBy('name')->get();
 
         return Inertia::render('Projects/Boq', [
             'project' => $project,
             'boqItems' => $boqItems,
-            'materials' => $materials,
+            'materials' => $materialSuggestions,
             'units' => $units,
             'isApproved' => (bool) $project->approved_by,
         ]);

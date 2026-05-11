@@ -243,9 +243,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                             }}
                             placeholder="Start typing material name..."
                         />
-                        <datalist id="wiz-material-suggestions">
-                            {materials.map(m => <option key={m.id} value={m.name} />)}
-                        </datalist>
+
                         {errors.itemDescription && <p className="text-[10px] text-red-500 mt-1 font-bold">{errors.itemDescription}</p>}
                     </div>
 
@@ -329,6 +327,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                                         <label className="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-1 block ml-1">Name</label>
                                         <input
                                             type="text"
+                                            list="wiz-material-suggestions"
                                             placeholder="Resource Name"
                                             className="w-full bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700/80 rounded shadow-sm p-1.5 text-xs text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
                                             value={comp.name}
@@ -573,6 +572,9 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                     )}
                 </div>
             </div>
+            <datalist id="wiz-material-suggestions">
+                {materials.map(m => <option key={m.id} value={m.name} />)}
+            </datalist>
         </Modal>
     );
 }
