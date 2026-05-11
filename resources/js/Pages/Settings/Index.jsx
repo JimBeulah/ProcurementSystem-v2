@@ -2,8 +2,10 @@ import React from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Settings, UserCog, Database, ChevronRight, UserCircle } from 'lucide-react';
+import { usePermissions } from '@/Hooks/usePermissions';
 
 export default function SettingsIndex() {
+    const { can } = usePermissions();
     const { auth } = usePage().props;
     const isAdmin = auth.user.role === 'admin';
 
@@ -15,7 +17,7 @@ export default function SettingsIndex() {
 
     const filteredItems = menuItems.filter(item => {
         if (item.adminOnly && !isAdmin) return false;
-        if (item.permission && !auth.permissions.includes(item.permission)) return false;
+        if (item.permission && !can(item.permission)) return false;
         return true;
     });
 

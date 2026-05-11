@@ -162,7 +162,7 @@ export default function ReceivingIndex() {
                         </h1>
                         <p className="text-slate-500">Track received materials and deliveries.</p>
                     </div>
-                    {auth.permissions.includes('create receiving') && (
+                    {(auth.roles?.includes('admin') || auth.permissions.includes('create receiving')) && (
                         <Link href="/inventory/receiving/create">
                             <button className="bg-orange-600 hover:bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors shadow-lg shadow-orange-600/20">
                                 <Plus size={18} /> Receive Goods
