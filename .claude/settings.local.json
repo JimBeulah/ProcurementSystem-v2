@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__plugin_laravel-boost_laravel-boost__application-info",
+      "mcp__plugin_laravel-boost_laravel-boost__database-schema"
+    ]
+  }
+}

@@ -40,7 +40,20 @@ export default function PurchaseRequestsIndex() {
     const { can } = usePermissions();
 
     const [showCreate, setShowCreate] = useState(false);
-    // ...
+    const [selectedPr, setSelectedPr] = useState(null);
+    const [showDrawer, setShowDrawer] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState(null);
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState('');
+    const [isCreatePoModalOpen, setIsCreatePoModalOpen] = useState(false);
+    const [isLoadingCreatePo, setIsLoadingCreatePo] = useState(false);
+
+    // Filters
+    const [search, setSearch] = useState(filters?.search || '');
+    const [dateFilter, setDateFilter] = useState(filters?.date || '');
+    const [statusFilter, setStatusFilter] = useState(filters?.status || 'ALL');
+
     // Create Form State
     const [projectId, setProjectId] = useState('');
 
