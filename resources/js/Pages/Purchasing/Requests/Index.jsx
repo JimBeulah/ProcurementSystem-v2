@@ -40,22 +40,20 @@ export default function PurchaseRequestsIndex() {
     const { can } = usePermissions();
 
     const [showCreate, setShowCreate] = useState(false);
-    const [selectedPr, setSelectedPr] = useState(null);
-    const [showDrawer, setShowDrawer] = useState(false);
-    const [submitting, setSubmitting] = useState(false);
-    const [deleteTarget, setDeleteTarget] = useState(null);
-    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-    const [previewUrl, setPreviewUrl] = useState('');
-    const [isCreatePoModalOpen, setIsCreatePoModalOpen] = useState(false);
-    const [isLoadingCreatePo, setIsLoadingCreatePo] = useState(false);
-
-    // Filters
-    const [search, setSearch] = useState(filters?.search || '');
-    const [dateFilter, setDateFilter] = useState(filters?.date || '');
-    const [statusFilter, setStatusFilter] = useState(filters?.status || 'ALL');
-
+    // ...
     // Create Form State
     const [projectId, setProjectId] = useState('');
+
+    // Handle URL parameters for contextual creation
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('create') === 'true') {
+            setShowCreate(true);
+            if (params.get('projectId')) {
+                setProjectId(params.get('projectId'));
+            }
+        }
+    }, []);
     const [purpose, setPurpose] = useState('');
     const [remarks, setRemarks] = useState('');
     const [cart, setCart] = useState([]);
@@ -270,11 +268,7 @@ export default function PurchaseRequestsIndex() {
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
-                            {can('manage purchase requests') && (
-                                <button onClick={() => setShowCreate(true)} className="flex-1 sm:flex-none bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white px-6 py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-all shadow-lg shadow-violet-600/20 active:scale-95 h-10">
-                                    <Plus size={18} /> <span className="whitespace-nowrap">New Request</span>
-                                </button>
-                            )}
+                            {/* Global "New Request" removed to enforce project-based creation */}
                         </div>
                     </div>
 

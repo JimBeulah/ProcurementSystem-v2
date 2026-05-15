@@ -198,6 +198,14 @@ export default function PurchaseOrdersIndex() {
                                 <CheckCircle size={18} /> Approve PO
                             </button>
                         )}
+                        {(po.status === 'APPROVED' || po.status === 'PARTIALLY DELIVERED' || po.status === 'COMPLETED') && can('create purchase orders') && (
+                            <Link 
+                                href={`/purchasing/supplier-returns/create?poId=${po.id}`}
+                                className="bg-rose-100 dark:bg-rose-900/30 hover:bg-rose-200 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold transition-colors"
+                            >
+                                <ArrowLeftRight size={18} /> Return Items
+                            </Link>
+                        )}
                         {po.status !== 'CANCELLED' && po.status !== 'COMPLETED' && can('create purchase orders') && (
                             <button onClick={() => handleCancel(po)} className="bg-rose-100 dark:bg-rose-900/30 hover:bg-rose-200 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold transition-colors outline-none">
                                 Cancel Order
@@ -303,13 +311,9 @@ export default function PurchaseOrdersIndex() {
                             <ShoppingCart className="text-blue-500" /> Purchase Orders
                         </h1>
                         <p className="text-slate-500">Track and manage supplier orders.</p>
-                    </div>
-                    {can('create purchase orders') && (
-                        <button onClick={() => setIsCreateOpen(true)} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors active:scale-95">
-                            <Plus size={18} /> Create PO
-                        </button>
-                    )}
-                </header>
+                        </div>
+                        {/* Global "Create PO" removed to enforce conversion from approved PRs */}
+                        </header>
 
                 <div className="bg-white dark:bg-[#1e1e1e] border border-slate-200 dark:border-slate-700 p-4 rounded-xl shadow-sm">
                     <DataTable

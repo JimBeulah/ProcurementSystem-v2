@@ -328,6 +328,13 @@ export default function ProjectShow() {
 
                                 <div className="mt-6 pt-4 border-t border-black/5 dark:border-white/5 flex flex-col gap-2">
                                     <Link
+                                        href={`/purchasing/requests?projectId=${project.id}&create=true`}
+                                        className="flex items-center justify-between p-2.5 rounded-xl bg-violet-500 text-white hover:bg-violet-600 transition-all shadow-lg shadow-violet-500/20 group"
+                                    >
+                                        <span className="text-[10px] font-black uppercase tracking-widest ml-1">New Purchase Request</span>
+                                        <Plus size={14} className="group-hover:rotate-90 transition-transform" />
+                                    </Link>
+                                    <Link
                                         href={`/projects/${project.id}/material-requests`}
                                         className="flex items-center justify-between p-2.5 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition-all shadow-lg shadow-blue-500/20 group"
                                     >

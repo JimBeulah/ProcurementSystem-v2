@@ -289,15 +289,9 @@ export default function SupplierReturnsIndex() {
                             <ArrowLeftRight className="text-rose-500" /> Supplier Returns
                         </h1>
                         <p className="text-slate-500">Track wrong or damaged deliveries returned to suppliers.</p>
-                    </div>
-                    {can('create purchase orders') && (
-                        <Link href="/purchasing/supplier-returns/create">
-                            <button className="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-xs font-bold transition-colors active:scale-95">
-                                <Plus size={18} /> New Return
-                            </button>
-                        </Link>
-                    )}
-                </header>
+                        </div>
+                        {/* Global "New Return" removed to enforce PO-based returns */}
+                        </header>
 
                 <div className="bg-white dark:bg-[#1e1e1e] border border-slate-200 dark:border-slate-700 p-4 rounded-xl shadow-sm">
                     <DataTable
