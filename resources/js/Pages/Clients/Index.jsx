@@ -210,6 +210,7 @@ export default function ClientsIndex() {
                         data={clients}
                         showSearch={true}
                         showPagination={true}
+                        overflowVisible={true}
                         customToolbar={
                             can('manage clients') && (
                                 <button
