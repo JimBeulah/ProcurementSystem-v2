@@ -1,18 +1,31 @@
 import React from 'react';
 import Select from '@/Components/UI/Select';
-import { Building2, Layers, UserCog } from 'lucide-react';
+import { Building2, Layers, UserCog, AlertCircle, Info } from 'lucide-react';
 
-export default function ProjectForm({ 
-    data, 
-    setData, 
-    errors, 
-    processing, 
-    handleSubmit, 
-    clients, 
-    siteEngineers, 
-    onCancel, 
-    isEditing 
+export default function ProjectForm({
+    data,
+    setData,
+    errors,
+    processing,
+    handleSubmit,
+    clients,
+    siteEngineers,
+    onCancel,
+    isEditing
 }) {
+    const handleBudgetChange = (value) => {
+        const stripped = stripCommas(value);
+        if (stripped === '' || /^\d*\.?\d*$/.test(stripped)) {
+            setData('budget', stripped);
+            if (!isEditing && !data.appropriation) {
+                setData('appropriation', stripped);
+            }
+        }
+    };
+
+    const budgetNum = parseFloat(data.budget) || 0;
+    const appropriationNum = parseFloat(data.appropriation) || 0;
+    const exceedsWarning = appropriationNum > 0 && appropriationNum > budgetNum;
     const formatWithCommas = (value) => {
         if (value === null || value === undefined || value === '') return '';
         const stringValue = value.toString();
@@ -81,24 +94,46 @@ export default function ProjectForm({
                     )}
                 </div>
                 <div>
-                    <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Budget (PhP)</label>
-                    <input 
-                        type="text" 
-                        className={`w-full bg-slate-50 dark:bg-slate-900/50 border ${errors.budget ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'} rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-cyan-500 transition-all font-mono`} 
-                        value={formatWithCommas(data.budget)} 
-                        onChange={e => handleNumericChange('budget', e.target.value)} 
-                        required 
+                    <div className="flex items-center gap-2 mb-1">
+                        <label className="text-[10px] text-slate-500 uppercase font-black tracking-widest">Budget (PhP)</label>
+                        <div className="group relative cursor-help">
+                            <Info size={14} className="text-slate-400" />
+                            <div className="invisible group-hover:visible absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded whitespace-nowrap z-10">
+                                Total estimated project cost
+                            </div>
+                        </div>
+                    </div>
+                    <input
+                        type="text"
+                        className={`w-full bg-slate-50 dark:bg-slate-900/50 border ${errors.budget ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'} rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-cyan-500 transition-all font-mono`}
+                        value={formatWithCommas(data.budget)}
+                        onChange={e => handleBudgetChange(e.target.value)}
+                        required
                     />
                     {errors.budget && <div className="text-red-500 text-[10px] mt-1 uppercase font-bold">{errors.budget}</div>}
                 </div>
                 <div>
-                    <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Appropriation (PhP)</label>
-                    <input 
-                        type="text" 
-                        className={`w-full bg-slate-50 dark:bg-slate-900/50 border ${errors.appropriation ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'} rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-cyan-500 transition-all font-mono`} 
-                        value={formatWithCommas(data.appropriation)} 
-                        onChange={e => handleNumericChange('appropriation', e.target.value)} 
+                    <div className="flex items-center gap-2 mb-1">
+                        <label className="text-[10px] text-slate-500 uppercase font-black tracking-widest">Appropriation (PhP)</label>
+                        <div className="group relative cursor-help">
+                            <Info size={14} className="text-slate-400" />
+                            <div className="invisible group-hover:visible absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded whitespace-nowrap z-10">
+                                Amount approved to release
+                            </div>
+                        </div>
+                    </div>
+                    <input
+                        type="text"
+                        className={`w-full bg-slate-50 dark:bg-slate-900/50 border ${exceedsWarning ? 'border-orange-500' : errors.appropriation ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'} rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-cyan-500 transition-all font-mono`}
+                        value={formatWithCommas(data.appropriation)}
+                        onChange={e => handleNumericChange('appropriation', e.target.value)}
                     />
+                    {exceedsWarning && (
+                        <div className="flex items-start gap-2 mt-2 p-2 bg-orange-50 dark:bg-orange-950/20 rounded border border-orange-200 dark:border-orange-900/30">
+                            <AlertCircle size={14} className="text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+                            <span className="text-orange-600 dark:text-orange-400 text-[10px] font-semibold">Appropriation exceeds budget</span>
+                        </div>
+                    )}
                     {errors.appropriation && <div className="text-red-500 text-[10px] mt-1 uppercase font-bold">{errors.appropriation}</div>}
                 </div>
                 <div className="md:col-span-2">
