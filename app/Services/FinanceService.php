@@ -6,7 +6,6 @@ use App\Enums\PurchaseOrderStatus;
 use App\Models\Disbursement;
 use App\Models\FinancialTransaction;
 use App\Models\PurchaseOrder;
-use App\Models\SupplierInvoice;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -100,22 +99,6 @@ class FinanceService
                 ]));
 
                 $change = $disbursement->amount - $actualAmount;
-
-                // Automatically record an invoice for audit and reporting
-                if ($disbursement->purchase_order_id) {
-                    $po = $disbursement->purchaseOrder;
-                    if ($po && $po->supplier_id) {
-                        SupplierInvoice::create([
-                            'invoice_number' => $data['receipt_number'],
-                            'invoice_date' => $data['receipt_date'],
-                            'supplier_id' => $po->supplier_id,
-                            'purchase_order_id' => $po->id,
-                            'total_amount' => $actualAmount,
-                            'status' => 'PENDING',
-                            'recorded_by_id' => Auth::id(),
-                        ]);
-                    }
-                }
 
                 // Record change returned into Ledger if actual spend was less than disbursed
                 if ($change > 0) {
