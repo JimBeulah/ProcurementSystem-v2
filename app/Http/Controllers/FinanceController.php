@@ -50,7 +50,7 @@ class FinanceController extends Controller
             ->get();
 
         $orders = PurchaseOrder::with('supplier')
-            ->where('status', 'APPROVED')
+            ->whereIn('status', ['APPROVED', 'PARTIALLY DELIVERED', 'COMPLETED'])
             ->whereDoesntHave('disbursements')
             ->get();
 

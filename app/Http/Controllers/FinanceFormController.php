@@ -49,7 +49,7 @@ class FinanceFormController extends Controller
     public function createDisbursement(): Response
     {
         $orders = PurchaseOrder::with('supplier')
-            ->where('status', 'APPROVED')
+            ->whereIn('status', ['APPROVED', 'PARTIALLY DELIVERED', 'COMPLETED'])
             ->get();
 
         $users = User::where('is_active', true)->orderBy('name')->get();
