@@ -185,6 +185,7 @@ export default function InvoicesIndex() {
                     <DataTable
                         columns={columns}
                         data={list}
+                        overflowVisible={true}
                         onRowClick={(row) => setDrawerItem(row)}
                     />
                 </div>

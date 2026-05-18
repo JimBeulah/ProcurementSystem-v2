@@ -242,6 +242,7 @@ export default function ActivityLogsIndex({ logs }) {
                         data={data}
                         showSearch={true}
                         showPagination={false}
+                        overflowVisible={true}
                         customToolbar={filterToolbar}
                     />
                 </div>

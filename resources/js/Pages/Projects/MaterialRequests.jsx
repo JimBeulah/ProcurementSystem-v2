@@ -127,6 +127,7 @@ export default function ProjectMaterialRequests() {
                         data={requests}
                         showSearch={true}
                         showPagination={true}
+                        overflowVisible={true}
                         onRowClick={(row) => { setSelectedMr(row); setShowDrawer(true); }}
                     />
                 </div>

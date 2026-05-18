@@ -209,6 +209,7 @@ export default function MaterialReturnsIndex({ returns }) {
                     <DataTable
                         columns={columns}
                         data={returns.data || []}
+                        overflowVisible={true}
                         onRowClick={handleRowClick}
                     />
                 </div>

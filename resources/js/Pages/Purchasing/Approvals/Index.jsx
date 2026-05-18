@@ -204,16 +204,18 @@ export default function ApprovalsIndex() {
 
                 <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
                     {tab === 'mr' ? (
-                        <DataTable 
-                            columns={mrColumns} 
-                            data={mrs} 
+                        <DataTable
+                            columns={mrColumns}
+                            data={mrs}
+                            overflowVisible={true}
                             onRowClick={(row) => openDetails(row, 'mr')}
                             showSearch={true}
                         />
                     ) : (
-                        <DataTable 
-                            columns={poColumns} 
-                            data={pos} 
+                        <DataTable
+                            columns={poColumns}
+                            data={pos}
+                            overflowVisible={true}
                             onRowClick={(row) => openDetails(row, 'po')}
                             showSearch={true}
                         />

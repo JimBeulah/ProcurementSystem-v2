@@ -182,6 +182,7 @@ export default function SuppliersIndex() {
                         data={suppliers || []}
                         showSearch={true}
                         showPagination={true}
+                        overflowVisible={true}
                     />
                 </div>
             </div>

@@ -244,6 +244,7 @@ export default function DisbursementsIndex() {
                     <DataTable
                         columns={columns}
                         data={list}
+                        overflowVisible={true}
                         onRowClick={(row) => setViewItem(row)}
                     />
                 </div>

@@ -231,6 +231,7 @@ export default function InventoryIndex() {
                             <DataTable
                                 columns={filteredColumns}
                                 data={tabFiltered}
+                                overflowVisible={true}
                                 onRowClick={handleRowClick}
                             />
                         </div>
@@ -257,6 +258,7 @@ export default function InventoryIndex() {
                                         <DataTable
                                             columns={columns.filter(col => col.id !== 'project')}
                                             data={projectItems}
+                                            overflowVisible={true}
                                             onRowClick={handleRowClick}
                                         />
                                     </div>

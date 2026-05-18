@@ -288,6 +288,7 @@ export default function PurchaseRequestsIndex() {
                     <DataTable
                         data={list}
                         columns={columns}
+                        overflowVisible={true}
                         onRowClick={(pr) => { setSelectedPr(pr); setShowDrawer(true); }}
                         searchPlaceholder="Search PR, Project, Purpose..."
                         showSearch={false} // We have our own filters

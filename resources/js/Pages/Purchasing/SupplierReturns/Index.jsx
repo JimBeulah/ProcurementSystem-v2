@@ -297,6 +297,7 @@ export default function SupplierReturnsIndex() {
                     <DataTable
                         columns={columns}
                         data={list}
+                        overflowVisible={true}
                         onRowClick={(row) => setSelectedReturn(row)}
                     />
                 </div>

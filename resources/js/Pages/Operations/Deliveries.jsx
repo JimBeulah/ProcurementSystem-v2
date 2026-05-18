@@ -307,6 +307,7 @@ export default function Deliveries() {
                     <DataTable
                         columns={columns}
                         data={rows}
+                        overflowVisible={true}
                         onRowClick={openDelivery}
                     />
                 </div>

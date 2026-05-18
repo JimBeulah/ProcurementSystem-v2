@@ -135,6 +135,7 @@ export default function ProjectMaterialReturns() {
                                         )
                                     }
                                 ]}
+                                overflowVisible={true}
                             />
                         </div>
                     </div>

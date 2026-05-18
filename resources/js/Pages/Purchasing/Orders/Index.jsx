@@ -319,6 +319,7 @@ export default function PurchaseOrdersIndex() {
                     <DataTable
                         columns={columns}
                         data={pos}
+                        overflowVisible={true}
                         onRowClick={handleRowClick}
                         showPagination={false}
                     />

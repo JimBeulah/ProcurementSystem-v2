@@ -175,6 +175,7 @@ export default function ReceivingIndex() {
                     <DataTable
                         columns={columns}
                         data={list}
+                        overflowVisible={true}
                         onRowClick={(row) => setSelectedReport(row)}
                     />
                 </div>
