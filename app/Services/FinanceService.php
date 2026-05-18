@@ -6,6 +6,7 @@ use App\Enums\PurchaseOrderStatus;
 use App\Models\Disbursement;
 use App\Models\FinancialTransaction;
 use App\Models\PurchaseOrder;
+use App\Models\SupplierInvoice;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
