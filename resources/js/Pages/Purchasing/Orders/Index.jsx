@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage, router } from '@inertiajs/react';
 import { usePermissions } from '@/Hooks/usePermissions';
-import { ShoppingCart, Plus, Calendar, MapPin, Package, Printer, CheckCircle, TrendingUp } from 'lucide-react';
+import { ShoppingCart, Plus, Calendar, MapPin, Package, Printer, TrendingUp, ArrowLeftRight, CheckCircle } from 'lucide-react';
 import DataTable from '@/Components/UI/DataTable';
 import Drawer from '@/Components/UI/Drawer';
 import Modal from '@/Components/UI/Modal';
@@ -34,18 +34,6 @@ export default function PurchaseOrdersIndex() {
         message: '', 
         onConfirm: () => {} 
     });
-
-    const handleApprove = React.useCallback((po) => {
-        setConfirmModal({
-            isOpen: true,
-            type: 'confirm',
-            title: 'Approve Purchase Order',
-            message: 'Are you sure you want to approve this Purchase Order?',
-            onConfirm: () => router.post(`/purchasing/orders/${po.id}/approve`, {}, {
-                onSuccess: () => setSelectedOrder(null)
-            })
-        });
-    }, []);
 
     const handleCancel = React.useCallback((po) => {
         setConfirmModal({
@@ -167,47 +155,40 @@ export default function PurchaseOrdersIndex() {
     const renderOrderDetails = (po) => {
         if (!po) return null;
         return (
-            <div className="space-y-6 max-w-5xl mx-auto">
-                <header className="flex justify-between items-start pb-6 border-b border-slate-200 dark:border-slate-700">
-                    <div className="flex items-center gap-4">
-                        <div>
-                            <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                                PO-{po.id.toString().padStart(4, '0')}
-                                <span className={`text-sm px-2 py-1 rounded border 
-                                    ${String(po.status).toUpperCase() === 'APPROVED' ? 'border-emerald-500 text-emerald-500' :
-                                      String(po.status).toUpperCase() === 'PARTIALLY DELIVERED' ? 'border-amber-500 text-amber-500' :
-                                      String(po.status).toUpperCase() === 'COMPLETED' ? 'border-blue-500 text-blue-500' :
-                                      'border-orange-500 text-orange-500'
-                                    }`}>{po.status}</span>
-                            </h1>
-                            <p className="text-slate-500">Issued on {new Date(po.order_date).toLocaleDateString()}</p>
-                        </div>
+            <div className="space-y-6 max-w-5xl mx-auto pb-6">
+                <header className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 pb-6 border-b border-slate-200 dark:border-slate-700">
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex flex-wrap items-center gap-3 mb-2">
+                            PO-{po.id.toString().padStart(4, '0')}
+                            <span className={`text-sm px-3 py-1 rounded border
+                                ${String(po.status).toUpperCase() === 'APPROVED' ? 'border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
+                                  String(po.status).toUpperCase() === 'PARTIALLY DELIVERED' ? 'border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400' :
+                                  String(po.status).toUpperCase() === 'COMPLETED' ? 'border-blue-500 bg-blue-500/10 text-blue-600 dark:text-blue-400' :
+                                  'border-orange-500 bg-orange-500/10 text-orange-600 dark:text-orange-400'
+                                }`}>{po.status}</span>
+                        </h1>
+                        <p className="text-sm text-slate-500">Issued on {new Date(po.order_date).toLocaleDateString()}</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                         <button
                             onClick={() => {
                                 setPreviewUrl(`/purchasing/orders/${po.id}/print`);
                                 setIsPreviewOpen(true);
                             }}
-                            className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm transition-colors"
+                            className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors whitespace-nowrap"
                         >
-                            <Printer size={18} /> Print
+                            <Printer size={16} /> Print
                         </button>
-                        {po.status === 'PENDING' && can('approve purchase orders') && (
-                            <button onClick={() => handleApprove(po)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold transition-colors active:scale-95">
-                                <CheckCircle size={18} /> Approve PO
-                            </button>
-                        )}
                         {(po.status === 'APPROVED' || po.status === 'PARTIALLY DELIVERED' || po.status === 'COMPLETED') && can('create purchase orders') && (
-                            <Link 
+                            <Link
                                 href={`/purchasing/supplier-returns/create?poId=${po.id}`}
-                                className="bg-rose-100 dark:bg-rose-900/30 hover:bg-rose-200 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold transition-colors"
+                                className="bg-rose-100 dark:bg-rose-900/30 hover:bg-rose-200 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors whitespace-nowrap"
                             >
-                                <ArrowLeftRight size={18} /> Return Items
+                                <ArrowLeftRight size={16} /> Return Items
                             </Link>
                         )}
                         {po.status !== 'CANCELLED' && po.status !== 'COMPLETED' && can('create purchase orders') && (
-                            <button onClick={() => handleCancel(po)} className="bg-rose-100 dark:bg-rose-900/30 hover:bg-rose-200 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold transition-colors outline-none">
+                            <button onClick={() => handleCancel(po)} className="bg-rose-100 dark:bg-rose-900/30 hover:bg-rose-200 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors outline-none whitespace-nowrap">
                                 Cancel Order
                             </button>
                         )}
@@ -215,86 +196,104 @@ export default function PurchaseOrdersIndex() {
                 </header>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-xl">
-                        <h2 className="text-xs text-slate-500 uppercase font-bold mb-4 tracking-widest">Supplier Details</h2>
-                        <div className="text-slate-900 dark:text-white font-bold text-lg mb-1">{po.supplier?.name || 'Internal Fulfillment'}</div>
-                        <div className="text-slate-500 text-sm">{po.supplier?.address || 'Warehouse Stock'}</div>
-                        {po.supplier && <div className="text-slate-500 text-sm">{po.supplier.contact_person}</div>}
+                    <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 p-5 rounded-lg">
+                        <h2 className="text-xs text-slate-400 uppercase font-bold mb-3 tracking-widest">Supplier Details</h2>
+                        <div className="space-y-2">
+                            <div>
+                                <p className="text-slate-900 dark:text-white font-semibold text-base">{po.supplier?.name || 'Internal Fulfillment'}</p>
+                                <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">{po.supplier?.address || 'Warehouse Stock'}</p>
+                            </div>
+                            {po.supplier?.contact_person && (
+                                <p className="text-slate-600 dark:text-slate-400 text-sm">Contact: {po.supplier.contact_person}</p>
+                            )}
+                        </div>
                     </div>
-                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-xl">
-                        <h2 className="text-xs text-slate-500 uppercase font-bold mb-4 tracking-widest">Delivery To</h2>
-                        <div className="text-slate-900 dark:text-white font-bold text-lg mb-1">{po.project?.name}</div>
-                        <div className="text-slate-500 text-sm">{po.project?.location}</div>
+                    <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 p-5 rounded-lg">
+                        <h2 className="text-xs text-slate-400 uppercase font-bold mb-3 tracking-widest">Delivery To</h2>
+                        <div className="space-y-2">
+                            <p className="text-slate-900 dark:text-white font-semibold text-base">{po.project?.name}</p>
+                            {po.project?.location && (
+                                <p className="text-slate-600 dark:text-slate-400 text-sm">{po.project.location}</p>
+                            )}
+                        </div>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
-                    <table className="w-full text-left text-sm text-slate-500">
-                        <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-400 uppercase text-xs tracking-wider">
-                            <tr>
-                                <th className="p-4">Item</th>
-                                <th className="p-4 text-center">Qty</th>
-                                <th className="p-4 text-right">Unit Price</th>
-                                <th className="p-4 text-right">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
-                            {(po.items || []).map(item => {
-                                const estimatedPrice = item.purchase_request_item?.estimated_unit_cost || 0;
-                                const variance = getPriceVariance(parseFloat(item.unit_price), parseFloat(estimatedPrice));
-                                const hasVariance = variance !== null && variance > VARIANCE_THRESHOLD;
-                                const hasSavings = variance !== null && variance < -VARIANCE_THRESHOLD;
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden shadow-sm">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm text-slate-600 dark:text-slate-400">
+                            <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 uppercase text-xs font-bold tracking-wider border-b border-slate-200 dark:border-slate-700">
+                                <tr>
+                                    <th className="px-5 py-3 text-left">Item</th>
+                                    <th className="px-5 py-3 text-center w-20">Qty</th>
+                                    <th className="px-5 py-3 text-right w-32">Unit Price</th>
+                                    <th className="px-5 py-3 text-right w-32">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+                                {(po.items || []).map(item => {
+                                    const estimatedPrice = item.purchase_request_item?.estimated_unit_cost || 0;
+                                    const variance = getPriceVariance(parseFloat(item.unit_price), parseFloat(estimatedPrice));
+                                    const hasVariance = variance !== null && variance > VARIANCE_THRESHOLD;
+                                    const hasSavings = variance !== null && variance < -VARIANCE_THRESHOLD;
 
-                                return (
-                                    <tr key={item.id} className={hasVariance ? 'bg-red-50/30 dark:bg-red-900/10' : ''}>
-                                        <td className="p-4">
-                                            <div className="flex items-center gap-2">
-                                                <div className="text-slate-900 dark:text-white font-medium">{item.material_name}</div>
-                                                {hasVariance && (
-                                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400 px-2 py-0.5 rounded-md">
-                                                        <TrendingUp size={10} /> +{variance.toFixed(0)}% OVER
-                                                    </span>
-                                                )}
-                                                {hasSavings && (
-                                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 px-2 py-0.5 rounded-md">
-                                                        ↓ {Math.abs(variance).toFixed(0)}% UNDER
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div className="text-xs text-slate-400">{item.description}</div>
-                                        </td>
-                                        <td className="p-4 text-center font-mono">{item.quantity}</td>
-                                        <td className="p-4 text-right">
-                                            <div className="flex flex-col items-end">
-                                                <span className="font-mono text-slate-900 dark:text-white">₱{Number(item.unit_price).toLocaleString()}</span>
-                                                {estimatedPrice > 0 && (
-                                                    <span className="text-[10px] text-slate-400">
-                                                        Est. ₱{Number(estimatedPrice).toLocaleString()}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="p-4 text-right font-mono text-slate-900 dark:text-white font-bold">
-                                            {(Number(item.quantity) * Number(item.unit_price)).toLocaleString()}
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                        <tfoot className="bg-slate-50 dark:bg-slate-800/80 font-bold text-slate-900 dark:text-white">
-                            <tr>
-                                <td colSpan={3} className="p-4 text-right">TOTAL AMOUNT (PHP)</td>
-                                <td className="p-4 text-right text-emerald-600 text-xl font-mono">
-                                    {Number(po.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                </td>
-                            </tr>
-                        </tfoot>
-                    </table>
+                                    return (
+                                        <tr key={item.id} className={`hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors ${hasVariance ? 'bg-red-50/40 dark:bg-red-900/10' : ''}`}>
+                                            <td className="px-5 py-4">
+                                                <div className="space-y-2">
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <div className="text-slate-900 dark:text-white font-semibold">{item.material_name}</div>
+                                                        {hasVariance && (
+                                                            <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400 px-2 py-0.5 rounded-md">
+                                                                <TrendingUp size={10} /> +{variance.toFixed(0)}% OVER
+                                                            </span>
+                                                        )}
+                                                        {hasSavings && (
+                                                            <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 px-2 py-0.5 rounded-md">
+                                                                ↓ {Math.abs(variance).toFixed(0)}% UNDER
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    {item.description && <div className="text-xs text-slate-500 dark:text-slate-400">{item.description}</div>}
+                                                </div>
+                                            </td>
+                                            <td className="px-5 py-4 text-center font-mono text-slate-900 dark:text-white font-semibold">{Number(item.quantity).toLocaleString()}</td>
+                                            <td className="px-5 py-4 text-right">
+                                                <div className="space-y-1">
+                                                    <div className="font-mono text-slate-900 dark:text-white font-semibold">₱{Number(item.unit_price).toLocaleString()}</div>
+                                                    {estimatedPrice > 0 && (
+                                                        <div className="text-[10px] text-slate-400 dark:text-slate-500">
+                                                            Est. ₱{Number(estimatedPrice).toLocaleString()}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-5 py-4 text-right font-mono text-slate-900 dark:text-white font-bold">
+                                                ₱{(Number(item.quantity) * Number(item.unit_price)).toLocaleString()}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                            <tfoot className="bg-slate-50 dark:bg-slate-900/50 font-bold text-slate-900 dark:text-white border-t-2 border-slate-200 dark:border-slate-700">
+                                <tr>
+                                    <td colSpan={3} className="px-5 py-4 text-right text-sm uppercase tracking-wider text-slate-600 dark:text-slate-400">Total Amount</td>
+                                    <td className="px-5 py-4 text-right text-emerald-600 dark:text-emerald-400 text-lg font-mono">
+                                        ₱{Number(po.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
                 </div>
 
                 {po.approver && (
-                    <div className="flex justify-end text-sm text-emerald-600 items-center gap-2">
-                        <CheckCircle size={14} /> Approved by {po.approver.name}
+                    <div className="flex items-center gap-2 p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                        <CheckCircle size={16} className="text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                        <div>
+                            <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-300">Approved by {po.approver.name}</p>
+                            {po.approved_at && <p className="text-xs text-emerald-700 dark:text-emerald-400">{new Date(po.approved_at).toLocaleDateString()}</p>}
+                        </div>
                     </div>
                 )}
             </div>

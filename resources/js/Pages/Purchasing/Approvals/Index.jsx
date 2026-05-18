@@ -248,42 +248,36 @@ export default function ApprovalsIndex() {
                 title={drawerType === 'mr' ? 'Resource Request Details' : 'Purchase Order Details'}
             >
                 {selectedItem && (
-                    <div className="space-y-5 pb-6">
-                        <div className="flex justify-between items-start">
+                    <div className="space-y-6 pb-6">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 pb-6 border-b border-slate-200 dark:border-slate-700">
                             <div>
-                                <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
-                                    <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                                        {drawerType === 'mr' ? <ClipboardList size={18} /> : <FileText size={18} />}
-                                    </div>
+                                <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3 mb-2">
                                     {drawerType === 'mr' ? 'RQ' : 'PO'}-{selectedItem.id.toString().padStart(5, '0')}
                                 </h1>
-                                <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                                    <Clock size={12} />
-                                    <span>Created on {new Date(selectedItem.created_at).toLocaleDateString()}</span>
-                                </div>
+                                <p className="text-sm text-slate-500">Created on {new Date(selectedItem.created_at).toLocaleDateString()}</p>
                             </div>
-                            <div className="bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                            <div className="bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap">
                                 Pending
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
-                            <div className="space-y-0.5">
-                                <div className="text-[9px] text-slate-400 uppercase font-black tracking-widest flex items-center gap-1.5">
-                                    <Building2 size={10} /> Project
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 p-5 rounded-lg space-y-3">
+                                <div>
+                                    <div className="text-xs text-slate-400 uppercase font-bold tracking-widest mb-2">Project</div>
+                                    <p className="text-slate-900 dark:text-white font-semibold text-base">{selectedItem.project?.name}</p>
                                 </div>
-                                <div className="text-xs font-semibold text-slate-900 dark:text-white truncate">{selectedItem.project?.name}</div>
                             </div>
-                            <div className="space-y-0.5">
-                                <div className="text-[9px] text-slate-400 uppercase font-black tracking-widest flex items-center gap-1.5">
-                                    <User size={10} /> Requester
+                            <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 p-5 rounded-lg space-y-3">
+                                <div>
+                                    <div className="text-xs text-slate-400 uppercase font-bold tracking-widest mb-2">Requested By</div>
+                                    <p className="text-slate-900 dark:text-white font-semibold text-base">{selectedItem.requester?.name}</p>
                                 </div>
-                                <div className="text-xs font-semibold text-slate-900 dark:text-white truncate">{selectedItem.requester?.name}</div>
                             </div>
                             {drawerType === 'po' && (
-                                <div className="space-y-0.5 col-span-2 pt-2 border-t border-slate-200 dark:border-slate-700/50">
-                                    <div className="text-[9px] text-slate-400 uppercase font-black tracking-widest leading-none">Total Cost</div>
-                                    <div className="font-bold text-base text-blue-600 dark:text-cyan-400 font-mono">
+                                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-5 rounded-lg md:col-span-2">
+                                    <div className="text-xs text-blue-600 dark:text-blue-400 uppercase font-bold tracking-widest mb-2">Total Cost</div>
+                                    <div className="font-bold text-2xl text-blue-600 dark:text-cyan-400 font-mono">
                                         ₱{Number(selectedItem.total_amount).toLocaleString()}
                                     </div>
                                 </div>
@@ -292,84 +286,101 @@ export default function ApprovalsIndex() {
 
                         {(drawerType === 'mr' || drawerType === 'po') && selectedItem.items && selectedItem.items.length > 0 && (
                             <div className="space-y-3">
-                                <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                                <h3 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                     {drawerType === 'mr' ? 'Items Requested' : 'Purchase Order Items'}
-                                    <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md text-[10px]">{selectedItem.items.length}</span>
+                                    <span className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-[10px] font-semibold text-slate-700 dark:text-slate-300">{selectedItem.items.length}</span>
                                 </h3>
-                                <div className="border border-slate-100 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
-                                    {drawerType === 'mr' && (
-                                        <div className="bg-slate-50 dark:bg-slate-800/50 p-3 grid grid-cols-[1fr,70px,70px,90px,100px] gap-2 text-[8px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-700">
+                                <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden shadow-sm">
+                                    {drawerType === 'po' && (
+                                        <div className="bg-slate-50 dark:bg-slate-900/50 px-5 py-3 grid grid-cols-[1fr,80px,100px,120px] gap-4 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
                                             <div>Item</div>
-                                            <div className="text-right">Whse</div>
-                                            <div className="text-right">Qty</div>
-                                            <div className="text-right">Price</div>
+                                            <div className="text-center">Qty</div>
+                                            <div className="text-right">Unit Price</div>
                                             <div className="text-right">Total</div>
                                         </div>
                                     )}
-                                    <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                                        {selectedItem.items.map((item, idx) => (
-                                            <div key={idx} className={`p-3 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors ${drawerType === 'mr' ? 'grid grid-cols-[1fr,70px,70px,90px,100px] gap-2 items-center' : 'flex justify-between items-center'}`}>
-                                                <div className="min-w-0 pr-2">
-                                                    <div className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
-                                                        {drawerType === 'mr' ? item.item_description : item.material_name}
-                                                    </div>
-                                                    {item.description && (
-                                                        <div className="text-[10px] text-slate-500 truncate mt-0.5">
-                                                            {item.description}
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                {drawerType === 'mr' ? (
-                                                    <>
-                                                        <div className={`text-right text-[10px] font-bold ${Number(item.warehouse_quantity || 0) >= Number(item.quantity) ? 'text-emerald-600' : 'text-amber-500'}`}>
-                                                            {Number(item.warehouse_quantity || 0).toLocaleString()}
-                                                        </div>
-                                                        <div className="text-right text-[10px] font-bold text-slate-900 dark:text-white">
-                                                            {Number(item.quantity).toLocaleString()} <span className="text-[8px] text-slate-400">{item.unit}</span>
-                                                        </div>
-                                                        <div className="text-right text-[10px] font-mono font-bold text-slate-600 dark:text-slate-400">
-                                                            ₱{Number(item.material_unit_price).toLocaleString()}
-                                                        </div>
-                                                        <div className="text-right text-xs font-mono font-bold text-blue-600 dark:text-cyan-400">
-                                                            ₱{Number(item.quantity * item.material_unit_price).toLocaleString()}
-                                                        </div>
-                                                    </>
-                                                ) : (
-                                                    <div className="text-right shrink-0">
-                                                        <div className="text-xs font-mono font-bold text-slate-900 dark:text-white">
-                                                            {Number(item.quantity).toLocaleString()} <span className="text-[10px] text-slate-400 uppercase font-black tracking-tighter ml-0.5">{item.unit}</span>
-                                                        </div>
-                                                        <div className="flex flex-col items-end gap-0.5 pt-1">
-                                                            <div className="flex items-center gap-1.5 justify-end mb-0.5">
-                                                                <div className={`text-[10px] font-mono font-bold ${
-                                                                    getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost) > VARIANCE_THRESHOLD 
-                                                                        ? 'text-red-500' 
-                                                                        : (getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost) < -VARIANCE_THRESHOLD ? 'text-emerald-500' : 'text-slate-900 dark:text-white')
-                                                                }`}>
-                                                                    @ ₱{Number(item.unit_price).toLocaleString()}
+                                    <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
+                                        {selectedItem.items.map((item, idx) => {
+                                            const variance = drawerType === 'po' ? getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost) : null;
+                                            const hasVariance = variance !== null && variance > VARIANCE_THRESHOLD;
+                                            const hasSavings = variance !== null && variance < -VARIANCE_THRESHOLD;
+                                            return (
+                                                <div key={idx} className={`bg-white dark:bg-slate-900/30 hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors ${drawerType === 'po' ? 'px-5 py-4 grid grid-cols-[1fr,80px,100px,120px] gap-4 items-start' : 'p-4'}`}>
+                                                    {drawerType === 'mr' ? (
+                                                        <div className="space-y-2">
+                                                            <div className="text-sm font-semibold text-slate-900 dark:text-white">{item.item_description}</div>
+                                                            {item.description && (
+                                                                <div className="text-xs text-slate-500 dark:text-slate-400">{item.description}</div>
+                                                            )}
+                                                            <div className="grid grid-cols-2 gap-4 pt-2">
+                                                                <div>
+                                                                    <div className="text-[10px] text-slate-400 font-semibold uppercase">Warehouse</div>
+                                                                    <div className={`text-sm font-bold ${Number(item.warehouse_quantity || 0) >= Number(item.quantity) ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                                                        {Number(item.warehouse_quantity || 0).toLocaleString()}
+                                                                    </div>
                                                                 </div>
-                                                                {getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost) > VARIANCE_THRESHOLD && (
-                                                                    <span className="inline-flex items-center gap-0.5 text-[8px] font-bold uppercase tracking-tighter bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400 px-1 py-0.5 rounded leading-none">
-                                                                        <TrendingUp size={8} /> +{getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost)?.toFixed(0)}% OVER
-                                                                    </span>
-                                                                )}
-                                                                {getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost) < -VARIANCE_THRESHOLD && (
-                                                                    <span className="inline-flex items-center gap-0.5 text-[8px] font-bold uppercase tracking-tighter bg-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 px-1 py-0.5 rounded leading-none">
-                                                                        ↓ {Math.abs(getPriceVariance(item.unit_price, item.purchase_request_item?.estimated_unit_cost)).toFixed(0)}% UNDER
-                                                                    </span>
+                                                                <div>
+                                                                    <div className="text-[10px] text-slate-400 font-semibold uppercase">Qty</div>
+                                                                    <div className="text-sm font-bold text-slate-900 dark:text-white">
+                                                                        {Number(item.quantity).toLocaleString()} <span className="text-xs text-slate-400 font-normal">{item.unit}</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div>
+                                                                    <div className="text-[10px] text-slate-400 font-semibold uppercase">Unit Price</div>
+                                                                    <div className="text-sm font-mono font-bold text-slate-600 dark:text-slate-400">₱{Number(item.material_unit_price).toLocaleString()}</div>
+                                                                </div>
+                                                                <div>
+                                                                    <div className="text-[10px] text-slate-400 font-semibold uppercase">Total</div>
+                                                                    <div className="text-sm font-mono font-bold text-blue-600 dark:text-cyan-400">₱{Number(item.quantity * item.material_unit_price).toLocaleString()}</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <div className="space-y-2 min-w-0">
+                                                                <div className="flex items-center gap-2 flex-wrap">
+                                                                    <div className="text-sm font-semibold text-slate-900 dark:text-white">{item.material_name}</div>
+                                                                    {hasVariance && (
+                                                                        <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400 px-2 py-0.5 rounded-md">
+                                                                            <TrendingUp size={10} /> +{variance.toFixed(0)}% OVER
+                                                                        </span>
+                                                                    )}
+                                                                    {hasSavings && (
+                                                                        <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 px-2 py-0.5 rounded-md">
+                                                                            ↓ {Math.abs(variance).toFixed(0)}% UNDER
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                {item.description && (
+                                                                    <div className="text-xs text-slate-500 dark:text-slate-400">{item.description}</div>
                                                                 )}
                                                             </div>
-                                                            {item.purchase_request_item?.estimated_unit_cost && (
-                                                                <div className="text-[9px] text-slate-400">
-                                                                    Est. ₱{Number(item.purchase_request_item.estimated_unit_cost).toLocaleString()}
+                                                            <div className="text-center font-mono text-sm font-semibold text-slate-900 dark:text-white">
+                                                                {Number(item.quantity).toLocaleString()}
+                                                                <div className="text-[10px] text-slate-400 font-normal uppercase">{item.unit}</div>
+                                                            </div>
+                                                            <div className="text-right space-y-1">
+                                                                <div className={`text-sm font-mono font-bold ${
+                                                                    hasVariance ? 'text-red-500' :
+                                                                    hasSavings ? 'text-emerald-500' :
+                                                                    'text-slate-900 dark:text-white'
+                                                                }`}>
+                                                                    ₱{Number(item.unit_price).toLocaleString()}
                                                                 </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
+                                                                {item.purchase_request_item?.estimated_unit_cost && (
+                                                                    <div className="text-[10px] text-slate-400 dark:text-slate-500">Est. ₱{Number(item.purchase_request_item.estimated_unit_cost).toLocaleString()}</div>
+                                                                )}
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <div className="text-sm font-mono font-bold text-slate-900 dark:text-white">
+                                                                    ₱{(Number(item.quantity) * Number(item.unit_price)).toLocaleString()}
+                                                                </div>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             </div>
