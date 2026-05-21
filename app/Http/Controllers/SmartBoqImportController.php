@@ -31,7 +31,7 @@ class SmartBoqImportController extends Controller
 
         $spreadsheet = IOFactory::load($request->file('file')->getRealPath());
         $sheet = $spreadsheet->getActiveSheet();
-        $allRows = $sheet->toArray(null, true, true, false);
+        $allRows = $sheet->toArray(null, true, false, false);
 
         $allRows = array_values(array_filter($allRows, fn($r) => count(array_filter($r, fn($c) => $c !== null && $c !== '')) > 0));
 
@@ -138,9 +138,9 @@ class SmartBoqImportController extends Controller
             match ($field) {
                 'itemDescription'  => $item['itemDescription']   = (string) $value,
                 'unit'             => $item['unit']              = (string) $value ?: 'lot',
-                'quantity'         => $item['quantity']          = ($value !== '' && $value !== null) ? (float) $value : 1,
-                'materialUnitCost' => $item['materialUnitPrice'] = (float) $value,
-                'laborUnitCost'    => $item['laborUnitPrice']    = (float) $value,
+                'quantity'         => $item['quantity']          = ($value !== '' && $value !== null) ? (float) str_replace(',', '', $value) : 1,
+                'materialUnitCost' => $item['materialUnitPrice'] = (float) str_replace(',', '', $value),
+                'laborUnitCost'    => $item['laborUnitPrice']    = (float) str_replace(',', '', $value),
                 default            => null,
             };
         }

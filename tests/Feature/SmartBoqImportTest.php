@@ -132,6 +132,36 @@ class SmartBoqImportTest extends TestCase
         \Illuminate\Support\Facades\Storage::assertMissing("boq_imports/{$token}.json");
     }
 
+    public function test_confirm_handles_comma_formatted_numbers()
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        [$user, $project] = $this->makeAdminWithProject();
+
+        $token = \Illuminate\Support\Str::uuid()->toString();
+        $rows = [['General Works', 'lot', '1', '35,000.00', '12,500.00']];
+        \Illuminate\Support\Facades\Storage::put("boq_imports/{$token}.json", json_encode($rows));
+
+        $mappings = [
+            ['columnIndex' => 0, 'mappedTo' => 'itemDescription'],
+            ['columnIndex' => 1, 'mappedTo' => 'unit'],
+            ['columnIndex' => 2, 'mappedTo' => 'quantity'],
+            ['columnIndex' => 3, 'mappedTo' => 'materialUnitCost'],
+            ['columnIndex' => 4, 'mappedTo' => 'laborUnitCost'],
+        ];
+
+        $this->actingAs($user)
+            ->post("/projects/{$project->id}/boq/smart-import/confirm", [
+                'token'    => $token,
+                'mappings' => $mappings,
+            ]);
+
+        $this->assertDatabaseHas('boq_items', [
+            'item_description'   => 'General Works',
+            'material_unit_price' => 35000.00,
+            'labor_unit_price'    => 12500.00,
+        ]);
+    }
+
     public function test_mapper_finds_header_row_after_title_block()
     {
         $mapper = new BoqColumnMapper();
