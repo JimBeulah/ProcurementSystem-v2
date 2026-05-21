@@ -20,7 +20,7 @@ class BoqColumnMapper
         'materialUnitCost' => [
             'material unit cost', 'mat. cost', 'material cost',
             'mat cost', 'material rate', 'mat. unit cost', 'material unit rate',
-            'materials', 'mat.',
+            'materials', 'mat.', 'unit price', 'unit cost', 'price', 'rate',
         ],
         'laborUnitCost' => [
             'labor unit cost', 'labour cost', 'labor cost',
