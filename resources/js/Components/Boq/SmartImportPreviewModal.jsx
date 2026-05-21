@@ -13,11 +13,29 @@ const FIELD_OPTIONS = [
     { value: 'totalCost',        label: 'Total Cost (ref. only)' },
 ];
 
-export default function SmartImportPreviewModal({ isOpen, onClose, projectId, analyzeData }) {
-    const [mappings, setMappings] = useState(analyzeData?.mappings ?? []);
+function ConfidenceBadge({ confidence }) {
+    if (confidence === 'high') {
+        return (
+            <span className="flex items-center gap-1 text-xs text-emerald-600 font-medium">
+                <CheckCircle size={12} /> High
+            </span>
+        );
+    }
+    if (confidence === 'low') {
+        return (
+            <span className="flex items-center gap-1 text-xs text-amber-600 font-medium">
+                <AlertTriangle size={12} /> Low
+            </span>
+        );
+    }
+    return <span className="text-xs text-slate-400">—</span>;
+}
+
+function ModalContent({ onClose, projectId, analyzeData }) {
+    const [mappings, setMappings] = useState(analyzeData.mappings ?? []);
     const [submitting, setSubmitting] = useState(false);
 
-    const { token, sampleRows = [], totalRows = 0 } = analyzeData ?? {};
+    const { token, sampleRows = [], totalRows = 0 } = analyzeData;
 
     const previewItems = useMemo(
         () => applyMappingsToRows(sampleRows, mappings),
@@ -41,13 +59,11 @@ export default function SmartImportPreviewModal({ isOpen, onClose, projectId, an
             `/projects/${projectId}/boq/smart-import/confirm`,
             { token, mappings },
             {
-                onSuccess: () => { setSubmitting(false); onClose(); },
-                onError:   () => { setSubmitting(false); },
+                onSuccess: () => onClose(),
+                onError:   () => setSubmitting(false),
             }
         );
     };
-
-    if (!isOpen || !analyzeData) return null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -96,19 +112,7 @@ export default function SmartImportPreviewModal({ isOpen, onClose, projectId, an
                                                 </select>
                                             </td>
                                             <td className="px-4 py-2.5">
-                                                {m.confidence === 'high' && (
-                                                    <span className="flex items-center gap-1 text-xs text-emerald-600 font-medium">
-                                                        <CheckCircle size={12} /> High
-                                                    </span>
-                                                )}
-                                                {m.confidence === 'low' && (
-                                                    <span className="flex items-center gap-1 text-xs text-amber-600 font-medium">
-                                                        <AlertTriangle size={12} /> Low
-                                                    </span>
-                                                )}
-                                                {!m.confidence && (
-                                                    <span className="text-xs text-slate-400">—</span>
-                                                )}
+                                                <ConfidenceBadge confidence={m.confidence} />
                                             </td>
                                         </tr>
                                     ))}
@@ -178,4 +182,9 @@ export default function SmartImportPreviewModal({ isOpen, onClose, projectId, an
             </div>
         </div>
     );
+}
+
+export default function SmartImportPreviewModal({ isOpen, onClose, projectId, analyzeData }) {
+    if (!isOpen || !analyzeData) return null;
+    return <ModalContent onClose={onClose} projectId={projectId} analyzeData={analyzeData} />;
 }
