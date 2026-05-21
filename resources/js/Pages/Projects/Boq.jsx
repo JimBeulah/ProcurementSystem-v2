@@ -228,15 +228,10 @@ export default function ProjectBoq() {
             confirmText: 'Delete All',
             onConfirm: () => {
                 setLoading(true);
-                const deletePromises = items.map(item =>
-                    new Promise((resolve) => {
-                        router.delete(`/projects/${project.id}/boq/${item.id}`, {
-                            onSuccess: () => resolve(),
-                            onError: () => resolve()
-                        });
-                    })
-                );
-                Promise.all(deletePromises).then(() => setLoading(false));
+                router.delete(`/projects/${project.id}/boq`, {
+                    onSuccess: () => setLoading(false),
+                    onError: () => setLoading(false),
+                });
             }
         });
     };

@@ -77,6 +77,7 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
             Route::post('/projects/{project}/boq/smart-import/analyze', [\App\Http\Controllers\SmartBoqImportController::class, 'analyze'])->name('projects.boq.smart-import.analyze');
             Route::post('/projects/{project}/boq/smart-import/confirm', [\App\Http\Controllers\SmartBoqImportController::class, 'confirm'])->name('projects.boq.smart-import.confirm');
             Route::put('/projects/{project}/boq/{boqItem}', [BoqController::class, 'update'])->name('projects.boq.update');
+            Route::delete('/projects/{project}/boq', [BoqController::class, 'destroyAll'])->name('projects.boq.destroy-all');
             Route::delete('/projects/{project}/boq/{boqItem}', [BoqController::class, 'destroy'])->name('projects.boq.destroy');
             Route::post('/projects/{project}/boq/{boqItem}/components', [BoqController::class, 'storeComponent'])->name('projects.boq.components.store');
             Route::put('/projects/{project}/boq/components/{boqComponent}', [BoqController::class, 'updateComponent'])->name('projects.boq.components.update');
