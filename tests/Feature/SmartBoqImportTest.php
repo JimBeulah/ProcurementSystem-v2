@@ -65,4 +65,85 @@ class SmartBoqImportTest extends TestCase
 
         $this->assertEquals('SCOPE OF WORKS', $result[0]['originalHeader']);
     }
+
+    // --- SmartBoqImportController feature tests ---
+
+    private function makeAdminWithProject(): array
+    {
+        $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+        $user = \App\Models\User::factory()->create(['role' => 'admin']);
+        $user->assignRole('admin');
+        $client = \App\Models\Client::factory()->create();
+        $project = \App\Models\Project::factory()->create([
+            'client_id' => $client->id,
+            'status' => 'PLANNING',
+            'approved_by' => null,
+        ]);
+        return [$user, $project];
+    }
+
+    public function test_analyze_rejects_non_excel_file()
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        [$user, $project] = $this->makeAdminWithProject();
+
+        $file = \Illuminate\Http\UploadedFile::fake()->create('test.pdf', 100, 'application/pdf');
+
+        $response = $this->actingAs($user)
+            ->postJson("/projects/{$project->id}/boq/smart-import/analyze", [
+                'file' => $file,
+            ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function test_confirm_saves_boq_items_using_confirmed_mappings()
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        [$user, $project] = $this->makeAdminWithProject();
+
+        $token = \Illuminate\Support\Str::uuid()->toString();
+        $rows = [
+            ['Concreting Works', 'lot', '1', '12500', '3000'],
+            ['Masonry Works', 'sqm', '45', '8200', '1500'],
+        ];
+        \Illuminate\Support\Facades\Storage::put("boq_imports/{$token}.json", json_encode($rows));
+
+        $mappings = [
+            ['columnIndex' => 0, 'mappedTo' => 'itemDescription'],
+            ['columnIndex' => 1, 'mappedTo' => 'unit'],
+            ['columnIndex' => 2, 'mappedTo' => 'quantity'],
+            ['columnIndex' => 3, 'mappedTo' => 'materialUnitCost'],
+            ['columnIndex' => 4, 'mappedTo' => 'laborUnitCost'],
+        ];
+
+        $response = $this->actingAs($user)
+            ->post("/projects/{$project->id}/boq/smart-import/confirm", [
+                'token'    => $token,
+                'mappings' => $mappings,
+            ]);
+
+        $response->assertStatus(302);
+        $this->assertDatabaseHas('boq_items', [
+            'item_description' => 'Concreting Works',
+            'project_id'       => $project->id,
+        ]);
+        $this->assertDatabaseHas('boq_items', ['item_description' => 'Masonry Works']);
+        \Illuminate\Support\Facades\Storage::assertMissing("boq_imports/{$token}.json");
+    }
+
+    public function test_confirm_rejects_invalid_token()
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        [$user, $project] = $this->makeAdminWithProject();
+
+        $response = $this->actingAs($user)
+            ->post("/projects/{$project->id}/boq/smart-import/confirm", [
+                'token'    => 'nonexistent-token',
+                'mappings' => [],
+            ]);
+
+        $response->assertStatus(302);
+        $response->assertSessionHasErrors();
+    }
 }
