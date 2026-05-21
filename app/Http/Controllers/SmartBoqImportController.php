@@ -39,8 +39,9 @@ class SmartBoqImportController extends Controller
             return response()->json(['message' => 'The file appears to be empty.'], 422);
         }
 
-        $headers = array_map(fn($v) => (string) ($v ?? ''), $allRows[0]);
-        $dataRows = array_slice($allRows, 1);
+        $headerRowIndex = $this->findHeaderRowIndex($allRows);
+        $headers = array_map(fn($v) => (string) ($v ?? ''), $allRows[$headerRowIndex]);
+        $dataRows = array_slice($allRows, $headerRowIndex + 1);
 
         $castRows = array_map(
             fn($r) => array_values(array_map(fn($v) => (string) ($v ?? ''), $r)),
@@ -97,6 +98,27 @@ class SmartBoqImportController extends Controller
         $this->boqService->bulkStore($items, $project);
 
         return redirect()->back()->with('success', count($items) . ' BOQ items imported successfully.');
+    }
+
+    private function findHeaderRowIndex(array $allRows): int
+    {
+        $bestIndex = 0;
+        $bestScore = 0;
+
+        foreach (array_slice($allRows, 0, 30, true) as $i => $row) {
+            $headers = array_map(fn($v) => (string) ($v ?? ''), $row);
+            $score = count(array_filter(
+                $this->mapper->map($headers),
+                fn($m) => $m['mappedTo'] !== null
+            ));
+
+            if ($score > $bestScore) {
+                $bestScore = $score;
+                $bestIndex = $i;
+            }
+        }
+
+        return $bestIndex;
     }
 
     private function rowToItem(array $row, array $fieldByIndex): array

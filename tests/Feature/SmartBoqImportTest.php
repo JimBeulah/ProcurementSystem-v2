@@ -132,6 +132,35 @@ class SmartBoqImportTest extends TestCase
         \Illuminate\Support\Facades\Storage::assertMissing("boq_imports/{$token}.json");
     }
 
+    public function test_mapper_finds_header_row_after_title_block()
+    {
+        $mapper = new BoqColumnMapper();
+
+        // Simulate a file where rows 0-2 are project metadata, row 3 is the real header
+        $rows = [
+            ['Project', ': Enterprise Bank Renovation', '', '', '', ''],
+            ['Location', ': Mati Branch', '', '', '', ''],
+            ['', '', '', '', '', ''],
+            ['Item', 'Details', 'Qty.', 'Unit', 'Price', 'Amount'],
+            ['Concreting Works', 'Concreting', '1.00', 'ls', '35000', '35000'],
+        ];
+
+        // Find which row has the most matches
+        $bestIndex = 0;
+        $bestScore = 0;
+        foreach ($rows as $i => $row) {
+            $mappings = $mapper->map(array_map('strval', $row));
+            $score = count(array_filter($mappings, fn($m) => $m['mappedTo'] !== null));
+            if ($score > $bestScore) {
+                $bestScore = $score;
+                $bestIndex = $i;
+            }
+        }
+
+        $this->assertEquals(3, $bestIndex, 'Header row should be detected at index 3, not 0');
+        $this->assertGreaterThan(2, $bestScore, 'Header row should match at least 3 columns');
+    }
+
     public function test_confirm_rejects_invalid_token()
     {
         \Illuminate\Support\Facades\Storage::fake('local');
