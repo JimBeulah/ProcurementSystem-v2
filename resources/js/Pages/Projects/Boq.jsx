@@ -7,12 +7,14 @@ import BoqMetricsModal from '@/Components/Boq/BoqMetricsModal';
 import EditBoqItemModal from '@/Components/Boq/EditBoqItemModal';
 import ResourceModal from '@/Components/Boq/ResourceModal';
 import ConfirmationModal from '@/Components/UI/ConfirmationModal';
+import SmartImportPreviewModal from '@/Components/Boq/SmartImportPreviewModal';
+import axios from 'axios';
 import { useBoqCalculations } from '@/Hooks/useBoqCalculations';
 import { downloadBoqTemplate, parseBoqCsv } from '@/Utils/boqFileUtils';
 import {
-    Plus, RefreshCcw, Upload, FileDown, Search, Layers, 
+    Plus, RefreshCcw, Upload, FileDown, Search, Layers,
     Trash2, Pencil, Box, Hammer, Truck, Info, Car,
-    TrendingUp
+    TrendingUp, Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -31,13 +33,14 @@ export default function ProjectBoq() {
     // Resource State
     const [resourceModal, setResourceModal] = useState({ open: false, mode: 'add', data: null });
     const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
-    const [confirmModal, setConfirmModal] = useState({ 
-        isOpen: false, 
-        type: 'confirm', 
-        title: '', 
-        message: '', 
-        onConfirm: () => {} 
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        type: 'confirm',
+        title: '',
+        message: '',
+        onConfirm: () => {}
     });
+    const [smartImport, setSmartImport] = useState({ open: false, data: null, analyzing: false });
 
     const items = initialItems || [];
     const drawerItem = items.find(i => i.id === drawerItemId) || null;
@@ -187,10 +190,55 @@ export default function ProjectBoq() {
                     onError: () => { setLoading(false); }
                 });
             }
-        } catch {
-            toast.error('Failed to parse CSV');
+        } catch (error) {
+            toast.error(error.message || 'Failed to parse file');
         }
         e.target.value = '';
+    };
+
+    const handleSmartImport = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        e.target.value = '';
+
+        setSmartImport(s => ({ ...s, analyzing: true }));
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const { data } = await axios.post(
+                `/projects/${project.id}/boq/smart-import/analyze`,
+                formData,
+                { headers: { 'Content-Type': 'multipart/form-data' } }
+            );
+            setSmartImport({ open: true, data, analyzing: false });
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to analyze file. Please check the format.');
+            setSmartImport({ open: false, data: null, analyzing: false });
+        }
+    };
+
+    const handleClearAll = () => {
+        setConfirmModal({
+            isOpen: true,
+            type: 'danger',
+            title: 'Clear All BOQ Items',
+            message: 'Are you sure you want to delete all BOQ items? This action cannot be undone.',
+            confirmText: 'Delete All',
+            onConfirm: () => {
+                setLoading(true);
+                const deletePromises = items.map(item =>
+                    new Promise((resolve) => {
+                        router.delete(`/projects/${project.id}/boq/${item.id}`, {
+                            onSuccess: () => resolve(),
+                            onError: () => resolve()
+                        });
+                    })
+                );
+                Promise.all(deletePromises).then(() => setLoading(false));
+            }
+        });
     };
 
     const filteredItems = items.filter(item =>
@@ -283,10 +331,33 @@ export default function ProjectBoq() {
                                     <FileDown size={16} />
                                 </button>
                                 {!isApproved && (
-                                    <label className="p-2 text-slate-500 hover:text-emerald-600 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all shadow-sm hover:shadow cursor-pointer" title="Bulk Upload">
-                                        <Upload size={16} />
-                                        <input type="file" accept=".csv" className="hidden" onChange={handleBulkUpload} disabled={loading} />
-                                    </label>
+                                    <>
+                                        <label
+                                            className="p-2 text-slate-500 hover:text-purple-600 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all shadow-sm hover:shadow cursor-pointer"
+                                            title={smartImport.analyzing ? 'Analyzing file...' : 'Smart Import — any Excel format'}
+                                        >
+                                            {smartImport.analyzing
+                                                ? <RefreshCcw size={16} className="animate-spin" />
+                                                : <Sparkles size={16} />
+                                            }
+                                            <input
+                                                type="file"
+                                                accept=".xlsx,.xls,.csv"
+                                                className="hidden"
+                                                onChange={handleSmartImport}
+                                                disabled={loading || smartImport.analyzing}
+                                            />
+                                        </label>
+                                        <label className="p-2 text-slate-500 hover:text-emerald-600 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all shadow-sm hover:shadow cursor-pointer" title="Import BOQ (CSV or Excel)">
+                                            <Upload size={16} />
+                                            <input type="file" accept=".csv,.xlsx" className="hidden" onChange={handleBulkUpload} disabled={loading} />
+                                        </label>
+                                        {items.length > 0 && (
+                                            <button onClick={handleClearAll} disabled={loading} className="p-2 text-slate-500 hover:text-red-600 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed" title="Clear All Items">
+                                                <Trash2 size={16} />
+                                            </button>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         </div>
@@ -568,16 +639,23 @@ export default function ProjectBoq() {
                     loading={loading} 
                 />
 
-                <ResourceModal 
-                    isOpen={resourceModal.open} 
-                    onClose={() => setResourceModal({ ...resourceModal, open: false })} 
-                    mode={resourceModal.mode} 
-                    data={resourceModal.data} 
-                    setData={(data) => setResourceModal({ ...resourceModal, data })} 
-                    units={units} 
-                    onSubmit={handleResourceSubmit} 
+                <ResourceModal
+                    isOpen={resourceModal.open}
+                    onClose={() => setResourceModal({ ...resourceModal, open: false })}
+                    mode={resourceModal.mode}
+                    data={resourceModal.data}
+                    setData={(data) => setResourceModal({ ...resourceModal, data })}
+                    units={units}
+                    onSubmit={handleResourceSubmit}
                     loading={loading}
-                    parentItem={drawerItem} 
+                    parentItem={drawerItem}
+                />
+
+                <SmartImportPreviewModal
+                    isOpen={smartImport.open}
+                    onClose={() => setSmartImport({ open: false, data: null, analyzing: false })}
+                    projectId={project.id}
+                    analyzeData={smartImport.data}
                 />
 
                 <ConfirmationModal
