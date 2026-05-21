@@ -4,18 +4,11 @@ namespace Tests\Feature;
 
 use App\Services\BoqColumnMapper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Tests\TestCase;
 
 class SmartBoqImportTest extends TestCase
 {
     use RefreshDatabase;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->withoutMiddleware(ValidateCsrfToken::class);
-    }
 
     // --- BoqColumnMapper unit tests ---
 

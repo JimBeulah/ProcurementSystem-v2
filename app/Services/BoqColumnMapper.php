@@ -64,6 +64,10 @@ class BoqColumnMapper
         // Second pass: partial match (substring only, not substring of synonym)
         foreach ($this->synonyms as $field => $synonymList) {
             foreach ($synonymList as $synonym) {
+                // Skip short synonyms in partial matching to avoid false positives
+                if (strlen($synonym) <= 3) {
+                    continue;
+                }
                 // Only match if normalized contains the synonym, not the other way around
                 if (str_contains($normalized, $synonym) && $normalized !== $synonym) {
                     return ['field' => $field, 'confidence' => 'low'];
