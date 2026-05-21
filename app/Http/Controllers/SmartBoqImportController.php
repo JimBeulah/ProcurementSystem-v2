@@ -42,18 +42,20 @@ class SmartBoqImportController extends Controller
         $headers = array_map(fn($v) => (string) ($v ?? ''), $allRows[0]);
         $dataRows = array_slice($allRows, 1);
 
-        $token = Str::uuid()->toString();
-        Storage::put(
-            "boq_imports/{$token}.json",
-            json_encode(array_map(fn($r) => array_values(array_map(fn($v) => (string) ($v ?? ''), $r)), $dataRows))
+        $castRows = array_map(
+            fn($r) => array_values(array_map(fn($v) => (string) ($v ?? ''), $r)),
+            $dataRows
         );
+
+        $token = Str::uuid()->toString();
+        Storage::put("boq_imports/{$token}.json", json_encode($castRows));
 
         return response()->json([
             'token'      => $token,
             'headers'    => $headers,
-            'sampleRows' => array_slice($dataRows, 0, 5),
+            'sampleRows' => array_slice($castRows, 0, 5),
             'mappings'   => $this->mapper->map($headers),
-            'totalRows'  => count($dataRows),
+            'totalRows'  => count($castRows),
         ]);
     }
 
@@ -64,7 +66,7 @@ class SmartBoqImportController extends Controller
         }
 
         $request->validate([
-            'token'    => 'required|string',
+            'token'    => 'required|string|uuid',
             'mappings' => 'required|array',
         ]);
 
@@ -114,7 +116,7 @@ class SmartBoqImportController extends Controller
             match ($field) {
                 'itemDescription'  => $item['itemDescription']   = (string) $value,
                 'unit'             => $item['unit']              = (string) $value ?: 'lot',
-                'quantity'         => $item['quantity']          = (float) $value ?: 1,
+                'quantity'         => $item['quantity']          = ($value !== '' && $value !== null) ? (float) $value : 1,
                 'materialUnitCost' => $item['materialUnitPrice'] = (float) $value,
                 'laborUnitCost'    => $item['laborUnitPrice']    = (float) $value,
                 default            => null,
