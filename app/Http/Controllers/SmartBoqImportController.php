@@ -88,6 +88,8 @@ class SmartBoqImportController extends Controller
         $items = collect($rows)
             ->map(fn($row) => $this->rowToItem($row, $fieldByIndex))
             ->filter(fn($item) => ! empty($item['itemDescription']))
+            ->filter(fn($item) => ! $this->isSummaryRow($item['itemDescription']))
+            ->unique('itemDescription')
             ->values()
             ->all();
 
@@ -119,6 +121,14 @@ class SmartBoqImportController extends Controller
         }
 
         return $bestIndex;
+    }
+
+    private function isSummaryRow(string $description): bool
+    {
+        return (bool) preg_match(
+            '/^(total|sub.?total|grand total|amount without|amount per|carport area|floor area|output per|direct unit cost)/i',
+            trim($description)
+        );
     }
 
     private function rowToItem(array $row, array $fieldByIndex): array

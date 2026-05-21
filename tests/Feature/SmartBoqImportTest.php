@@ -132,6 +132,47 @@ class SmartBoqImportTest extends TestCase
         \Illuminate\Support\Facades\Storage::assertMissing("boq_imports/{$token}.json");
     }
 
+    public function test_confirm_deduplicates_and_skips_summary_rows()
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        [$user, $project] = $this->makeAdminWithProject();
+
+        $token = \Illuminate\Support\Str::uuid()->toString();
+        $rows = [
+            // Summary table
+            ['GENERAL REQUIREMENTS', 'lot', '1', '28500', '0'],
+            ['CONCRETE / STRUCTURAL', 'lot', '1', '275959', '110383'],
+            // Summary/total rows that should be skipped
+            ['TOTAL CONSTRUCTION COST', 'lot', '1', '0', '0'],
+            ['TOTAL CONSTRUCTION COST ( plus 10% profit)', 'lot', '1', '0', '0'],
+            ['AMOUNT WITHOUT CARPORT', '', '', '1849598', ''],
+            // Breakdown section — duplicate item names, should be dropped
+            ['GENERAL REQUIREMENTS', 'lot', '1', '0', '0'],
+        ];
+        \Illuminate\Support\Facades\Storage::put("boq_imports/{$token}.json", json_encode($rows));
+
+        $mappings = [
+            ['columnIndex' => 0, 'mappedTo' => 'itemDescription'],
+            ['columnIndex' => 1, 'mappedTo' => 'unit'],
+            ['columnIndex' => 2, 'mappedTo' => 'quantity'],
+            ['columnIndex' => 3, 'mappedTo' => 'materialUnitCost'],
+            ['columnIndex' => 4, 'mappedTo' => 'laborUnitCost'],
+        ];
+
+        $response = $this->actingAs($user)
+            ->post("/projects/{$project->id}/boq/smart-import/confirm", [
+                'token'    => $token,
+                'mappings' => $mappings,
+            ]);
+
+        $response->assertStatus(302);
+        $this->assertDatabaseHas('boq_items', ['item_description' => 'GENERAL REQUIREMENTS']);
+        $this->assertDatabaseHas('boq_items', ['item_description' => 'CONCRETE / STRUCTURAL']);
+        $this->assertDatabaseMissing('boq_items', ['item_description' => 'TOTAL CONSTRUCTION COST']);
+        $this->assertDatabaseMissing('boq_items', ['item_description' => 'AMOUNT WITHOUT CARPORT']);
+        $this->assertEquals(2, \App\Models\BoqItem::where('project_id', $project->id)->count());
+    }
+
     public function test_confirm_handles_comma_formatted_numbers()
     {
         \Illuminate\Support\Facades\Storage::fake('local');
