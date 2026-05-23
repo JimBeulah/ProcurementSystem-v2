@@ -132,14 +132,11 @@ export default function ProjectMaterialRequests() {
                     />
                 </div>
 
-                <MRCreateModal 
-                    isOpen={showModal} 
+                <MRCreateModal
+                    isOpen={showModal}
                     onClose={() => setShowModal(false)}
                     onSubmit={handleCreateSubmit}
                     boqItems={boqItems}
-                    inventoryItems={inventoryItems}
-                    auth={auth}
-                    requests={requests}
                     submitting={submitting}
                 />
 
