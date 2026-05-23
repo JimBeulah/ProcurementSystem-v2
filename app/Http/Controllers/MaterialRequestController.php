@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Enums\MaterialRequestStatus;
 use App\Http\Requests\StoreMaterialRequestRequest;
 use App\Models\BoqItem;
-use App\Models\InventoryItem;
 use App\Models\MaterialRequest;
 use App\Models\Project;
 use App\Services\MaterialRequestService;
@@ -51,7 +50,7 @@ class MaterialRequestController extends Controller
             ])
             ->get()
             ->map(function ($boqItem) {
-                $clientBudget = (float) $boqItem->material_unit_price + (float) $boqItem->labor_unit_price;
+                $clientBudget = ((float) $boqItem->material_unit_price + (float) $boqItem->labor_unit_price) * (float) $boqItem->quantity;
 
                 $totalRequested = $boqItem->components->flatMap(fn ($c) => $c->materialRequestItems)
                     ->sum(fn ($mri) => (float) $mri->quantity * ((float) $mri->material_unit_price + (float) $mri->labor_unit_price));
@@ -64,15 +63,10 @@ class MaterialRequestController extends Controller
                 return $item;
             });
 
-        $inventoryItems = InventoryItem::whereNull('project_id')
-            ->with('warehouse')
-            ->get();
-
         return Inertia::render('Projects/MaterialRequests', [
             'project' => $project,
             'materialRequests' => $materialRequests,
             'boqItems' => $boqItems,
-            'inventoryItems' => $inventoryItems,
         ]);
     }
 

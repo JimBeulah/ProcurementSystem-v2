@@ -38,6 +38,10 @@ class MaterialRequestService
                 continue;
             }
 
+            if ($component->quantity_factor === null) {
+                continue;
+            }
+
             $totalComponentQty = $component->boqItem->quantity * $component->quantity_factor;
             $totalAltapilBudget = $totalComponentQty * $component->altapil_unit_rate;
 

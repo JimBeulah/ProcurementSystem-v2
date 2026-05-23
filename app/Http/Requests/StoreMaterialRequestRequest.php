@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreMaterialRequestRequest extends FormRequest
 {
@@ -17,8 +18,15 @@ class StoreMaterialRequestRequest extends FormRequest
             'remarks' => 'nullable|string|max:500',
             'authorize_override' => 'sometimes|boolean',
             'items' => 'required|array|min:1',
-            'items.*.boq_item_id' => 'nullable|exists:boq_items,id',
-            'items.*.boq_item_component_id' => 'nullable|exists:boq_item_components,id',
+            'items.*.boq_item_id' => [
+                'nullable',
+                Rule::exists('boq_items', 'id')->where('project_id', $this->route('project')->id),
+            ],
+            'items.*.boq_item_component_id' => [
+                'nullable',
+                Rule::exists('boq_item_components', 'id')
+                    ->whereIn('boq_item_id', \App\Models\BoqItem::where('project_id', $this->route('project')->id)->pluck('id')),
+            ],
             'items.*.is_new_resource' => 'sometimes|boolean',
             'items.*.resource_type' => 'required_if:items.*.is_new_resource,true|nullable|in:MATERIAL,LABOR,EQUIPMENT',
             'items.*.item_description' => 'required|string|max:500',

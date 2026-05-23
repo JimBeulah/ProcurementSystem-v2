@@ -8,7 +8,7 @@ import MRDetailsDrawer from '@/Components/MaterialRequest/MRDetailsDrawer';
 import MRCreateModal from '@/Components/MaterialRequest/MRCreateModal';
 
 export default function ProjectMaterialRequests() {
-    const { project, materialRequests: initialMRs, boqItems, inventoryItems, auth } = usePage().props;
+    const { project, materialRequests: initialMRs, boqItems, auth } = usePage().props;
     const requests = useMemo(() => initialMRs || [], [initialMRs]);
 
     const [showModal, setShowModal] = useState(false);
