@@ -74,20 +74,52 @@ class MaterialRequestService
             ]);
 
             foreach ($validated['items'] as $item) {
+                $componentId = $this->resolveComponentId($item);
+
                 MaterialRequestItem::create([
-                    'material_request_id' => $mr->id,
-                    'boq_item_id' => $item['boq_item_id'] ?? null,
-                    'boq_item_component_id' => $item['boq_item_component_id'] ?? null,
-                    'item_description' => $item['item_description'],
-                    'unit' => $item['unit'],
-                    'quantity' => $item['quantity'],
-                    'material_unit_price' => $item['material_unit_price'] ?? 0,
-                    'labor_unit_price' => $item['labor_unit_price'] ?? 0,
+                    'material_request_id'   => $mr->id,
+                    'boq_item_id'           => $item['boq_item_id'] ?? null,
+                    'boq_item_component_id' => $componentId,
+                    'item_description'      => $item['item_description'],
+                    'unit'                  => $item['unit'],
+                    'quantity'              => $item['quantity'],
+                    'material_unit_price'   => $item['material_unit_price'] ?? 0,
+                    'labor_unit_price'      => $item['labor_unit_price'] ?? 0,
                 ]);
             }
 
             return $mr;
         });
+    }
+
+    /**
+     * Resolve the boq_item_component_id for a material request item.
+     * If the item references an existing component, return its ID.
+     * If it is a new resource, create a BoqItemComponent record and return the new ID.
+     */
+    private function resolveComponentId(array $item): ?int
+    {
+        if (!empty($item['boq_item_component_id'])) {
+            return (int) $item['boq_item_component_id'];
+        }
+
+        if (!empty($item['is_new_resource']) && !empty($item['boq_item_id'])) {
+            $component = BoqItemComponent::create([
+                'boq_item_id'        => $item['boq_item_id'],
+                'resource_type'      => $item['resource_type'],
+                'name'               => $item['item_description'],
+                'unit'               => $item['unit'],
+                'quantity_factor'    => null,
+                'client_unit_rate'   => null,
+                'client_total_cost'  => null,
+                'altapil_unit_rate'  => 0,
+                'altapil_total_cost' => 0,
+            ]);
+
+            return $component->id;
+        }
+
+        return null;
     }
 
     /**
