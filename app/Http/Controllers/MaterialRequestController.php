@@ -41,8 +41,28 @@ class MaterialRequestController extends Controller
             });
 
         $boqItems = BoqItem::where('project_id', $project->id)
-            ->with('components')
-            ->get();
+            ->with([
+                'components',
+                'components.materialRequestItems' => function ($q) {
+                    $q->whereHas('materialRequest', function ($q2) {
+                        $q2->whereNotIn('status', ['REJECTED', 'CANCELLED']);
+                    });
+                },
+            ])
+            ->get()
+            ->map(function ($boqItem) {
+                $clientBudget = (float) $boqItem->material_unit_price + (float) $boqItem->labor_unit_price;
+
+                $totalRequested = $boqItem->components->flatMap(fn ($c) => $c->materialRequestItems)
+                    ->sum(fn ($mri) => (float) $mri->quantity * ((float) $mri->material_unit_price + (float) $mri->labor_unit_price));
+
+                $item = $boqItem->toArray();
+                $item['client_budget'] = $clientBudget;
+                $item['total_requested'] = $totalRequested;
+                $item['remaining_budget'] = $clientBudget - $totalRequested;
+
+                return $item;
+            });
 
         $inventoryItems = InventoryItem::whereNull('project_id')
             ->with('warehouse')

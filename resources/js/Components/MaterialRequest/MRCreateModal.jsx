@@ -168,10 +168,17 @@ export default function MRCreateModal({
                                 icon={Package}
                             />
                             {selectedBoqItem && (
-                                <div className="mt-1.5 text-[10px] text-slate-500 flex justify-between">
-                                    <span>{selectedBoqItem.unit} × {Number(selectedBoqItem.quantity).toLocaleString()}</span>
+                                <div className="mt-1.5 text-[10px] flex justify-between">
+                                    <span className="text-slate-500">
+                                        {selectedBoqItem.unit} × {Number(selectedBoqItem.quantity).toLocaleString()}
+                                    </span>
                                     <span className="font-bold text-slate-700 dark:text-slate-300">
-                                        Budget: ₱{Number(clientBudget).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                        Budget: ₱{Number(selectedBoqItem.client_budget ?? clientBudget).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                        {selectedBoqItem.remaining_budget != null && (
+                                            <span className={`ml-2 ${selectedBoqItem.remaining_budget < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
+                                                · Remaining: ₱{Number(selectedBoqItem.remaining_budget).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                            </span>
+                                        )}
                                     </span>
                                 </div>
                             )}
