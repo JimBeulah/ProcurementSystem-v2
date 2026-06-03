@@ -105,10 +105,10 @@ export default function ProjectShow() {
             hideForSiteEngineer: true
         },
         {
-            title: 'Total Profit',
-            value: formatCurrency(project.total_profit),
-            icon: <Activity size={20} className="text-purple-600 dark:text-purple-400" />,
-            color: 'from-purple-500 to-indigo-500',
+            title: Number(project.profit_or_loss || 0) >= 0 ? 'Profit' : 'Loss',
+            value: formatCurrency(Math.abs(Number(project.profit_or_loss || 0))),
+            icon: <Activity size={20} className={Number(project.profit_or_loss || 0) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'} />,
+            color: Number(project.profit_or_loss || 0) >= 0 ? 'from-emerald-500 to-teal-500' : 'from-red-500 to-rose-500',
             hideForSiteEngineer: true
         },
         {

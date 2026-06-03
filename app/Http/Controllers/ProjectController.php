@@ -38,6 +38,7 @@ class ProjectController extends Controller
         $this->authorize('view', $project);
 
         $project->load(['client', 'siteEngineer', 'boqItems', 'materialRequests', 'purchaseOrders']);
+        $project->append(['total_budget', 'total_actual_spend', 'profit_or_loss']);
 
         return Inertia::render('Projects/Show', [
             'project' => $project,

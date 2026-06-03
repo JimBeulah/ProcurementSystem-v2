@@ -43,7 +43,7 @@ class MaterialRequestService
             }
 
             $totalComponentQty = $component->boqItem->quantity * $component->quantity_factor;
-            $totalAltapilBudget = $totalComponentQty * $component->altapil_unit_rate;
+            $totalBudget = $totalComponentQty * $component->unit_rate;
 
             $currentRequestCost = $item['quantity'] * (($item['material_unit_price'] ?? 0) + ($item['labor_unit_price'] ?? 0));
 
@@ -54,9 +54,9 @@ class MaterialRequestService
                 ->get()
                 ->sum(fn ($reqItem) => $reqItem->quantity * ($reqItem->material_unit_price + $reqItem->labor_unit_price));
 
-            if (($previousRequestsCost + $currentRequestCost) > $totalAltapilBudget) {
-                $remaining = max(0, $totalAltapilBudget - $previousRequestsCost);
-                $overBudgetItems[] = "{$component->name} (Budget: ".number_format($totalAltapilBudget, 2).', Remaining: '.number_format($remaining, 2).', Requested: '.number_format($currentRequestCost, 2).')';
+            if (($previousRequestsCost + $currentRequestCost) > $totalBudget) {
+                $remaining = max(0, $totalBudget - $previousRequestsCost);
+                $overBudgetItems[] = "{$component->name} (Budget: ".number_format($totalBudget, 2).', Remaining: '.number_format($remaining, 2).', Requested: '.number_format($currentRequestCost, 2).')';
             }
         }
 
@@ -109,15 +109,13 @@ class MaterialRequestService
 
         if (!empty($item['is_new_resource']) && !empty($item['boq_item_id'])) {
             $component = BoqItemComponent::create([
-                'boq_item_id'        => $item['boq_item_id'],
-                'resource_type'      => $item['resource_type'],
-                'name'               => $item['item_description'],
-                'unit'               => $item['unit'],
-                'quantity_factor'    => null,
-                'client_unit_rate'   => null,
-                'client_total_cost'  => null,
-                'altapil_unit_rate'  => 0,
-                'altapil_total_cost' => 0,
+                'boq_item_id'     => $item['boq_item_id'],
+                'resource_type'   => $item['resource_type'],
+                'name'            => $item['item_description'],
+                'unit'            => $item['unit'],
+                'quantity_factor' => null,
+                'unit_rate'       => 0,
+                'total_cost'      => 0,
             ]);
 
             return $component->id;

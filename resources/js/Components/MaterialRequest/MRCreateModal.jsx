@@ -173,7 +173,7 @@ export default function MRCreateModal({
                                         {selectedBoqItem.unit} × {Number(selectedBoqItem.quantity).toLocaleString()}
                                     </span>
                                     <span className="font-bold text-slate-700 dark:text-slate-300">
-                                        Budget: ₱{Number(selectedBoqItem.client_budget ?? clientBudget).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                        Budget: ₱{Number(selectedBoqItem.budget ?? clientBudget).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                         {selectedBoqItem.remaining_budget != null && (
                                             <span className={`ml-2 ${selectedBoqItem.remaining_budget < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
                                                 · Remaining: ₱{Number(selectedBoqItem.remaining_budget).toLocaleString(undefined, { minimumFractionDigits: 2 })}

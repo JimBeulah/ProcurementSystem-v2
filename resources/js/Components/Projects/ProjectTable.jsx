@@ -110,18 +110,16 @@ export default function ProjectTable({ projects, onEdit, onDelete, onCreate, aut
                     }
                 },
                 {
-                    accessorKey: 'total_profit',
-                    header: () => <div className="text-right text-purple-500 w-full block">Total Profit</div>,
+                    accessorKey: 'profit_or_loss',
+                    header: 'Profit / Loss',
                     cell: ({ row }) => {
-                        const project = row.original;
+                        const val = Number(row.original.profit_or_loss || 0);
                         return (
-                            <div className="text-right font-mono text-purple-600 dark:text-purple-400 w-full block">
-                                <span className="bg-purple-50/10 dark:bg-purple-900/10 inline-block px-2 py-1 rounded">
-                                    ₱ {Number(project.total_profit || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                                </span>
-                            </div>
+                            <span className={val >= 0 ? 'text-emerald-600 font-mono' : 'text-red-500 font-mono'}>
+                                {val >= 0 ? '' : '-'}₱ {Math.abs(val).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                            </span>
                         );
-                    }
+                    },
                 }
             );
         }

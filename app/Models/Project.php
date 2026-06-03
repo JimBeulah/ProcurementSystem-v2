@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\MaterialRequestStatus;
+use App\Models\BoqItemComponent;
+use App\Models\MaterialRequestItem;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -138,21 +141,26 @@ class Project extends Model
         return $this->hasManyThrough(SupplierInvoice::class, PurchaseOrder::class);
     }
 
-    /**
-     * Calculate the total profit for the project's BOQ.
-     * Encapsulated as an accessor so controllers stay thin.
-     */
-    public function getTotalProfitAttribute(): float
+    public function getTotalBudgetAttribute(): float
     {
         return (float) BoqItemComponent::join('boq_items', 'boq_items.id', '=', 'boq_item_components.boq_item_id')
             ->where('boq_items.project_id', $this->id)
-            ->sum(DB::raw('client_total_cost - altapil_total_cost'));
+            ->sum('total_cost');
     }
 
-    public function getTotalAltapilBudgetAttribute(): float
+    public function getTotalActualSpendAttribute(): float
     {
-        return (float) BoqItemComponent::join('boq_items', 'boq_items.id', '=', 'boq_item_components.boq_item_id')
-            ->where('boq_items.project_id', $this->id)
-            ->sum('altapil_total_cost');
+        return (float) MaterialRequestItem::join('material_requests', 'material_requests.id', '=', 'material_request_items.material_request_id')
+            ->where('material_requests.project_id', $this->id)
+            ->whereNotIn('material_requests.status', [
+                MaterialRequestStatus::REJECTED->value,
+                MaterialRequestStatus::CANCELLED->value,
+            ])
+            ->sum(DB::raw('material_request_items.quantity * (material_request_items.material_unit_price + material_request_items.labor_unit_price)'));
+    }
+
+    public function getProfitOrLossAttribute(): float
+    {
+        return $this->total_budget - $this->total_actual_spend;
     }
 }

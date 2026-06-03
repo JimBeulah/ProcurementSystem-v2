@@ -18,8 +18,7 @@ class StoreBoqComponentRequest extends FormRequest
             'name' => 'required|string|max:255',
             'unit' => 'nullable|string|max:50',
             'quantityFactor' => 'required|numeric|min:0',
-            'clientUnitRate' => 'required|numeric|min:0',
-            'altapilUnitRate' => 'nullable|numeric|min:0',
+            'unitRate' => 'required|numeric|min:0',
             'noOfPersons' => 'nullable|numeric|min:0',
             'hours' => 'nullable|numeric|min:0',
         ];

@@ -33,8 +33,7 @@ class StoreBoqItemRequest extends FormRequest
             'components.*.resourceType' => 'required|string|in:MATERIAL,LABOR,EQUIPMENT',
             'components.*.name' => 'required|string|max:255',
             'components.*.quantityFactor' => 'required|numeric|min:0',
-            'components.*.clientUnitRate' => 'required|numeric|min:0',
-            'components.*.altapilUnitRate' => 'nullable|numeric|min:0',
+            'components.*.unitRate' => 'required|numeric|min:0',
             'components.*.noOfPersons' => 'nullable|numeric|min:0',
             'components.*.hours' => 'nullable|numeric|min:0',
         ];

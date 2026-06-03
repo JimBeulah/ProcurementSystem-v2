@@ -49,18 +49,16 @@ class MaterialRequestBudgetTest extends TestCase
             'is_carport' => false,
         ]);
 
-        // Total budget = BOQ qty(10) * quantity_factor(5) * altapil_unit_rate(20) = 1000
+        // Total budget = BOQ qty(10) * quantity_factor(5) * unit_rate(20) = 1000
         $component = BoqItemComponent::create([
-            'boq_item_id' => $boqItem->id,
-            'resource_type' => 'MATERIAL',
-            'name' => 'Cement',
+            'boq_item_id'     => $boqItem->id,
+            'resource_type'   => 'MATERIAL',
+            'name'            => 'Cement',
             'quantity_factor' => 5,
-            'client_unit_rate' => 25,
-            'client_total_cost' => 125,
-            'altapil_unit_rate' => 20,
-            'altapil_total_cost' => 100,
-            'no_of_persons' => 0,
-            'hours' => 0,
+            'unit_rate'       => 20,
+            'total_cost'      => 100,
+            'no_of_persons'   => 0,
+            'hours'           => 0,
         ]);
 
         // Grant material request permissions
@@ -75,7 +73,7 @@ class MaterialRequestBudgetTest extends TestCase
     {
         ['user' => $user, 'project' => $project, 'boqItem' => $boqItem, 'component' => $component] = $this->makeProjectWithComponent();
 
-        // Total Altapil budget = 10 * 5 * 20 = 1000. Requesting qty=45 @ ₱20 = 900 — within budget.
+        // Total budget = 10 * 5 * 20 = 1000. Requesting qty=45 @ ₱20 = 900 — within budget.
         $response = $this->actingAs($user)->post(route('projects.material-requests.store', $project), [
             'items' => [
                 [

@@ -92,15 +92,13 @@ class MaterialRequestNewResourceTest extends TestCase
         [$user, $project, $boqItem] = $this->makeProjectAndEngineer();
 
         $component = BoqItemComponent::create([
-            'boq_item_id' => $boqItem->id,
-            'resource_type' => 'MATERIAL',
-            'name' => 'PVC Conduit',
-            'unit' => 'pcs',
+            'boq_item_id'     => $boqItem->id,
+            'resource_type'   => 'MATERIAL',
+            'name'            => 'PVC Conduit',
+            'unit'            => 'pcs',
             'quantity_factor' => null,
-            'client_unit_rate' => null,
-            'client_total_cost' => null,
-            'altapil_unit_rate' => 0,
-            'altapil_total_cost' => 0,
+            'unit_rate'       => 0,
+            'total_cost'      => 0,
         ]);
 
         $this->actingAs($user)

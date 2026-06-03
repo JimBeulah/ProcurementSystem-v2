@@ -25,7 +25,14 @@ export default function ProjectGrid({ projects, onEdit, onDelete, auth }) {
                         {!isSiteEngineer && (
                             <>
                                 <div className="flex justify-between items-center py-1 border-b border-slate-100 dark:border-slate-700/50"><span className="text-slate-500">Budget</span><span className="font-mono font-bold text-emerald-600">₱ {Number(project.budget).toLocaleString()}</span></div>
-                                <div className="flex justify-between items-center py-1 border-b border-slate-100 dark:border-slate-700/50"><span className="text-purple-500/80">Total Profit</span><span className="font-mono font-bold text-purple-600 dark:text-purple-400">₱ {Number(project.total_profit || 0).toLocaleString()}</span></div>
+                                <div className="flex justify-between items-center py-1 border-b border-slate-100 dark:border-slate-700/50">
+                                    <span className={Number(project.profit_or_loss || 0) >= 0 ? 'text-emerald-500/80' : 'text-red-500/80'}>
+                                        {Number(project.profit_or_loss || 0) >= 0 ? 'Profit' : 'Loss'}
+                                    </span>
+                                    <span className={`font-mono font-bold ${Number(project.profit_or_loss || 0) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                                        ₱ {Math.abs(Number(project.profit_or_loss || 0)).toLocaleString()}
+                                    </span>
+                                </div>
                             </>
                         )}
                         <div className="flex justify-between items-center py-1 border-b border-slate-100 dark:border-slate-700/50"><span className="text-slate-500">Status</span><span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${project.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-600' : 'text-slate-500 bg-slate-100 dark:bg-slate-700'}`}>{project.status}</span></div>

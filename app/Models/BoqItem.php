@@ -49,11 +49,11 @@ class BoqItem extends Model
     {
         $materialTotal = $this->components()
             ->whereIn('resource_type', ['MATERIAL', 'EQUIPMENT'])
-            ->sum('client_total_cost');
+            ->sum('total_cost');
 
         $laborTotal = $this->components()
             ->where('resource_type', 'LABOR')
-            ->sum('client_total_cost');
+            ->sum('total_cost');
 
         $this->update([
             'material_unit_price' => $materialTotal,

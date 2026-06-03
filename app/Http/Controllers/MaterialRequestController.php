@@ -56,7 +56,7 @@ class MaterialRequestController extends Controller
                     ->sum(fn ($mri) => (float) $mri->quantity * ((float) $mri->material_unit_price + (float) $mri->labor_unit_price));
 
                 $item = $boqItem->toArray();
-                $item['client_budget'] = $clientBudget;
+                $item['budget'] = $clientBudget;
                 $item['total_requested'] = $totalRequested;
                 $item['remaining_budget'] = $clientBudget - $totalRequested;
 
@@ -94,7 +94,7 @@ class MaterialRequestController extends Controller
             }
 
             $itemsList = implode('; ', $violations);
-            $msg = "Budget Exceeded! The request exceeds the Altapil budget for: $itemsList.";
+            $msg = "Budget Exceeded! The request exceeds the budget for: $itemsList.";
 
             if ($isAuthorizedToOverride) {
                 return redirect()->back()->with('warning', "$msg You may choose to Authorize Override if this price increase is necessary.");

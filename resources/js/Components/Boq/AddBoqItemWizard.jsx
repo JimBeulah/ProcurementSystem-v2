@@ -80,8 +80,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                 ...c,
                 unit: c.unit || '',
                 quantityFactor: Number(c.quantityFactor) || 0,
-                clientUnitRate: Number(c.clientUnitRate) || 0,
-                altapilUnitRate: Number(c.altapilUnitRate) || 0,
+                unitRate: Number(c.unitRate) || 0,
                 noOfPersons: Number(c.noOfPersons) || 0,
                 hours: Number(c.hours) || 0,
             }))
@@ -129,7 +128,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
     const addComponent = () => {
         setItem(prev => ({
             ...prev,
-            components: [...prev.components, { resourceType: 'MATERIAL', name: '', unit: '', quantityFactor: 0, clientUnitRate: 0, altapilUnitRate: 0, noOfPersons: 0, hours: 0 }]
+            components: [...prev.components, { resourceType: 'MATERIAL', name: '', unit: '', quantityFactor: 0, unitRate: 0, noOfPersons: 0, hours: 0 }]
         }));
         // Auto-scroll to bottom after React re-renders the new row
         setTimeout(() => {
@@ -146,7 +145,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
 
     const updateComponent = (index, field, rawValue) => {
         const newComponents = [...item.components];
-        const value = ['quantityFactor', 'clientUnitRate', 'altapilUnitRate', 'noOfPersons', 'hours'].includes(field) 
+        const value = ['quantityFactor', 'unitRate', 'noOfPersons', 'hours'].includes(field)
             ? stripCommas(rawValue) 
             : rawValue;
             
@@ -167,10 +166,10 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
 
         const matCosts = newComponents
             .filter(c => c.resourceType === 'MATERIAL')
-            .reduce((sum, c) => sum + (Number(c.quantityFactor) * Number(c.clientUnitRate)), 0);
+            .reduce((sum, c) => sum + (Number(c.quantityFactor) * Number(c.unitRate)), 0);
         const labCosts = newComponents
             .filter(c => c.resourceType === 'LABOR' || c.resourceType === 'EQUIPMENT')
-            .reduce((sum, c) => sum + (Number(c.quantityFactor) * Number(c.clientUnitRate)), 0);
+            .reduce((sum, c) => sum + (Number(c.quantityFactor) * Number(c.unitRate)), 0);
 
         setItem(prev => ({
             ...prev,
@@ -310,7 +309,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                     <div ref={resourceListRef} className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar pr-1">
                         {item.components.map((comp, idx) => (
                             <div key={idx} className="bg-white/60 dark:bg-slate-800/40 backdrop-blur-xl shadow-sm rounded-lg p-3 border border-slate-200/80 dark:border-slate-700/80 relative group/row hover:bg-white/80 dark:hover:bg-slate-800/60 transition-colors">
-                                <div className="grid gap-2 items-center" style={{ gridTemplateColumns: comp.resourceType === 'MATERIAL' ? "100px 1fr 60px 80px 96px 96px 28px" : "100px 1fr 60px 48px 48px 80px 96px 96px 28px" }}>
+                                <div className="grid gap-2 items-center" style={{ gridTemplateColumns: comp.resourceType === 'MATERIAL' ? "100px 1fr 60px 80px 96px 28px" : "100px 1fr 60px 48px 48px 80px 96px 28px" }}>
                                     <div>
                                         <label className="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-1 block ml-1">Type</label>
                                         <select
@@ -399,31 +398,16 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-1 block text-right pr-1">Client Rate</label>
+                                        <label className="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-1 block text-right pr-1">Budget Rate</label>
                                         <input
                                             type="text"
                                             placeholder="0.00"
                                             className="w-full bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-700/80 rounded shadow-sm p-1.5 text-xs text-slate-900 dark:text-white outline-none text-right focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-mono"
-                                            value={formatWithCommas(comp.clientUnitRate)}
+                                            value={formatWithCommas(comp.unitRate)}
                                             onChange={e => {
                                                 const stripped = stripCommas(e.target.value);
                                                 if (stripped === '' || /^\d*\.?\d*$/.test(stripped)) {
-                                                    updateComponent(idx, 'clientUnitRate', stripped);
-                                                }
-                                            }}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-[9px] text-blue-600 dark:text-blue-400 uppercase font-black mb-1 block text-right pr-1 drop-shadow-sm">Altapil Rate</label>
-                                        <input
-                                            type="text"
-                                            placeholder="0.00"
-                                            className="w-full bg-blue-50/50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700/50 rounded shadow-sm p-1.5 text-xs text-slate-900 dark:text-white outline-none text-right focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-mono font-bold"
-                                            value={formatWithCommas(comp.altapilUnitRate)}
-                                            onChange={e => {
-                                                const stripped = stripCommas(e.target.value);
-                                                if (stripped === '' || /^\d*\.?\d*$/.test(stripped)) {
-                                                    updateComponent(idx, 'altapilUnitRate', stripped);
+                                                    updateComponent(idx, 'unitRate', stripped);
                                                 }
                                             }}
                                         />
@@ -436,7 +420,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                                 </div>
                                 <div className="flex justify-end mt-1">
                                     <span className="text-[9px] font-mono text-slate-400">
-                                        Row: ₱ {(Number(comp.quantityFactor) * Number(comp.clientUnitRate)).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                        Row: ₱ {(Number(comp.quantityFactor) * Number(comp.unitRate)).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </span>
                                 </div>
                             </div>

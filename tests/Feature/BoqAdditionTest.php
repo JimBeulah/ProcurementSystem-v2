@@ -50,9 +50,7 @@ class BoqAdditionTest extends TestCase
                     'resourceType' => 'MATERIAL',
                     'name' => 'Cement',
                     'quantityFactor' => 5,
-                    'unitRate' => 100,  // Used for StoreBoqItemRequest validation
-                    'clientUnitRate' => 100,  // Used when creating the component record
-                    'altapilUnitRate' => 80,
+                    'unitRate' => 100,
                     'noOfPersons' => 0,
                     'hours' => 0,
                 ],
@@ -64,6 +62,6 @@ class BoqAdditionTest extends TestCase
 
         $response->assertStatus(302);
         $this->assertDatabaseHas('boq_items', ['item_description' => 'Test Item']);
-        $this->assertDatabaseHas('boq_item_components', ['name' => 'Cement', 'client_unit_rate' => 100]);
+        $this->assertDatabaseHas('boq_item_components', ['name' => 'Cement', 'unit_rate' => 100]);
     }
 }

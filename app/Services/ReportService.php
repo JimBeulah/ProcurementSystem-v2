@@ -89,7 +89,7 @@ class ReportService
         $grossProfit = $operatingRevenue - $cogs;
         $netIncome = $grossProfit - $operatingExpenses;
 
-        $boqBaselineCogs = (float) $project->total_altapil_budget;
+        $boqBaselineCogs = (float) $project->total_budget;
         $variance = $committedDirectCosts - $boqBaselineCogs;
 
         // Fetch POs with their DB-aggregated paid amount
