@@ -170,6 +170,18 @@ class BoqController extends Controller
         return redirect()->back()->with('success', 'BOQ item deleted successfully.');
     }
 
+    public function destroyAll(Project $project): RedirectResponse
+    {
+        if ($project->approved_by) {
+            abort(403, 'Project is approved. Modifications are locked.');
+        }
+
+        BoqItemComponent::whereHas('boqItem', fn ($q) => $q->where('project_id', $project->id))->delete();
+        BoqItem::where('project_id', $project->id)->delete();
+
+        return redirect()->back()->with('success', 'All BOQ items deleted successfully.');
+    }
+
     // Components / DUPA Management
 
     public function storeComponent(StoreBoqComponentRequest $request, Project $project, BoqItem $boqItem): RedirectResponse

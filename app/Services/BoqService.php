@@ -50,15 +50,19 @@ class BoqService
     {
         DB::transaction(function () use ($itemsData, $project) {
             foreach ($itemsData as $itemData) {
-                $boqItem = BoqItem::create([
-                    'project_id' => $project->id,
-                    'item_description' => $itemData['itemDescription'],
-                    'unit' => $itemData['unit'],
-                    'quantity' => $itemData['quantity'],
-                    'material_unit_price' => $itemData['materialUnitPrice'],
-                    'labor_unit_price' => $itemData['laborUnitPrice'],
-                    'is_carport' => $itemData['isCarport'] ?? false,
-                ]);
+                $boqItem = BoqItem::updateOrCreate(
+                    [
+                        'project_id' => $project->id,
+                        'item_description' => $itemData['itemDescription'],
+                    ],
+                    [
+                        'unit' => $itemData['unit'],
+                        'quantity' => $itemData['quantity'],
+                        'material_unit_price' => $itemData['materialUnitPrice'],
+                        'labor_unit_price' => $itemData['laborUnitPrice'],
+                        'is_carport' => $itemData['isCarport'] ?? false,
+                    ]
+                );
 
                 if (! empty($itemData['components'])) {
                     $componentsData = collect($itemData['components'])->map(function ($comp) {

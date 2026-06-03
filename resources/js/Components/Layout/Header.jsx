@@ -104,7 +104,7 @@ export default function Header({ user, onMenuClick }) {
     };
 
     return (
-        <header className="sticky top-0 z-40 w-full border-b border-black/5 dark:border-white/5 bg-background/70 backdrop-blur-2xl saturate-180 transition-all supports-[backdrop-filter]:bg-background/60">
+        <header className="sticky top-0 z-30 w-full border-b border-black/5 dark:border-white/5 bg-background/70 backdrop-blur-2xl saturate-180 transition-all supports-[backdrop-filter]:bg-background/60">
             <div className="flex h-14 items-center justify-between px-2 md:px-4">
                 <div className="flex items-center gap-4">
                     <button
