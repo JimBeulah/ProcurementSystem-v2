@@ -28,7 +28,7 @@ export default function SubNavigationTabs({ items }) {
         <div className="w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border sticky top-0 z-30">
             <div className="px-2 md:px-4 max-w-[1600px] mx-auto">
                 <nav
-                    className="-mb-px flex space-x-6 overflow-x-auto minimal-scrollbar scroll-smooth"
+                    className="-mb-px flex space-x-4 md:space-x-6 overflow-x-auto minimal-scrollbar scroll-smooth"
                     aria-label="Sub Navigation"
                 >
                     {visibleItems.map((item) => {
@@ -40,7 +40,7 @@ export default function SubNavigationTabs({ items }) {
                                 key={item.label}
                                 href={item.href}
                                 className={`
-                                    whitespace-nowrap pb-3.5 pt-4 px-1 border-b-2 font-medium text-sm transition-colors relative flex items-center gap-2 group
+                                    whitespace-nowrap pb-3 pt-3.5 sm:pb-3.5 sm:pt-4 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors relative flex items-center gap-1.5 sm:gap-2 group
                                     ${active
                                         ? 'border-blue-600 text-blue-600 dark:text-blue-400'
                                         : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'}

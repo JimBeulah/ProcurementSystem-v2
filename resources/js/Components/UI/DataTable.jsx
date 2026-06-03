@@ -112,7 +112,7 @@ export function DataTable({
                                 placeholder="Search all columns..."
                                 value={globalFilter ?? ''}
                                 onChange={(e) => setGlobalFilter(e.target.value)}
-                                className="pl-10 h-10 md:h-9 shadow-sm"
+                                className="pl-10 h-9 shadow-sm text-sm"
                             />
                         </div>
                     )}
@@ -137,7 +137,7 @@ export function DataTable({
                         <div
                             key={row.id}
                             onClick={() => onRowClick && onRowClick(row.original)}
-                            className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm space-y-3 ${
+                            className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 shadow-sm space-y-2.5 sm:space-y-3 ${
                                 onRowClick ? "cursor-pointer active:scale-[0.98] transition-transform" : ""
                             }`}
                         >
@@ -268,7 +268,7 @@ export function DataTable({
             {showPagination && table.getPageCount() > 0 && (
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4 px-2 mt-6">
                     <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
-                        <div className="text-sm text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 whitespace-nowrap">
                             Page <span className="font-medium text-slate-900 dark:text-slate-100">{table.getState().pagination.pageIndex + 1}</span> of{" "}
                             <span className="font-medium text-slate-900 dark:text-slate-100">{table.getPageCount()}</span>
                         </div>
@@ -294,7 +294,7 @@ export function DataTable({
                     <div className="flex items-center justify-center gap-2 w-full md:w-auto">
                         <button
                             type="button"
-                            className="flex-1 md:flex-none inline-flex items-center justify-center rounded-xl text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:pointer-events-none disabled:opacity-30 border border-slate-200 bg-white shadow-sm hover:bg-slate-50 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-900 dark:hover:border-slate-700 h-10 px-6 active:scale-95"
+                            className="flex-1 md:flex-none inline-flex items-center justify-center rounded-xl text-xs sm:text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:pointer-events-none disabled:opacity-30 border border-slate-200 bg-white shadow-sm hover:bg-slate-50 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-900 dark:hover:border-slate-700 h-9 sm:h-10 px-4 sm:px-6 active:scale-95"
                             onClick={() => table.previousPage()}
                             disabled={!table.getCanPreviousPage()}
                         >
@@ -302,7 +302,7 @@ export function DataTable({
                         </button>
                         <button
                             type="button"
-                            className="flex-1 md:flex-none inline-flex items-center justify-center rounded-xl text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:pointer-events-none disabled:opacity-30 border border-slate-200 bg-white shadow-sm hover:bg-slate-50 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-900 dark:hover:border-slate-700 h-10 px-6 active:scale-95"
+                            className="flex-1 md:flex-none inline-flex items-center justify-center rounded-xl text-xs sm:text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:pointer-events-none disabled:opacity-30 border border-slate-200 bg-white shadow-sm hover:bg-slate-50 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-900 dark:hover:border-slate-700 h-9 sm:h-10 px-4 sm:px-6 active:scale-95"
                             onClick={() => table.nextPage()}
                             disabled={!table.getCanNextPage()}
                         >

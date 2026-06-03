@@ -141,13 +141,13 @@ export default function ProjectForm({
                     <input className={`w-full bg-slate-50 dark:bg-slate-900/50 border ${errors.location ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'} rounded-lg p-2.5 text-sm text-slate-900 dark:text-white focus:border-cyan-500 outline-none transition-all`} value={data.location} onChange={e => setData('location', e.target.value)} placeholder="Project Site Location" />
                     {errors.location && <div className="text-red-500 text-[10px] mt-1 uppercase font-bold">{errors.location}</div>}
                 </div>
-                <div className="md:col-span-2 grid grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-900/30 p-4 rounded-xl border border-slate-200/50 dark:border-slate-700/50">
+                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-900/30 p-4 rounded-xl border border-slate-200/50 dark:border-slate-700/50">
                     <div>
                         <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Contract ID</label>
                         <input className={`w-full bg-white dark:bg-slate-900/40 border ${errors.contract_id ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'} rounded p-2 text-xs text-slate-900 dark:text-white focus:border-cyan-500 outline-none`} value={data.contract_id} onChange={e => setData('contract_id', e.target.value)} placeholder="e.g. 24L00123" />
                         {errors.contract_id && <div className="text-red-500 text-[10px] mt-1 uppercase font-bold">{errors.contract_id}</div>}
                     </div>
-                    <div className="col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4 border-t border-slate-200/50 dark:border-slate-700/50 pt-3 mt-3">
+                    <div className="col-span-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 border-t border-slate-200/50 dark:border-slate-700/50 pt-3 mt-3">
                         <div>
                             <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Start Date</label>
                             <input type="date" className={`w-full bg-white dark:bg-slate-900/40 border ${errors.target_start_date ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'} rounded p-2 text-xs text-slate-900 dark:text-white focus:border-cyan-500 outline-none uppercase font-mono`} value={data.target_start_date} onChange={e => {
@@ -186,14 +186,14 @@ export default function ProjectForm({
                             {errors.target_end_date && <div className="text-red-500 text-[10px] mt-1 uppercase font-bold">{errors.target_end_date}</div>}
                         </div>
                     </div>
-                    <div className="col-span-2 grid grid-cols-2 gap-4 mt-2 border-t border-slate-200/50 dark:border-slate-700/50 pt-3">
+                    <div className="col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 border-t border-slate-200/50 dark:border-slate-700/50 pt-3">
                         <div>
                             <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Source of Fund</label>
                             <input className={`w-full bg-white dark:bg-slate-900/40 border ${errors.source_of_fund ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'} rounded p-2 text-xs text-slate-900 dark:text-white focus:border-cyan-500 outline-none`} value={data.source_of_fund} onChange={e => setData('source_of_fund', e.target.value)} placeholder="e.g. GAA 2024" />
                             {errors.source_of_fund && <div className="text-red-500 text-[10px] mt-1 uppercase font-bold">{errors.source_of_fund}</div>}
                         </div>
                     </div>
-                    <div className="col-span-2 grid grid-cols-2 gap-4 mt-2 border-t border-slate-200/50 dark:border-slate-700/50 pt-3">
+                    <div className="col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 border-t border-slate-200/50 dark:border-slate-700/50 pt-3">
                         <div>
                             <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Contract Type</label>
                             <Select
@@ -215,7 +215,7 @@ export default function ProjectForm({
                     </div>
                 </div>
                 {data.project_type === 'BUILDING' ? (
-                    <div className="md:col-span-2 grid grid-cols-2 gap-4 border-t border-slate-200 dark:border-slate-700 pt-2">
+                    <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-200 dark:border-slate-700 pt-2">
                         <div>
                             <label className="text-[10px] text-cyan-600 uppercase font-black mb-1 block tracking-widest">Total Floor Area (sqm)</label>
                             <input type="number" step="0.01" className={`w-full bg-cyan-500/5 border ${errors.total_floor_area ? 'border-red-500' : 'border-cyan-500/20'} rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-cyan-500`} value={data.total_floor_area} onChange={e => setData('total_floor_area', e.target.value)} />

@@ -35,7 +35,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
     return createPortal(
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4">
                     {/* macOS Backdrop — deep blur like Spotlight */}
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -77,7 +77,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
                         </div>
 
                         {/* Content */}
-                        <div className="p-6 max-h-[85vh] overflow-y-auto overscroll-contain scrollbar-thin">
+                        <div className="p-4 sm:p-6 max-h-[80vh] sm:max-h-[85vh] overflow-y-auto overscroll-contain scrollbar-thin">
                             {children}
                         </div>
                     </motion.div>
