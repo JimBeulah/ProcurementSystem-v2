@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreProjectRequest extends FormRequest
 {
@@ -24,7 +25,7 @@ class StoreProjectRequest extends FormRequest
             'total_floor_area' => 'nullable|numeric|min:0',
             'carport_area' => 'nullable|numeric|min:0',
             'status' => 'nullable|string|in:ACTIVE,PLANNING,COMPLETED,ON_HOLD,WARRANTY_PERIOD',
-            'project_type' => 'nullable|string|in:BUILDING,INFRASTRUCTURE,MAINTENANCE',
+            'project_type' => ['nullable', 'string', Rule::exists('project_types', 'name')],
             'appropriation' => 'nullable|numeric|min:0',
             'source_of_fund' => 'nullable|string|max:255',
             'contract_id' => 'nullable|string|max:100',

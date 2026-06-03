@@ -1,7 +1,7 @@
 import React from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Settings, UserCog, Database, ChevronRight, UserCircle } from 'lucide-react';
+import { Settings, UserCog, Database, ChevronRight, UserCircle, Layers } from 'lucide-react';
 import { usePermissions } from '@/Hooks/usePermissions';
 
 export default function SettingsIndex() {
@@ -12,6 +12,7 @@ export default function SettingsIndex() {
     const menuItems = [
         { title: 'Account Settings', description: 'Update your profile information and change password.', icon: UserCircle, href: route('profile.edit'), color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
         { title: 'User Management', description: 'Manage system users, roles, and access permissions.', icon: UserCog, href: route('settings.users'), color: 'text-blue-500', bg: 'bg-blue-500/10', permission: 'manage users' },
+        { title: 'Project Types', description: 'Add and manage project type categories used across all projects.', icon: Layers, href: route('settings.project-types.index'), color: 'text-violet-500', bg: 'bg-violet-500/10', permission: 'manage users' },
         { title: 'Backup & Recovery', description: 'Create database backups and restore system data.', icon: Database, href: route('settings.database.index'), color: 'text-emerald-500', bg: 'bg-emerald-500/10', adminOnly: true },
     ];
 

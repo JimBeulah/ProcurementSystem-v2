@@ -1,6 +1,6 @@
 import React from 'react';
 import Modal from '@/Components/UI/Modal';
-import { TrendingUp, Home, Car, Settings } from 'lucide-react';
+import { TrendingUp, Home, Car } from 'lucide-react';
 
 export default function BoqMetricsModal({ 
     isOpen, 
@@ -37,63 +37,41 @@ export default function BoqMetricsModal({
                     </p>
                 </div>
 
-                {project.project_type === 'BUILDING' ? (
-                    <>
-                        <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-md border border-white/20 dark:border-slate-700/50 rounded-2xl p-4 flex flex-col justify-between shadow-sm relative group overflow-hidden">
-                            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                                <Home size={48} className="text-blue-500" />
-                            </div>
-                            <div className="flex items-center gap-3 mb-2 relative z-10">
-                                <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                                    <Home size={20} />
-                                </div>
-                                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Building Value</span>
-                            </div>
-                            <div className="flex items-baseline gap-2 relative z-10">
-                                <p className="text-xl font-bold text-slate-900 dark:text-white font-mono">
-                                    ₱ {amountPerSqmBuilding.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                                </p>
-                                <span className="text-xs text-slate-500 font-medium">/ sqm ({floorArea})</span>
-                            </div>
-                        </div>
-
-                        <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-md border border-white/20 dark:border-slate-700/50 rounded-2xl p-4 flex flex-col justify-between shadow-sm relative group overflow-hidden">
-                            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                                <Car size={48} className="text-amber-500" />
-                            </div>
-                            <div className="flex items-center gap-3 mb-2 relative z-10">
-                                <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                                    <Car size={20} />
-                                </div>
-                                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Carport Value</span>
-                            </div>
-                            <div className="flex items-baseline gap-2 relative z-10">
-                                <p className="text-xl font-bold text-slate-900 dark:text-white font-mono">
-                                    ₱ {amountPerSqmCarport.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                                </p>
-                                <span className="text-xs text-slate-500 font-medium">/ sqm ({carportArea})</span>
-                            </div>
-                        </div>
-                    </>
-                ) : (
-                    <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-md border border-white/20 dark:border-slate-700/50 rounded-2xl p-4 flex flex-col justify-between shadow-sm relative group overflow-hidden">
-                        <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <Settings size={48} className="text-emerald-500" />
-                        </div>
-                        <div className="flex items-center gap-3 mb-2 relative z-10">
-                            <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                                <Settings size={20} />
-                            </div>
-                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Infra Value</span>
-                        </div>
-                        <div className="flex items-baseline gap-2 relative z-10">
-                            <p className="text-xl font-bold text-slate-900 dark:text-white font-mono">
-                                ₱ {(project.net_length > 0 ? totalConstructionCost / Number(project.net_length) : 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                            </p>
-                            <span className="text-xs text-slate-500 font-medium">/ meter ({project.net_length || 0})</span>
-                        </div>
+                <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-md border border-white/20 dark:border-slate-700/50 rounded-2xl p-4 flex flex-col justify-between shadow-sm relative group overflow-hidden">
+                    <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <Home size={48} className="text-blue-500" />
                     </div>
-                )}
+                    <div className="flex items-center gap-3 mb-2 relative z-10">
+                        <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                            <Home size={20} />
+                        </div>
+                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Building Value</span>
+                    </div>
+                    <div className="flex items-baseline gap-2 relative z-10">
+                        <p className="text-xl font-bold text-slate-900 dark:text-white font-mono">
+                            ₱ {amountPerSqmBuilding.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                        </p>
+                        <span className="text-xs text-slate-500 font-medium">/ sqm ({floorArea})</span>
+                    </div>
+                </div>
+
+                <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-md border border-white/20 dark:border-slate-700/50 rounded-2xl p-4 flex flex-col justify-between shadow-sm relative group overflow-hidden">
+                    <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <Car size={48} className="text-amber-500" />
+                    </div>
+                    <div className="flex items-center gap-3 mb-2 relative z-10">
+                        <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                            <Car size={20} />
+                        </div>
+                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Carport Value</span>
+                    </div>
+                    <div className="flex items-baseline gap-2 relative z-10">
+                        <p className="text-xl font-bold text-slate-900 dark:text-white font-mono">
+                            ₱ {amountPerSqmCarport.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                        </p>
+                        <span className="text-xs text-slate-500 font-medium">/ sqm ({carportArea})</span>
+                    </div>
+                </div>
 
                 <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-md border border-white/20 dark:border-slate-700/50 rounded-2xl p-4 flex flex-col justify-end shadow-sm relative">
                     <div className="flex justify-between items-center mb-2">

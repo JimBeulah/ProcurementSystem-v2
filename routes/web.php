@@ -16,6 +16,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OperationsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProjectTypeController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\PurchaseRequestController;
 use App\Http\Controllers\ReceivingController;
@@ -200,6 +201,14 @@ Route::middleware(['auth', 'verified', 'password.changed'])->group(function () {
     // Restricted Settings
     Route::middleware(['can:view settings'])->group(function () {
         Route::get('/settings/workflows', [SettingsController::class, 'workflows'])->name('settings.workflows');
+    });
+
+    // Project Type Management (admin + project_manager)
+    Route::middleware(['can:manage users'])->group(function () {
+        Route::get('/settings/project-types', [ProjectTypeController::class, 'index'])->name('settings.project-types.index');
+        Route::post('/settings/project-types', [ProjectTypeController::class, 'store'])->name('settings.project-types.store');
+        Route::put('/settings/project-types/{projectType}', [ProjectTypeController::class, 'update'])->name('settings.project-types.update');
+        Route::delete('/settings/project-types/{projectType}', [ProjectTypeController::class, 'destroy'])->name('settings.project-types.destroy');
     });
 
     // User Management (Admin only)

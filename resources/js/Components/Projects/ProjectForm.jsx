@@ -10,6 +10,7 @@ export default function ProjectForm({
     handleSubmit,
     clients,
     siteEngineers,
+    projectTypes,
     onCancel,
     isEditing
 }) {
@@ -72,7 +73,7 @@ export default function ProjectForm({
                 <div className={`md:col-span-2 ${isEditing ? 'grid grid-cols-1 sm:grid-cols-2' : ''} gap-4`}>
                     <div>
                         <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Project Type</label>
-                        <Select value={data.project_type} onChange={val => setData('project_type', val)} options={[{ value: "BUILDING", label: "BUILDING" }, { value: "INFRASTRUCTURE", label: "INFRASTRUCTURE" }, { value: "MAINTENANCE", label: "MAINTENANCE" }]} icon={Layers} />
+                        <Select value={data.project_type} onChange={val => setData('project_type', val)} options={(projectTypes || []).map(t => ({ value: t.name, label: t.label }))} icon={Layers} placeholder="Select Type" />
                         {errors.project_type && <div className="text-red-500 text-[10px] mt-1 uppercase font-bold">{errors.project_type}</div>}
                     </div>
                     {isEditing && (
@@ -214,26 +215,18 @@ export default function ProjectForm({
                         </div>
                     </div>
                 </div>
-                {data.project_type === 'BUILDING' ? (
-                    <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-200 dark:border-slate-700 pt-2">
-                        <div>
-                            <label className="text-[10px] text-cyan-600 uppercase font-black mb-1 block tracking-widest">Total Floor Area (sqm)</label>
-                            <input type="number" step="0.01" className={`w-full bg-cyan-500/5 border ${errors.total_floor_area ? 'border-red-500' : 'border-cyan-500/20'} rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-cyan-500`} value={data.total_floor_area} onChange={e => setData('total_floor_area', e.target.value)} />
-                            {errors.total_floor_area && <div className="text-red-500 text-[10px] mt-1 uppercase font-bold">{errors.total_floor_area}</div>}
-                        </div>
-                        <div>
-                            <label className="text-[10px] text-orange-600 uppercase font-black mb-1 block tracking-widest">Carport Area (sqm)</label>
-                            <input type="number" step="0.01" className={`w-full bg-orange-500/5 border ${errors.carport_area ? 'border-red-500' : 'border-orange-500/20'} rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-orange-500`} value={data.carport_area} onChange={e => setData('carport_area', e.target.value)} />
-                            {errors.carport_area && <div className="text-red-500 text-[10px] mt-1 uppercase font-bold">{errors.carport_area}</div>}
-                        </div>
+                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-200 dark:border-slate-700 pt-2">
+                    <div>
+                        <label className="text-[10px] text-cyan-600 uppercase font-black mb-1 block tracking-widest">Total Floor Area (sqm)</label>
+                        <input type="number" step="0.01" className={`w-full bg-cyan-500/5 border ${errors.total_floor_area ? 'border-red-500' : 'border-cyan-500/20'} rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-cyan-500`} value={data.total_floor_area} onChange={e => setData('total_floor_area', e.target.value)} placeholder="e.g. 120.00" />
+                        {errors.total_floor_area && <div className="text-red-500 text-[10px] mt-1 uppercase font-bold">{errors.total_floor_area}</div>}
                     </div>
-                ) : (
-                    <div className="md:col-span-2 border-t border-slate-200 dark:border-slate-700 pt-2">
-                        <label className="text-[10px] text-emerald-600 uppercase font-black mb-1 block tracking-widest">Net Length (Linear Meters)</label>
-                        <input type="number" step="0.01" className={`w-full bg-emerald-500/5 border ${errors.net_length ? 'border-red-500' : 'border-emerald-500/20'} rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-emerald-500`} value={data.net_length} onChange={e => setData('net_length', e.target.value)} placeholder="e.g. 952.14" />
-                        {errors.net_length && <div className="text-red-500 text-[10px] mt-1 uppercase font-bold">{errors.net_length}</div>}
+                    <div>
+                        <label className="text-[10px] text-orange-600 uppercase font-black mb-1 block tracking-widest">Carport Area (sqm)</label>
+                        <input type="number" step="0.01" className={`w-full bg-orange-500/5 border ${errors.carport_area ? 'border-red-500' : 'border-orange-500/20'} rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-orange-500`} value={data.carport_area} onChange={e => setData('carport_area', e.target.value)} placeholder="e.g. 20.00" />
+                        {errors.carport_area && <div className="text-red-500 text-[10px] mt-1 uppercase font-bold">{errors.carport_area}</div>}
                     </div>
-                )}
+                </div>
             </div>
             <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-6 border-t border-slate-200 dark:border-slate-700">
                 <button type="button" onClick={onCancel} className="min-h-[44px] px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors uppercase tracking-widest rounded-lg active:scale-95">Cancel</button>

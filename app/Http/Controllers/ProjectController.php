@@ -8,6 +8,7 @@ use App\Models\Client;
 use App\Models\InventoryItem;
 use App\Models\MaterialReturn;
 use App\Models\Project;
+use App\Models\ProjectType;
 use App\Models\User;
 use App\Services\ProjectService;
 use App\Services\ReportService;
@@ -25,11 +26,13 @@ class ProjectController extends Controller
         $projects = $this->service->getAllForUser(auth()->user());
         $clients = Client::orderBy('name')->get();
         $siteEngineers = User::role('site_engineer')->get();
+        $projectTypes = ProjectType::orderBy('label')->get();
 
         return Inertia::render('Projects/Index', [
             'projects' => $projects,
             'clients' => $clients,
             'siteEngineers' => $siteEngineers,
+            'projectTypes' => $projectTypes,
         ]);
     }
 

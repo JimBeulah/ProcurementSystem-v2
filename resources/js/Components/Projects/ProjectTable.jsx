@@ -3,8 +3,59 @@ import { Link } from '@inertiajs/react';
 import { Briefcase, Edit2, Trash2, Plus } from 'lucide-react';
 import DataTable from '@/Components/UI/DataTable';
 
-export default function ProjectTable({ projects, onEdit, onDelete, onCreate, auth }) {
+const TYPE_BADGE = {
+    slate:   'bg-slate-500/10 text-slate-600 border-slate-500/20',
+    gray:    'bg-gray-500/10 text-gray-600 border-gray-500/20',
+    zinc:    'bg-zinc-500/10 text-zinc-600 border-zinc-500/20',
+    stone:   'bg-stone-500/10 text-stone-600 border-stone-500/20',
+    red:     'bg-red-500/10 text-red-600 border-red-500/20',
+    orange:  'bg-orange-500/10 text-orange-600 border-orange-500/20',
+    amber:   'bg-amber-500/10 text-amber-600 border-amber-500/20',
+    yellow:  'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
+    lime:    'bg-lime-500/10 text-lime-600 border-lime-500/20',
+    green:   'bg-green-500/10 text-green-600 border-green-500/20',
+    emerald: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+    teal:    'bg-teal-500/10 text-teal-600 border-teal-500/20',
+    cyan:    'bg-cyan-500/10 text-cyan-600 border-cyan-500/20',
+    sky:     'bg-sky-500/10 text-sky-600 border-sky-500/20',
+    blue:    'bg-blue-500/10 text-blue-600 border-blue-500/20',
+    indigo:  'bg-indigo-500/10 text-indigo-600 border-indigo-500/20',
+    violet:  'bg-violet-500/10 text-violet-600 border-violet-500/20',
+    purple:  'bg-purple-500/10 text-purple-600 border-purple-500/20',
+    fuchsia: 'bg-fuchsia-500/10 text-fuchsia-600 border-fuchsia-500/20',
+    pink:    'bg-pink-500/10 text-pink-600 border-pink-500/20',
+    rose:    'bg-rose-500/10 text-rose-600 border-rose-500/20',
+};
+
+const TYPE_ICON_BG = {
+    slate:   'bg-slate-500/10 text-slate-600',
+    gray:    'bg-gray-500/10 text-gray-600',
+    zinc:    'bg-zinc-500/10 text-zinc-600',
+    stone:   'bg-stone-500/10 text-stone-600',
+    red:     'bg-red-500/10 text-red-600',
+    orange:  'bg-orange-500/10 text-orange-600',
+    amber:   'bg-amber-500/10 text-amber-600',
+    yellow:  'bg-yellow-500/10 text-yellow-600',
+    lime:    'bg-lime-500/10 text-lime-600',
+    green:   'bg-green-500/10 text-green-600',
+    emerald: 'bg-emerald-500/10 text-emerald-600',
+    teal:    'bg-teal-500/10 text-teal-600',
+    cyan:    'bg-cyan-500/10 text-cyan-600',
+    sky:     'bg-sky-500/10 text-sky-600',
+    blue:    'bg-blue-500/10 text-blue-600',
+    indigo:  'bg-indigo-500/10 text-indigo-600',
+    violet:  'bg-violet-500/10 text-violet-600',
+    purple:  'bg-purple-500/10 text-purple-600',
+    fuchsia: 'bg-fuchsia-500/10 text-fuchsia-600',
+    pink:    'bg-pink-500/10 text-pink-600',
+    rose:    'bg-rose-500/10 text-rose-600',
+};
+
+export { TYPE_BADGE, TYPE_ICON_BG };
+
+export default function ProjectTable({ projects, projectTypes, onEdit, onDelete, onCreate, auth }) {
     const isSiteEngineer = auth?.user?.role === 'site_engineer';
+    const typeMap = useMemo(() => Object.fromEntries((projectTypes || []).map(t => [t.name, t])), [projectTypes]);
 
     const [statusFilter, setStatusFilter] = useState('ALL');
     const [typeFilter, setTypeFilter] = useState('ALL');
@@ -37,9 +88,9 @@ export default function ProjectTable({ projects, onEdit, onDelete, onCreate, aut
                 className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-600 dark:text-slate-300 focus:border-cyan-500 outline-none transition-all cursor-pointer font-medium min-h-[40px]"
             >
                 <option value="ALL">All Types</option>
-                <option value="BUILDING">Building</option>
-                <option value="INFRASTRUCTURE">Infrastructure</option>
-                <option value="MAINTENANCE">Maintenance</option>
+                {(projectTypes || []).map(t => (
+                    <option key={t.name} value={t.name}>{t.label}</option>
+                ))}
             </select>
         </div>
     );
@@ -88,10 +139,12 @@ export default function ProjectTable({ projects, onEdit, onDelete, onCreate, aut
                 header: () => <div className="text-center w-full block">Type</div>,
                 cell: ({ row }) => {
                     const project = row.original;
+                    const type = typeMap[project.project_type];
+                    const badgeClass = TYPE_BADGE[type?.color] ?? TYPE_BADGE.slate;
                     return (
                         <div className="text-center w-full block">
-                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase border ${project.project_type === 'BUILDING' ? 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20' : project.project_type === 'INFRASTRUCTURE' ? 'bg-orange-500/10 text-orange-600 border-orange-500/20' : 'bg-blue-500/10 text-blue-600 border-blue-500/20'}`}>
-                                {project.project_type}
+                            <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase border ${badgeClass}`}>
+                                {type?.label ?? project.project_type}
                             </span>
                         </div>
                     );

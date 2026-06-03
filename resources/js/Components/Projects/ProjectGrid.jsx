@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link } from '@inertiajs/react';
 import { Briefcase, Edit2, Trash2 } from 'lucide-react';
+import { TYPE_ICON_BG } from './ProjectTable';
 
-export default function ProjectGrid({ projects, onEdit, onDelete, auth }) {
+export default function ProjectGrid({ projects, projectTypes, onEdit, onDelete, auth }) {
     const isSiteEngineer = auth?.user?.role === 'site_engineer';
+    const typeMap = useMemo(() => Object.fromEntries((projectTypes || []).map(t => [t.name, t])), [projectTypes]);
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -11,7 +13,7 @@ export default function ProjectGrid({ projects, onEdit, onDelete, auth }) {
                 <div key={project.id} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 group relative hover:border-cyan-500/30 transition-all shadow-sm">
                     <Link href={`/projects/${project.id}`} className="absolute inset-0 z-10" />
                     <div className="flex justify-between items-start mb-4">
-                        <div className={`p-2 rounded-lg ${project.project_type === 'BUILDING' ? 'bg-cyan-500/10 text-cyan-600' : 'bg-orange-500/10 text-orange-600'}`}><Briefcase size={20} /></div>
+                        <div className={`p-2 rounded-lg ${TYPE_ICON_BG[typeMap[project.project_type]?.color] ?? TYPE_ICON_BG.slate}`}><Briefcase size={20} /></div>
                         {(onEdit || onDelete) && (
                             <div className="flex items-center gap-1 relative z-20">
                                 {onEdit && <button onClick={(e) => onEdit(project, e)} className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-cyan-600 rounded active:scale-95" aria-label="Edit project"><Edit2 size={14} /></button>}

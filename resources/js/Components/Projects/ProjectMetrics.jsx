@@ -12,7 +12,6 @@ export default function ProjectMetrics({ projects, auth }) {
     const totalBudget = projects.reduce((sum, p) => sum + Number(p.budget), 0);
     const totalAppropriation = projects.reduce((sum, p) => sum + (Number(p.appropriation) || 0), 0);
     const totalFloorArea = projects
-        .filter(p => p.project_type === 'BUILDING')
         .reduce((sum, p) => sum + (Number(p.total_floor_area) || 0), 0);
 
     // Dynamic Project Health Calculation
@@ -63,7 +62,7 @@ export default function ProjectMetrics({ projects, auth }) {
                 <div>
                     <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-black tracking-wider">Total Floor Area</p>
                     <p className="text-2xl font-black text-slate-900 dark:text-white font-mono">{totalFloorArea.toLocaleString()} <span className="text-xs text-slate-500">sqm</span></p>
-                    <p className="text-[9px] text-slate-500 mt-1">Building Projects Only</p>
+                    <p className="text-[9px] text-slate-500 mt-1">All Projects</p>
                 </div>
             </div>
 

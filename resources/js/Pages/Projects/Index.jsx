@@ -10,7 +10,7 @@ import ProjectGrid from '@/Components/Projects/ProjectGrid';
 import ProjectForm from '@/Components/Projects/ProjectForm';
 
 export default function ProjectsIndex() {
-    const { projects: initialProjects, clients, siteEngineers, auth } = usePage().props;
+    const { projects: initialProjects, clients, siteEngineers, projectTypes, auth } = usePage().props;
     const projects = initialProjects || [];
     const { can } = usePermissions();
 
@@ -127,21 +127,22 @@ export default function ProjectsIndex() {
                     ? <ProjectTable
                         auth={auth}
                         projects={projects}
+                        projectTypes={projectTypes}
                         onEdit={can('edit projects') ? handleEdit : null}
                         onDelete={can('delete projects') ? handleDeleteClick : null}
-                        onCreate={can('create projects') ? () => { 
-                            setEditingProject(null); 
-                            reset(); 
+                        onCreate={can('create projects') ? () => {
+                            setEditingProject(null);
+                            reset();
                             clearErrors();
-                            setShowModal(true); 
+                            setShowModal(true);
                         } : null}
                     />
-                    : <ProjectGrid auth={auth} projects={filteredProjects} onEdit={can('edit projects') ? handleEdit : null} onDelete={can('delete projects') ? handleDeleteClick : null} />
+                    : <ProjectGrid auth={auth} projects={filteredProjects} projectTypes={projectTypes} onEdit={can('edit projects') ? handleEdit : null} onDelete={can('delete projects') ? handleDeleteClick : null} />
                 }
 
                 {/* Create/Edit Modal */}
                 <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingProject(null); }} title={editingProject ? "Edit Project" : "Create New Project"}>
-                    <ProjectForm 
+                    <ProjectForm
                         data={data}
                         setData={setData}
                         errors={errors}
@@ -149,6 +150,7 @@ export default function ProjectsIndex() {
                         handleSubmit={handleSubmit}
                         clients={clients}
                         siteEngineers={siteEngineers}
+                        projectTypes={projectTypes}
                         onCancel={() => { setShowModal(false); setEditingProject(null); }}
                         isEditing={!!editingProject}
                     />
