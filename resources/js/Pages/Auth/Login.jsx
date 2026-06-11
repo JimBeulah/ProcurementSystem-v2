@@ -72,7 +72,6 @@ export default function Login({ status }) {
                                         value={data.username}
                                         onChange={(e) => setData('username', e.target.value)}
                                         className="w-full pl-11 pr-3 py-2.5 bg-white border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-[3px] focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
-                                        placeholder="johndoe"
                                         autoFocus
                                         autoComplete="username"
                                         required
@@ -98,7 +97,6 @@ export default function Login({ status }) {
                                         value={data.password}
                                         onChange={(e) => setData('password', e.target.value)}
                                         className="w-full pl-11 pr-12 py-2.5 bg-white border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-[3px] focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
-                                        placeholder="••••••••"
                                         autoComplete="current-password"
                                         required
                                     />
