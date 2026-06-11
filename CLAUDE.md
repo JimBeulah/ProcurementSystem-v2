@@ -81,3 +81,7 @@ The core data flow: `Project` → `BoqItem` → `BoqItemComponent` (the resource
 ### Testing
 
 PHPUnit tests live in `tests/Feature/` (uses in-memory SQLite, configured in `phpunit.xml`). Playwright E2E tests are in `tests/e2e/`. Feature tests cover BOQ operations, material request budget validation, and smart BOQ import.
+
+## Git
+
+**Never auto-commit.** Always ask the user before running `git commit`. Only commit when explicitly instructed.

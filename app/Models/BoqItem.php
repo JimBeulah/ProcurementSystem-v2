@@ -20,6 +20,7 @@ class BoqItem extends Model
         'labor_unit_price',
         'quantity',
         'is_carport',
+        'nature',
     ];
 
     protected function casts(): array

@@ -29,6 +29,7 @@ class StoreBoqItemRequest extends FormRequest
             'material_unit_price' => 'nullable|numeric|min:0',
             'labor_unit_price' => 'nullable|numeric|min:0',
             'is_carport' => 'nullable|boolean',
+            'nature'     => 'nullable|in:DIRECT_MATERIAL,SERVICE,BUNDLE',
             'components' => 'nullable|array',
             'components.*.resourceType' => 'required|string|in:MATERIAL,LABOR,EQUIPMENT',
             'components.*.name' => 'required|string|max:255',

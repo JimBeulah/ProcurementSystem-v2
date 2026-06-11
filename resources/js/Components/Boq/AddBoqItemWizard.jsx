@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Plus, Save, Trash2, Calculator, Hammer, Home, Car, Settings, ChevronRight, ChevronLeft, Check, Layers } from 'lucide-react';
 import Modal from '@/Components/UI/Modal';
+import { classifyNature, natureHelperText, NATURE_OPTIONS } from '@/Utils/boqNatureClassifier';
 
 const INITIAL_STATE = {
     itemDescription: '',
@@ -9,6 +10,7 @@ const INITIAL_STATE = {
     laborUnitPrice: 0,
     quantity: 0,
     isCarport: false,
+    nature: 'BUNDLE',
     components: [],
 };
 
@@ -76,6 +78,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
             material_unit_price: item.materialUnitPrice,
             labor_unit_price: item.laborUnitPrice,
             is_carport: item.isCarport,
+            nature: item.nature,
             components: item.components.map(c => ({
                 ...c,
                 unit: c.unit || '',
@@ -234,9 +237,9 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                                 const val = e.target.value;
                                 const mat = materials.find(m => m.name === val);
                                 if (mat) {
-                                    setItem(prev => ({ ...prev, itemDescription: mat.name, unit: mat.unit }));
+                                    setItem(prev => ({ ...prev, itemDescription: mat.name, unit: mat.unit, nature: classifyNature(mat.name) }));
                                 } else {
-                                    setItem(prev => ({ ...prev, itemDescription: val }));
+                                    setItem(prev => ({ ...prev, itemDescription: val, nature: classifyNature(val) }));
                                 }
                                 if (errors.itemDescription) setErrors(prev => { const n = { ...prev }; delete n.itemDescription; return n; });
                             }}
@@ -244,6 +247,27 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                         />
 
                         {errors.itemDescription && <p className="text-[10px] text-red-500 mt-1 font-bold">{errors.itemDescription}</p>}
+                    </div>
+
+                    {/* Nature classification */}
+                    <div>
+                        <label className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-black mb-1 block ml-1">
+                            Item Nature
+                        </label>
+                        <select
+                            className="w-full bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl shadow-sm border border-slate-200/80 dark:border-slate-700/80 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all"
+                            value={item.nature}
+                            onChange={e => setItem(prev => ({ ...prev, nature: e.target.value }))}
+                        >
+                            {NATURE_OPTIONS.map(opt => (
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            ))}
+                        </select>
+                        <p className={`text-[10px] mt-1 ml-1 font-semibold ${
+                            item.nature === 'BUNDLE' ? 'text-amber-500' : 'text-emerald-600'
+                        }`}>
+                            {item.nature === 'BUNDLE' ? '⚠' : '✓'} {natureHelperText(item.nature)}
+                        </p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">

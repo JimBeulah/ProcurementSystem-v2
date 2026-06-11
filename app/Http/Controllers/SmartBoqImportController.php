@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Services\BoqColumnMapper;
+use App\Services\BoqItemClassifier;
 use App\Services\BoqService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -17,6 +18,7 @@ class SmartBoqImportController extends Controller
     public function __construct(
         private BoqColumnMapper $mapper,
         private BoqService $boqService,
+        private BoqItemClassifier $classifier,
     ) {}
 
     public function analyze(Request $request, Project $project): JsonResponse
@@ -67,8 +69,10 @@ class SmartBoqImportController extends Controller
         }
 
         $request->validate([
-            'token'    => 'required|string|uuid',
-            'mappings' => 'required|array',
+            'token'       => 'required|string|uuid',
+            'mappings'    => 'required|array',
+            'overrides'   => 'nullable|array',
+            'overrides.*' => 'nullable|in:DIRECT_MATERIAL,SERVICE,BUNDLE',
         ]);
 
         $path = "boq_imports/{$request->token}.json";
@@ -85,8 +89,16 @@ class SmartBoqImportController extends Controller
             ->pluck('mappedTo', 'columnIndex')
             ->all();
 
+        $overrides = $request->overrides ?? [];
+
         $items = collect($rows)
-            ->map(fn($row) => $this->rowToItem($row, $fieldByIndex))
+            ->values()
+            ->map(function ($row, $index) use ($fieldByIndex, $overrides) {
+                $item = $this->rowToItem($row, $fieldByIndex);
+                $item['nature'] = $overrides[$index]
+                    ?? $this->classifier->classify($item['itemDescription']);
+                return $item;
+            })
             ->filter(fn($item) => ! empty($item['itemDescription']))
             ->filter(fn($item) => ! $this->isSummaryRow($item['itemDescription']))
             ->unique('itemDescription')
