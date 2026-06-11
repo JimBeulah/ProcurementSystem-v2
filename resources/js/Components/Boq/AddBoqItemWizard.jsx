@@ -55,6 +55,14 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
             if (!item.unit.trim()) errs.unit = 'Unit is required';
             if (!item.quantity || item.quantity <= 0) errs.quantity = 'Quantity must be > 0';
         }
+        if (s === 1) {
+            if (item.nature === 'DIRECT_MATERIAL' && item.components.length === 0 && Number(item.materialUnitPrice) <= 0) {
+                errs.autoRate = 'Unit rate is required — this becomes the auto-created component budget';
+            }
+            if (item.nature === 'SERVICE' && item.components.length === 0 && Number(item.laborUnitPrice) <= 0) {
+                errs.autoRate = 'Unit rate is required — this becomes the auto-created component budget';
+            }
+        }
         setErrors(errs);
         return Object.keys(errs).length === 0;
     }, [item]);
@@ -449,7 +457,49 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                                 </div>
                             </div>
                         ))}
-                        {item.components.length === 0 && (
+                        {item.components.length === 0 && item.nature !== 'BUNDLE' && (
+                            <div className={`rounded-xl p-4 border ${item.nature === 'DIRECT_MATERIAL' ? 'bg-emerald-500/5 border-emerald-500/30' : 'bg-blue-500/5 border-blue-500/30'}`}>
+                                <div className="flex items-center gap-2 mb-3">
+                                    <div className={`w-2 h-2 rounded-full ${item.nature === 'DIRECT_MATERIAL' ? 'bg-emerald-500' : 'bg-blue-500'}`} />
+                                    <p className={`text-[10px] font-black uppercase ${item.nature === 'DIRECT_MATERIAL' ? 'text-emerald-600' : 'text-blue-600'}`}>
+                                        Auto-Component: 1 {item.nature === 'DIRECT_MATERIAL' ? 'MATERIAL' : 'LABOR'} component will be created on save
+                                    </p>
+                                </div>
+                                <div>
+                                    <label className={`text-[9px] font-black uppercase mb-1 block ${item.nature === 'DIRECT_MATERIAL' ? 'text-emerald-600' : 'text-blue-600'}`}>
+                                        Unit Rate (₱) <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder="0.00"
+                                        className={`w-full bg-white/80 dark:bg-slate-900/80 border rounded-lg p-2.5 text-slate-900 dark:text-white text-sm outline-none font-mono focus:ring-2 transition-all ${
+                                            errors.autoRate
+                                                ? 'border-red-500/60 focus:ring-red-500/30'
+                                                : item.nature === 'DIRECT_MATERIAL'
+                                                    ? 'border-emerald-500/40 focus:ring-emerald-500/30 focus:border-emerald-500'
+                                                    : 'border-blue-500/40 focus:ring-blue-500/30 focus:border-blue-500'
+                                        }`}
+                                        value={formatWithCommas(item.nature === 'DIRECT_MATERIAL' ? item.materialUnitPrice : item.laborUnitPrice)}
+                                        onChange={e => {
+                                            const stripped = stripCommas(e.target.value);
+                                            if (stripped === '' || /^\d*\.?\d*$/.test(stripped)) {
+                                                const field = item.nature === 'DIRECT_MATERIAL' ? 'materialUnitPrice' : 'laborUnitPrice';
+                                                setItem(prev => ({ ...prev, [field]: stripped === '' ? 0 : Number(stripped) }));
+                                                if (errors.autoRate) setErrors(prev => { const n = { ...prev }; delete n.autoRate; return n; });
+                                            }
+                                        }}
+                                    />
+                                    {errors.autoRate
+                                        ? <p className="text-[10px] text-red-500 mt-1 font-bold">{errors.autoRate}</p>
+                                        : (item.nature === 'DIRECT_MATERIAL' ? item.materialUnitPrice : item.laborUnitPrice) <= 0
+                                            ? <p className="text-[10px] text-amber-500 mt-1 font-semibold">⚠ Enter the unit rate so the auto-component has a budget</p>
+                                            : null
+                                    }
+                                </div>
+                                <p className="text-[9px] text-slate-400 mt-3">You can still add additional components below if needed.</p>
+                            </div>
+                        )}
+                        {item.components.length === 0 && item.nature === 'BUNDLE' && (
                             <div className="text-center py-8 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
                                 <Settings size={24} className="mx-auto text-slate-300 mb-2" />
                                 <p className="text-[10px] text-slate-500 uppercase font-black">No resources added yet</p>
@@ -507,9 +557,20 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                             </div>
                             <div>
                                 <p className="text-[9px] text-slate-500 uppercase font-black">Components</p>
-                                <p className="text-sm font-bold text-slate-900 dark:text-white">{item.components.length}</p>
+                                {item.nature !== 'BUNDLE' && item.components.length === 0 ? (
+                                    <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                                        1 <span className="text-[9px] font-black opacity-70">(auto)</span>
+                                    </p>
+                                ) : (
+                                    <p className="text-sm font-bold text-slate-900 dark:text-white">{item.components.length}</p>
+                                )}
                             </div>
                         </div>
+                        {item.nature !== 'BUNDLE' && item.components.length === 0 && (
+                            <div className={`text-[9px] font-semibold px-2.5 py-1.5 rounded-lg ${item.nature === 'DIRECT_MATERIAL' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'}`}>
+                                ✓ 1 {item.nature === 'DIRECT_MATERIAL' ? 'MATERIAL' : 'LABOR'} component will be auto-created on save
+                            </div>
+                        )}
                     </div>
 
                     {/* Cost Breakdown */}
