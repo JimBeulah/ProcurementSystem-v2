@@ -128,14 +128,6 @@ export default function ForcePasswordChange() {
                                 </div>
                             </div>
 
-                            {/* Password strength hint */}
-                            <div className="flex gap-2 items-start p-3 rounded-lg bg-blue-50 border border-blue-100">
-                                <span className="text-blue-500 text-[12px] mt-0.5 shrink-0">ℹ</span>
-                                <p className="text-[12px] text-blue-700 leading-relaxed">
-                                    Use at least 8 characters. Mix letters, numbers, and symbols for a stronger password.
-                                </p>
-                            </div>
-
                             {/* Submit */}
                             <div className="pt-3">
                                 <button
