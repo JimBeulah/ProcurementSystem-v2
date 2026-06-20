@@ -69,11 +69,6 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
         if (!validateStep(0)) { setStep(0); return; }
         setSubmitting(true);
 
-        const derivedNature =
-            Number(item.materialUnitPrice) > 0 && Number(item.laborUnitPrice) <= 0 ? 'DIRECT_MATERIAL' :
-            Number(item.laborUnitPrice) > 0 && Number(item.materialUnitPrice) <= 0 ? 'SERVICE' :
-            'BUNDLE';
-
         const payload = {
             item_description: item.itemDescription,
             unit: item.unit,
@@ -81,7 +76,7 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
             material_unit_price: Number(item.materialUnitPrice),
             labor_unit_price: Number(item.laborUnitPrice),
             is_carport: item.isCarport,
-            nature: derivedNature,
+            nature: 'BUNDLE',
             components: item.components.map(c => ({
                 ...c,
                 unit: c.unit || '',

@@ -78,14 +78,24 @@ export default function ProjectBoq() {
     const handleUpdateItem = (e) => {
         e.preventDefault();
         setLoading(true);
-        const { ...payload } = editItem;
+        const stripNum = (v) => parseFloat(String(v).replace(/,/g, '')) || 0;
+        // Exclude DB-only and relational fields that would break validation
+        const { components, created_at, updated_at, deleted_at, project_id, ...rest } = editItem;
+        const payload = {
+            ...rest,
+            quantity: stripNum(rest.quantity),
+            material_unit_price: stripNum(rest.material_unit_price),
+            labor_unit_price: stripNum(rest.labor_unit_price),
+        };
         router.put(`/projects/${project.id}/boq/${editItem.id}`, payload, {
             onSuccess: () => {
                 setEditItem(null);
                 setLoading(false);
             },
-            onError: () => {
+            onError: (errors) => {
                 setLoading(false);
+                const first = Object.values(errors)[0];
+                toast.error(first || 'Failed to update BOQ item.');
             }
         });
     };

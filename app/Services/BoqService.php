@@ -41,8 +41,6 @@ class BoqService
 
                 $boqItem->components()->createMany($componentsData);
                 $boqItem->recalculateTotals();
-            } else {
-                $this->maybeAutoCreateComponent($boqItem);
             }
 
             return $boqItem;
@@ -84,8 +82,6 @@ class BoqService
 
                     $boqItem->components()->createMany($componentsData);
                     $boqItem->recalculateTotals();
-                } else {
-                    $this->maybeAutoCreateComponent($boqItem);
                 }
             }
         });
@@ -125,36 +121,5 @@ class BoqService
         });
     }
 
-    private function maybeAutoCreateComponent(BoqItem $boqItem): void
-    {
-        if ($boqItem->components()->exists()) {
-            return;
-        }
 
-        // Note: recalculateTotals() is called automatically via BoqItemComponent::booted()
-        // on the `saved` observer — no explicit call needed here.
-        match ($boqItem->nature) {
-            'DIRECT_MATERIAL' => $boqItem->components()->create([
-                'resource_type'   => 'MATERIAL',
-                'name'            => $boqItem->item_description,
-                'unit'            => $boqItem->unit,
-                'quantity_factor' => 1,
-                'unit_rate'       => $boqItem->material_unit_price,
-                'total_cost'      => $boqItem->material_unit_price,
-                'no_of_persons'   => 0,
-                'hours'           => 0,
-            ]),
-            'SERVICE' => $boqItem->components()->create([
-                'resource_type'   => 'LABOR',
-                'name'            => $boqItem->item_description,
-                'unit'            => $boqItem->unit,
-                'quantity_factor' => 1,
-                'unit_rate'       => $boqItem->labor_unit_price,
-                'total_cost'      => $boqItem->labor_unit_price,
-                'no_of_persons'   => 0,
-                'hours'           => 0,
-            ]),
-            default => null,
-        };
-    }
 }

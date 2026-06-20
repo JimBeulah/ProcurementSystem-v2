@@ -22,7 +22,7 @@ class StoreBoqItemRequest extends FormRequest
                 Rule::unique('boq_items')
                     ->where('project_id', $this->route('project')->id)
                     ->whereNull('deleted_at')
-                    ->ignore($this->route('boq_item')),
+                    ->ignore($this->route('boqItem')),
             ],
             'unit' => 'required|string|max:50',
             'quantity' => 'required|numeric|min:0',
