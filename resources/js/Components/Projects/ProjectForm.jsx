@@ -1,5 +1,6 @@
 import React from 'react';
 import Select from '@/Components/UI/Select';
+import Combobox from '@/Components/UI/Combobox';
 import { Building2, Layers, UserCog, AlertCircle, Info } from 'lucide-react';
 
 export default function ProjectForm({
@@ -14,13 +15,23 @@ export default function ProjectForm({
     onCancel,
     isEditing
 }) {
+    const [appropriationManuallyEdited, setAppropriationManuallyEdited] = React.useState(false);
+
     const handleBudgetChange = (value) => {
         const stripped = stripCommas(value);
         if (stripped === '' || /^\d*\.?\d*$/.test(stripped)) {
             setData('budget', stripped);
-            if (!isEditing && !data.appropriation) {
+            if (!isEditing && !appropriationManuallyEdited) {
                 setData('appropriation', stripped);
             }
+        }
+    };
+
+    const handleAppropriationChange = (value) => {
+        const stripped = stripCommas(value);
+        if (stripped === '' || /^\d*\.?\d*$/.test(stripped)) {
+            setAppropriationManuallyEdited(true);
+            setData('appropriation', stripped);
         }
     };
 
@@ -62,18 +73,18 @@ export default function ProjectForm({
                 </div>
                 <div>
                     <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Client</label>
-                    <Select value={data.client_id} onChange={val => setData('client_id', val)} options={(clients || []).map(c => ({ value: c.id.toString(), label: c.name }))} placeholder="Select Client" icon={Building2} />
+                    <Combobox value={data.client_id} onChange={val => setData('client_id', val)} options={(clients || []).map(c => ({ value: c.id.toString(), label: c.name }))} placeholder="Select Client" searchPlaceholder="Search clients..." />
                     {errors.client_id && <div className="text-red-500 text-[10px] mt-1 uppercase font-bold">{errors.client_id}</div>}
                 </div>
                 <div>
                     <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Site Engineer (Optional)</label>
-                    <Select value={data.site_engineer_id} onChange={val => setData('site_engineer_id', val)} options={(siteEngineers || []).map(u => ({ value: u.id.toString(), label: u.name }))} placeholder="Unassigned" icon={UserCog} />
+                    <Combobox value={data.site_engineer_id} onChange={val => setData('site_engineer_id', val)} options={(siteEngineers || []).map(u => ({ value: u.id.toString(), label: u.name }))} placeholder="Unassigned" searchPlaceholder="Search engineers..." />
                     {errors.site_engineer_id && <div className="text-red-500 text-[10px] mt-1 uppercase font-bold">{errors.site_engineer_id}</div>}
                 </div>
                 <div className={`md:col-span-2 ${isEditing ? 'grid grid-cols-1 sm:grid-cols-2' : ''} gap-4`}>
                     <div>
                         <label className="text-[10px] text-slate-500 uppercase font-black mb-1 block tracking-widest">Project Type</label>
-                        <Select value={data.project_type} onChange={val => setData('project_type', val)} options={(projectTypes || []).map(t => ({ value: t.name, label: t.label }))} icon={Layers} placeholder="Select Type" />
+                        <Combobox value={data.project_type} onChange={val => setData('project_type', val)} options={(projectTypes || []).map(t => ({ value: t.name, label: t.label }))} placeholder="Select Type" searchPlaceholder="Search types..." />
                         {errors.project_type && <div className="text-red-500 text-[10px] mt-1 uppercase font-bold">{errors.project_type}</div>}
                     </div>
                     {isEditing && (
@@ -127,7 +138,7 @@ export default function ProjectForm({
                         type="text"
                         className={`w-full bg-slate-50 dark:bg-slate-900/50 border ${exceedsWarning ? 'border-orange-500' : errors.appropriation ? 'border-red-500' : 'border-slate-200 dark:border-slate-700'} rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-cyan-500 transition-all font-mono`}
                         value={formatWithCommas(data.appropriation)}
-                        onChange={e => handleNumericChange('appropriation', e.target.value)}
+                        onChange={e => handleAppropriationChange(e.target.value)}
                     />
                     {exceedsWarning && (
                         <div className="flex items-start gap-2 mt-2 p-2 bg-orange-50 dark:bg-orange-950/20 rounded border border-orange-200 dark:border-orange-900/30">
