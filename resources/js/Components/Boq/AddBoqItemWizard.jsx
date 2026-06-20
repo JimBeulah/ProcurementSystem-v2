@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Plus, Save, Trash2, Calculator, Hammer, Home, Car, Settings, ChevronRight, ChevronLeft, Check, Layers } from 'lucide-react';
 import Modal from '@/Components/UI/Modal';
-import { classifyNature, natureHelperText, NATURE_OPTIONS } from '@/Utils/boqNatureClassifier';
 
 const INITIAL_STATE = {
     itemDescription: '',
@@ -10,7 +9,6 @@ const INITIAL_STATE = {
     laborUnitPrice: 0,
     quantity: 0,
     isCarport: false,
-    nature: 'BUNDLE',
     components: [],
 };
 
@@ -55,14 +53,6 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
             if (!item.unit.trim()) errs.unit = 'Unit is required';
             if (!item.quantity || item.quantity <= 0) errs.quantity = 'Quantity must be > 0';
         }
-        if (s === 1) {
-            if (item.nature === 'DIRECT_MATERIAL' && item.components.length === 0 && Number(item.materialUnitPrice) <= 0) {
-                errs.autoRate = 'Unit rate is required — this becomes the auto-created component budget';
-            }
-            if (item.nature === 'SERVICE' && item.components.length === 0 && Number(item.laborUnitPrice) <= 0) {
-                errs.autoRate = 'Unit rate is required — this becomes the auto-created component budget';
-            }
-        }
         setErrors(errs);
         return Object.keys(errs).length === 0;
     }, [item]);
@@ -79,14 +69,19 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
         if (!validateStep(0)) { setStep(0); return; }
         setSubmitting(true);
 
+        const derivedNature =
+            Number(item.materialUnitPrice) > 0 && Number(item.laborUnitPrice) <= 0 ? 'DIRECT_MATERIAL' :
+            Number(item.laborUnitPrice) > 0 && Number(item.materialUnitPrice) <= 0 ? 'SERVICE' :
+            'BUNDLE';
+
         const payload = {
             item_description: item.itemDescription,
             unit: item.unit,
             quantity: Number(item.quantity),
-            material_unit_price: item.materialUnitPrice,
-            labor_unit_price: item.laborUnitPrice,
+            material_unit_price: Number(item.materialUnitPrice),
+            labor_unit_price: Number(item.laborUnitPrice),
             is_carport: item.isCarport,
-            nature: item.nature,
+            nature: derivedNature,
             components: item.components.map(c => ({
                 ...c,
                 unit: c.unit || '',
@@ -245,9 +240,9 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                                 const val = e.target.value;
                                 const mat = materials.find(m => m.name === val);
                                 if (mat) {
-                                    setItem(prev => ({ ...prev, itemDescription: mat.name, unit: mat.unit, nature: classifyNature(mat.name) }));
+                                    setItem(prev => ({ ...prev, itemDescription: mat.name, unit: mat.unit }));
                                 } else {
-                                    setItem(prev => ({ ...prev, itemDescription: val, nature: classifyNature(val) }));
+                                    setItem(prev => ({ ...prev, itemDescription: val }));
                                 }
                                 if (errors.itemDescription) setErrors(prev => { const n = { ...prev }; delete n.itemDescription; return n; });
                             }}
@@ -255,27 +250,6 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                         />
 
                         {errors.itemDescription && <p className="text-[10px] text-red-500 mt-1 font-bold">{errors.itemDescription}</p>}
-                    </div>
-
-                    {/* Nature classification */}
-                    <div>
-                        <label className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-black mb-1 block ml-1">
-                            Item Nature
-                        </label>
-                        <select
-                            className="w-full bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl shadow-sm border border-slate-200/80 dark:border-slate-700/80 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all"
-                            value={item.nature}
-                            onChange={e => setItem(prev => ({ ...prev, nature: e.target.value }))}
-                        >
-                            {NATURE_OPTIONS.map(opt => (
-                                <option key={opt.value} value={opt.value}>{opt.label}</option>
-                            ))}
-                        </select>
-                        <p className={`text-[10px] mt-1 ml-1 font-semibold ${
-                            item.nature === 'BUNDLE' ? 'text-amber-500' : 'text-emerald-600'
-                        }`}>
-                            {item.nature === 'BUNDLE' ? '⚠' : '✓'} {natureHelperText(item.nature)}
-                        </p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -457,53 +431,11 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                                 </div>
                             </div>
                         ))}
-                        {item.components.length === 0 && item.nature !== 'BUNDLE' && (
-                            <div className={`rounded-xl p-4 border ${item.nature === 'DIRECT_MATERIAL' ? 'bg-emerald-500/5 border-emerald-500/30' : 'bg-blue-500/5 border-blue-500/30'}`}>
-                                <div className="flex items-center gap-2 mb-3">
-                                    <div className={`w-2 h-2 rounded-full ${item.nature === 'DIRECT_MATERIAL' ? 'bg-emerald-500' : 'bg-blue-500'}`} />
-                                    <p className={`text-[10px] font-black uppercase ${item.nature === 'DIRECT_MATERIAL' ? 'text-emerald-600' : 'text-blue-600'}`}>
-                                        Auto-Component: 1 {item.nature === 'DIRECT_MATERIAL' ? 'MATERIAL' : 'LABOR'} component will be created on save
-                                    </p>
-                                </div>
-                                <div>
-                                    <label className={`text-[9px] font-black uppercase mb-1 block ${item.nature === 'DIRECT_MATERIAL' ? 'text-emerald-600' : 'text-blue-600'}`}>
-                                        Unit Rate (₱) <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        placeholder="0.00"
-                                        className={`w-full bg-white/80 dark:bg-slate-900/80 border rounded-lg p-2.5 text-slate-900 dark:text-white text-sm outline-none font-mono focus:ring-2 transition-all ${
-                                            errors.autoRate
-                                                ? 'border-red-500/60 focus:ring-red-500/30'
-                                                : item.nature === 'DIRECT_MATERIAL'
-                                                    ? 'border-emerald-500/40 focus:ring-emerald-500/30 focus:border-emerald-500'
-                                                    : 'border-blue-500/40 focus:ring-blue-500/30 focus:border-blue-500'
-                                        }`}
-                                        value={formatWithCommas(item.nature === 'DIRECT_MATERIAL' ? item.materialUnitPrice : item.laborUnitPrice)}
-                                        onChange={e => {
-                                            const stripped = stripCommas(e.target.value);
-                                            if (stripped === '' || /^\d*\.?\d*$/.test(stripped)) {
-                                                const field = item.nature === 'DIRECT_MATERIAL' ? 'materialUnitPrice' : 'laborUnitPrice';
-                                                setItem(prev => ({ ...prev, [field]: stripped === '' ? 0 : Number(stripped) }));
-                                                if (errors.autoRate) setErrors(prev => { const n = { ...prev }; delete n.autoRate; return n; });
-                                            }
-                                        }}
-                                    />
-                                    {errors.autoRate
-                                        ? <p className="text-[10px] text-red-500 mt-1 font-bold">{errors.autoRate}</p>
-                                        : (item.nature === 'DIRECT_MATERIAL' ? item.materialUnitPrice : item.laborUnitPrice) <= 0
-                                            ? <p className="text-[10px] text-amber-500 mt-1 font-semibold">⚠ Enter the unit rate so the auto-component has a budget</p>
-                                            : null
-                                    }
-                                </div>
-                                <p className="text-[9px] text-slate-400 mt-3">You can still add additional components below if needed.</p>
-                            </div>
-                        )}
-                        {item.components.length === 0 && item.nature === 'BUNDLE' && (
+                        {item.components.length === 0 && (
                             <div className="text-center py-8 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
                                 <Settings size={24} className="mx-auto text-slate-300 mb-2" />
                                 <p className="text-[10px] text-slate-500 uppercase font-black">No resources added yet</p>
-                                <p className="text-[9px] text-slate-400 mt-1">Click &quot;Add Resource&quot; below to define material, labor &amp; equipment costs</p>
+                                <p className="text-[9px] text-slate-400 mt-1">Add components above, or enter costs directly below</p>
                             </div>
                         )}
                     </div>
@@ -513,19 +445,44 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                     </button>
 
                     {/* Cost Summary */}
-                    <div className="grid grid-cols-2 gap-3 pt-3 mt-3 border-t border-slate-200 dark:border-slate-700">
-                        <div>
-                            <label className="text-[10px] text-cyan-600 uppercase font-black mb-1 block">Material Cost /unit</label>
-                            <div className="bg-cyan-500/5 border border-cyan-500/20 rounded-lg p-2 text-slate-900 dark:text-white text-sm font-mono flex items-center justify-between backdrop-blur-sm shadow-sm">
-                                <span>₱ {item.materialUnitPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                                <Calculator size={12} className="opacity-30" />
+                    <div className="pt-3 mt-3 border-t border-slate-200 dark:border-slate-700">
+                        <p className="text-[9px] text-slate-400 mb-2 ml-1">Components auto-update these values — you can also enter them directly.</p>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="text-[10px] text-cyan-600 uppercase font-black mb-1 block">Material Cost /unit</label>
+                                <div className="relative">
+                                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-slate-500 font-mono pointer-events-none">₱</span>
+                                    <input
+                                        type="text"
+                                        className="w-full bg-cyan-500/5 border border-cyan-500/20 rounded-lg pl-7 pr-7 py-2 text-slate-900 dark:text-white text-sm font-mono focus:ring-2 focus:ring-cyan-500/30 focus:border-cyan-500 outline-none transition-all backdrop-blur-sm shadow-sm"
+                                        value={formatWithCommas(item.materialUnitPrice)}
+                                        onChange={e => {
+                                            const stripped = stripCommas(e.target.value);
+                                            if (stripped === '' || /^\d*\.?\d*$/.test(stripped)) {
+                                                setItem(prev => ({ ...prev, materialUnitPrice: stripped === '' ? 0 : Number(stripped) }));
+                                            }
+                                        }}
+                                    />
+                                    <Calculator size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 opacity-30 pointer-events-none" />
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <label className="text-[10px] text-blue-600 uppercase font-black mb-1 block">Labor/Eq. Cost /unit</label>
-                            <div className="bg-blue-500/5 border border-blue-500/20 rounded-lg p-2 text-slate-900 dark:text-white text-sm font-mono flex items-center justify-between backdrop-blur-sm shadow-sm">
-                                <span>₱ {item.laborUnitPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                                <Hammer size={12} className="opacity-30" />
+                            <div>
+                                <label className="text-[10px] text-blue-600 uppercase font-black mb-1 block">Labor/Eq. Cost /unit</label>
+                                <div className="relative">
+                                    <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-slate-500 font-mono pointer-events-none">₱</span>
+                                    <input
+                                        type="text"
+                                        className="w-full bg-blue-500/5 border border-blue-500/20 rounded-lg pl-7 pr-7 py-2 text-slate-900 dark:text-white text-sm font-mono focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all backdrop-blur-sm shadow-sm"
+                                        value={formatWithCommas(item.laborUnitPrice)}
+                                        onChange={e => {
+                                            const stripped = stripCommas(e.target.value);
+                                            if (stripped === '' || /^\d*\.?\d*$/.test(stripped)) {
+                                                setItem(prev => ({ ...prev, laborUnitPrice: stripped === '' ? 0 : Number(stripped) }));
+                                            }
+                                        }}
+                                    />
+                                    <Hammer size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 opacity-30 pointer-events-none" />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -557,20 +514,9 @@ export default function AddBoqItemWizard({ isOpen, onClose, onSubmit, materials 
                             </div>
                             <div>
                                 <p className="text-[9px] text-slate-500 uppercase font-black">Components</p>
-                                {item.nature !== 'BUNDLE' && item.components.length === 0 ? (
-                                    <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                                        1 <span className="text-[9px] font-black opacity-70">(auto)</span>
-                                    </p>
-                                ) : (
-                                    <p className="text-sm font-bold text-slate-900 dark:text-white">{item.components.length}</p>
-                                )}
+                                <p className="text-sm font-bold text-slate-900 dark:text-white">{item.components.length}</p>
                             </div>
                         </div>
-                        {item.nature !== 'BUNDLE' && item.components.length === 0 && (
-                            <div className={`text-[9px] font-semibold px-2.5 py-1.5 rounded-lg ${item.nature === 'DIRECT_MATERIAL' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'}`}>
-                                ✓ 1 {item.nature === 'DIRECT_MATERIAL' ? 'MATERIAL' : 'LABOR'} component will be auto-created on save
-                            </div>
-                        )}
                     </div>
 
                     {/* Cost Breakdown */}
