@@ -98,6 +98,7 @@ export default function MRCreateModal({
 
         const newItems = checkedRows.map(r => {
             if (r.type === 'existing') {
+                const isLabor = r.component.resource_type === 'LABOR';
                 return {
                     boq_item_id: Number(selectedBoqItemId),
                     boq_item_component_id: r.component.id,
@@ -105,10 +106,11 @@ export default function MRCreateModal({
                     item_description: r.component.name,
                     unit: r.component.unit || selectedBoqItem.unit,
                     quantity: Number(r.qty),
-                    material_unit_price: 0,
-                    labor_unit_price: 0,
+                    material_unit_price: isLabor ? 0 : Number(r.component.unit_rate || 0),
+                    labor_unit_price: isLabor ? Number(r.component.unit_rate || 0) : 0,
                 };
             }
+            const isLabor = r.resource_type === 'LABOR';
             return {
                 boq_item_id: Number(selectedBoqItemId),
                 boq_item_component_id: null,
@@ -117,8 +119,8 @@ export default function MRCreateModal({
                 item_description: r.name.trim(),
                 unit: r.unit.trim(),
                 quantity: Number(r.qty),
-                material_unit_price: 0,
-                labor_unit_price: 0,
+                material_unit_price: isLabor ? 0 : 0,
+                labor_unit_price: isLabor ? 0 : 0,
             };
         });
 

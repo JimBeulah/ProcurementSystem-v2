@@ -151,6 +151,7 @@ class MaterialRequestService
                 'purpose' => 'Generated from RQ-'.str_pad($materialRequest->id, 5, '0', STR_PAD_LEFT),
                 'remarks' => $materialRequest->remarks,
                 'total_estimated_cost' => $totalCost,
+                'material_request_id' => $materialRequest->id,
             ]);
 
             foreach ($materialRequest->items as $item) {

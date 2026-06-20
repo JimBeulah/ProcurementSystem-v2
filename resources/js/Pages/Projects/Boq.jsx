@@ -497,7 +497,7 @@ export default function ProjectBoq() {
                                                     </span>
                                                 </div>
                                                 <div className="bg-white dark:bg-slate-900/40 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
-                                                    <span className="block text-slate-400 uppercase font-bold text-[9px] mb-1">Budget Rate</span>
+                                                    <span className="block text-slate-400 uppercase font-bold text-[9px] mb-1">Unit Price</span>
                                                     <span className="font-mono text-slate-700 dark:text-slate-300 font-bold tabular-nums">₱{Number(comp.unit_rate || 0).toLocaleString()}</span>
                                                 </div>
                                                 <div className="bg-emerald-50/50 dark:bg-emerald-900/10 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-900/30">

@@ -282,79 +282,63 @@ export default function ApprovalsIndex() {
                             )}
                         </div>
 
-                        {/* BOQ Budget Impact — compact */}
+                        {/* BOQ Budget Impact — per BOQ item */}
                         {drawerType === 'po' && selectedItem.budget_context && (() => {
                             const ctx = selectedItem.budget_context;
-                            const hasBudget = ctx.has_boq_link && ctx.boq_budget > 0;
-                            const usedPct = hasBudget ? (ctx.committed_spend / ctx.boq_budget) * 100 : 0;
-                            const thisPct = hasBudget ? (ctx.this_po_amount / ctx.boq_budget) * 100 : 0;
-                            const isOverBudget = hasBudget && ctx.remaining_after < 0;
-                            const isNearLimit = hasBudget && !isOverBudget && ctx.remaining_after < ctx.boq_budget * 0.1;
                             const fmt = (n) => Number(n).toLocaleString('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 });
 
-                            return (
-                                <div className={`rounded-lg border px-3 py-2.5 space-y-2 ${
-                                    !hasBudget ? 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700'
-                                    : isOverBudget ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-                                    : isNearLimit ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
-                                    : 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800'
-                                }`}>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-1.5 min-w-0">
-                                            {isOverBudget
-                                                ? <AlertTriangle size={12} className="text-red-600 dark:text-red-400 shrink-0" />
-                                                : <TrendingUp size={12} className={`shrink-0 ${!hasBudget ? 'text-slate-400' : isNearLimit ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`} />
-                                            }
-                                            <div className="min-w-0">
-                                                <span className={`text-[10px] font-bold uppercase tracking-widest ${
-                                                    !hasBudget ? 'text-slate-400'
-                                                    : isOverBudget ? 'text-red-700 dark:text-red-400'
-                                                    : isNearLimit ? 'text-amber-700 dark:text-amber-400'
-                                                    : 'text-emerald-700 dark:text-emerald-400'
-                                                }`}>BOQ Budget Impact</span>
-                                                {ctx.boq_item_names?.length > 0 && (
-                                                    <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate">
-                                                        {ctx.boq_item_names.join(' · ')}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                        {hasBudget && (
-                                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ml-2 ${
-                                                isOverBudget ? 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400'
-                                                : isNearLimit ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400'
-                                                : 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400'
-                                            }`}>
-                                                {isOverBudget ? 'OVER BUDGET' : isNearLimit ? 'NEAR LIMIT' : 'WITHIN BUDGET'}
-                                            </span>
-                                        )}
-                                    </div>
+                            if (!ctx.has_boq_link) return (
+                                <div className="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 px-3 py-2.5 flex items-center gap-1.5">
+                                    <TrendingUp size={12} className="text-slate-400 shrink-0" />
+                                    <p className="text-[10px] text-slate-400 dark:text-slate-500 italic">This PO has no linked purchase request — BOQ budget cannot be determined.</p>
+                                </div>
+                            );
 
-                                    {hasBudget ? (
-                                        <>
-                                            <div className="h-2 bg-white dark:bg-slate-800 rounded-full overflow-hidden flex">
-                                                <div className="h-full bg-slate-300 dark:bg-slate-600" style={{ width: `${Math.min(usedPct, 100)}%` }} title={`Already committed: ${fmt(ctx.committed_spend)}`} />
-                                                <div className={`h-full ${isOverBudget ? 'bg-red-500' : 'bg-blue-500'}`} style={{ width: `${Math.min(thisPct, 100 - Math.min(usedPct, 100))}%` }} title={`This PO: ${fmt(ctx.this_po_amount)}`} />
-                                            </div>
-                                            <div className="grid grid-cols-4 gap-1.5 text-[10px]">
-                                                {[
-                                                    { label: 'BOQ Budget', value: fmt(ctx.boq_budget), color: 'text-slate-700 dark:text-slate-200' },
-                                                    { label: 'Committed', value: fmt(ctx.committed_spend), color: 'text-slate-500 dark:text-slate-300' },
-                                                    { label: 'This PO', value: fmt(ctx.this_po_amount), color: isOverBudget ? 'text-red-600' : 'text-blue-600 dark:text-blue-400' },
-                                                    { label: 'Remaining', value: fmt(ctx.remaining_after), color: isOverBudget ? 'text-red-600 dark:text-red-400' : isNearLimit ? 'text-amber-700 dark:text-amber-400' : 'text-emerald-700 dark:text-emerald-400' },
-                                                ].map(({ label, value, color }) => (
-                                                    <div key={label} className="bg-white/60 dark:bg-slate-800/40 rounded px-2 py-1">
-                                                        <div className="text-slate-400 uppercase font-bold tracking-widest mb-0.5" style={{ fontSize: '9px' }}>{label}</div>
-                                                        <div className={`font-mono font-bold truncate ${color}`}>{value}</div>
+                            return (
+                                <div className="space-y-1.5">
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                        <TrendingUp size={11} /> BOQ Budget Impact
+                                    </span>
+                                    {ctx.breakdown.map((row, i) => {
+                                        const isOver = row.remaining_after < 0;
+                                        const isNear = !isOver && row.remaining_after < row.budget * 0.1;
+                                        const pct = row.budget > 0 ? Math.min((row.this_po_amount / row.budget) * 100, 100) : 0;
+                                        return (
+                                            <div key={i} className={`rounded-lg border px-3 py-2 space-y-1.5 ${
+                                                isOver ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+                                                : isNear ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
+                                                : 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800'
+                                            }`}>
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200 truncate">{row.boq_item_name}</span>
+                                                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
+                                                        isOver ? 'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400'
+                                                        : isNear ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400'
+                                                        : 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400'
+                                                    }`}>
+                                                        {isOver ? 'OVER' : isNear ? 'NEAR LIMIT' : 'GOOD'}
+                                                    </span>
+                                                </div>
+                                                <div className="h-1.5 bg-white dark:bg-slate-800 rounded-full overflow-hidden">
+                                                    <div className={`h-full rounded-full ${isOver ? 'bg-red-500' : isNear ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${pct}%` }} />
+                                                </div>
+                                                <div className="grid grid-cols-3 gap-1 text-[10px]">
+                                                    <div>
+                                                        <div className="text-slate-400 font-semibold" style={{ fontSize: '9px' }}>BOQ BUDGET</div>
+                                                        <div className="font-mono font-bold text-slate-700 dark:text-slate-200">{fmt(row.budget)}</div>
                                                     </div>
-                                                ))}
+                                                    <div>
+                                                        <div className="text-slate-400 font-semibold" style={{ fontSize: '9px' }}>THIS PO</div>
+                                                        <div className={`font-mono font-bold ${isOver ? 'text-red-600' : 'text-blue-600 dark:text-blue-400'}`}>{fmt(row.this_po_amount)}</div>
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-slate-400 font-semibold" style={{ fontSize: '9px' }}>REMAINING</div>
+                                                        <div className={`font-mono font-bold ${isOver ? 'text-red-600 dark:text-red-400' : isNear ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>{fmt(row.remaining_after)}</div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </>
-                                    ) : (
-                                        <p className="text-[10px] text-slate-400 dark:text-slate-500 italic">
-                                            {ctx.has_boq_link === false ? 'This PO has no linked purchase request — BOQ budget cannot be determined.' : 'No BOQ budget set for the linked item(s).'}
-                                        </p>
-                                    )}
+                                        );
+                                    })}
                                 </div>
                             );
                         })()}

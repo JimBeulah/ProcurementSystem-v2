@@ -66,34 +66,32 @@ export default function EditBoqItemModal({
                         />
                     </div>
                 </div>
-                {item.components && item.components.length === 0 && (
-                    <div className="grid grid-cols-2 gap-4 border-t border-slate-100 dark:border-slate-700/50 pt-4">
-                        <div>
-                            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Mat. Unit Price</label>
-                            <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₱</span>
-                                <input
-                                    type="text"
-                                    value={formatWithCommas(item.material_unit_price)}
-                                    onChange={e => handleNumericChange('material_unit_price', e.target.value)}
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-8 pr-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all shadow-sm"
-                                />
-                            </div>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Lab. Unit Price</label>
-                            <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₱</span>
-                                <input
-                                    type="text"
-                                    value={formatWithCommas(item.labor_unit_price)}
-                                    onChange={e => handleNumericChange('labor_unit_price', e.target.value)}
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-8 pr-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all shadow-sm"
-                                />
-                            </div>
+                <div className="grid grid-cols-2 gap-4 border-t border-slate-100 dark:border-slate-700/50 pt-4">
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Mat. Unit Price</label>
+                        <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₱</span>
+                            <input
+                                type="text"
+                                value={formatWithCommas(item.material_unit_price)}
+                                onChange={e => handleNumericChange('material_unit_price', e.target.value)}
+                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-8 pr-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all shadow-sm"
+                            />
                         </div>
                     </div>
-                )}
+                    <div>
+                        <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">Lab. Unit Price</label>
+                        <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₱</span>
+                            <input
+                                type="text"
+                                value={formatWithCommas(item.labor_unit_price)}
+                                onChange={e => handleNumericChange('labor_unit_price', e.target.value)}
+                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-8 pr-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-all shadow-sm"
+                            />
+                        </div>
+                    </div>
+                </div>
                 <div className="flex items-center gap-3 pt-2 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700/50">
                     <input
                         type="checkbox"

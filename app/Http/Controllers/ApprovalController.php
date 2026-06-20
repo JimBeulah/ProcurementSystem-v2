@@ -35,57 +35,64 @@ class ApprovalController extends Controller
 
         $mrIds = $mrIdByPrId->values()->filter()->unique();
 
-        // MR id → [boq_item_ids]
-        $boqItemIdsByMrId = MaterialRequestItem::whereIn('material_request_id', $mrIds)
+        // MR id → boq_item_id → [item_descriptions]  (for PO amount attribution per BOQ item)
+        $mrItemsRaw = MaterialRequestItem::whereIn('material_request_id', $mrIds)
             ->whereNotNull('boq_item_id')
-            ->select('material_request_id', 'boq_item_id')
-            ->distinct()
-            ->get()
-            ->groupBy('material_request_id')
-            ->map(fn ($rows) => $rows->pluck('boq_item_id')->unique()->values());
+            ->get(['material_request_id', 'boq_item_id', 'item_description']);
 
-        // Fetch all relevant BOQ items keyed by id
-        $allBoqItemIds = $boqItemIdsByMrId->flatten()->unique();
+        // mr_id → boq_item_id → [descriptions]
+        $descsByMrAndBoq = $mrItemsRaw
+            ->groupBy('material_request_id')
+            ->map(fn ($rows) => $rows->groupBy('boq_item_id')
+                ->map(fn ($r) => $r->pluck('item_description')->unique()->values())
+            );
+
+        // All unique BOQ item IDs
+        $allBoqItemIds = $mrItemsRaw->pluck('boq_item_id')->unique();
         $boqItemsById = BoqItem::whereIn('id', $allBoqItemIds)
             ->whereNull('deleted_at')
             ->get(['id', 'item_description', 'material_unit_price', 'labor_unit_price', 'quantity'])
             ->keyBy('id');
 
-        // Committed PO spend per MR (all non-cancelled/declined POs from the same MR, via PR)
-        $committedByMrId = DB::table('purchase_orders as po')
-            ->join('purchase_requests as pr', 'po.purchase_request_id', '=', 'pr.id')
-            ->whereIn('pr.material_request_id', $mrIds)
-            ->whereNotIn('po.status', [PurchaseOrderStatus::CANCELLED->value, PurchaseOrderStatus::DECLINED->value])
-            ->whereNull('po.deleted_at')
-            ->select('pr.material_request_id', DB::raw('SUM(po.total_amount) as total_spend'))
-            ->groupBy('pr.material_request_id')
-            ->pluck('total_spend', 'material_request_id');
-
         $pendingPos = $pendingPos->map(function (PurchaseOrder $po) use (
-            $mrIdByPrId, $boqItemIdsByMrId, $boqItemsById, $committedByMrId
+            $mrIdByPrId, $descsByMrAndBoq, $boqItemsById
         ) {
             $mrId = $mrIdByPrId[$po->purchase_request_id] ?? null;
-            $boqItemIds = $mrId ? ($boqItemIdsByMrId[$mrId] ?? collect()) : collect();
+            $boqMap = $mrId ? ($descsByMrAndBoq[$mrId] ?? collect()) : collect();
 
-            $boqBudget = $boqItemIds->sum(function ($id) use ($boqItemsById) {
-                $item = $boqItemsById[$id] ?? null;
-                return $item ? ($item->material_unit_price + $item->labor_unit_price) * $item->quantity : 0;
-            });
+            if ($boqMap->isEmpty()) {
+                $data = $po->toArray();
+                $data['budget_context'] = ['has_boq_link' => false, 'breakdown' => []];
+                return $data;
+            }
 
-            $boqItemNames = $boqItemIds->map(fn ($id) => $boqItemsById[$id]?->item_description)->filter()->values();
+            // Map PR item description → PO item total (quantity × unit_price)
+            $poTotalByDesc = collect($po->items)->mapWithKeys(fn ($item) => [
+                ($item->purchaseRequestItem?->item_description ?? $item->material_name)
+                    => (float) $item->quantity * (float) $item->unit_price,
+            ]);
 
-            // Committed = all PO spend for this MR minus this PO's own amount
-            $committedForMr = (float) ($committedByMrId[$mrId] ?? 0);
-            $committedExcludingThis = max(0, $committedForMr - (float) $po->total_amount);
+            // Build one row per BOQ item
+            $breakdown = $boqMap->map(function ($descriptions, $boqItemId) use ($boqItemsById, $poTotalByDesc) {
+                $boqItem = $boqItemsById[$boqItemId] ?? null;
+                if (!$boqItem) return null;
+
+                $budget   = ((float) $boqItem->material_unit_price + (float) $boqItem->labor_unit_price)
+                            * (float) $boqItem->quantity;
+                $poAmount = $descriptions->sum(fn ($desc) => $poTotalByDesc[$desc] ?? 0);
+
+                return [
+                    'boq_item_name'  => $boqItem->item_description,
+                    'budget'         => $budget,
+                    'this_po_amount' => $poAmount,
+                    'remaining_after'=> $budget - $poAmount,
+                ];
+            })->filter()->values();
 
             $data = $po->toArray();
             $data['budget_context'] = [
-                'boq_budget'      => $boqBudget,
-                'boq_item_names'  => $boqItemNames,
-                'committed_spend' => $committedExcludingThis,
-                'this_po_amount'  => (float) $po->total_amount,
-                'remaining_after' => $boqBudget - $committedExcludingThis - (float) $po->total_amount,
-                'has_boq_link'    => $boqItemIds->isNotEmpty(),
+                'has_boq_link' => true,
+                'breakdown'    => $breakdown,
             ];
             return $data;
         });

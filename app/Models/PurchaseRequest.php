@@ -53,6 +53,7 @@ class PurchaseRequest extends Model
         'purpose',
         'remarks',
         'total_estimated_cost',
+        'material_request_id',
     ];
 
     protected function casts(): array
