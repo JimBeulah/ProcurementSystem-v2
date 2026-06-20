@@ -25,7 +25,7 @@ class BoqController extends Controller
             abort(403, 'Unauthorized. Site Engineers cannot view BOQ details.');
         }
 
-        $project->load('client', 'approver');
+        $project->load('client');
         $boqItems = BoqItem::where('project_id', $project->id)
             ->with('components')
             ->orderBy('id')
@@ -48,61 +48,11 @@ class BoqController extends Controller
             'boqItems' => $boqItems,
             'materials' => $materialSuggestions,
             'units' => $units,
-            'isApproved' => (bool) $project->approved_by,
         ]);
-    }
-
-    public function approve(Project $project): RedirectResponse
-    {
-        if (! in_array(auth()->user()->role, ['admin', 'project_manager'])) {
-            abort(403, 'Unauthorized. Only Admins and Project Managers can approve BOQs.');
-        }
-
-        if ($project->approved_by) {
-            return redirect()->back()->with('error', 'Project BOQ is already approved.');
-        }
-
-        $project->update([
-            'approved_by' => auth()->id(),
-            'approved_at' => now(),
-            'status' => 'ACTIVE',
-        ]);
-
-        return redirect()->back()->with('success', 'Project BOQ approved successfully. The project is now ACTIVE.');
-    }
-
-    public function revise(Project $project, Request $request): RedirectResponse
-    {
-        if (! in_array(auth()->user()->role, ['admin', 'project_manager'])) {
-            abort(403, 'Unauthorized. Only Admins and Project Managers can request BOQ revisions.');
-        }
-
-        $request->validate([
-            'reason' => 'required|string|min:5',
-        ]);
-
-        $project->update([
-            'approved_by' => null,
-            'approved_at' => null,
-            'status' => 'PLANNING',
-        ]);
-
-        // Log the revision reason in activity log
-        activity()
-            ->performedOn($project)
-            ->causedBy(auth()->user())
-            ->withProperty('reason', $request->reason)
-            ->log('BOQ revision requested. Project status reverted to PLANNING.');
-
-        return redirect()->back()->with('success', 'BOQ has been unlocked for revision. Project status reverted to PLANNING.');
     }
 
     public function store(StoreBoqItemRequest $request, Project $project): RedirectResponse
     {
-        if ($project->approved_by) {
-            abort(403, 'Project is approved. Modifications are locked.');
-        }
-
         $this->boqService->store($request->validated(), $project);
 
         return redirect()->back()->with('success', 'BOQ item added successfully.');
@@ -110,10 +60,6 @@ class BoqController extends Controller
 
     public function bulkStore(Request $request, Project $project): RedirectResponse
     {
-        if ($project->approved_by) {
-            abort(403, 'Project is approved. Modifications are locked.');
-        }
-
         $validated = $request->validate([
             'items' => 'required|array',
             'items.*.itemDescription' => 'required|string',
@@ -136,10 +82,6 @@ class BoqController extends Controller
             abort(403);
         }
 
-        if ($project->approved_by) {
-            abort(403, 'Project is approved. Modifications are locked.');
-        }
-
         $validated = $request->validated();
 
         $boqItem->update([
@@ -160,10 +102,6 @@ class BoqController extends Controller
             abort(403, 'Item does not belong to this project.');
         }
 
-        if ($project->approved_by) {
-            abort(403, 'Project is approved. Modifications are locked.');
-        }
-
         $boqItem->components()->delete();
         $boqItem->delete();
 
@@ -172,10 +110,6 @@ class BoqController extends Controller
 
     public function destroyAll(Project $project): RedirectResponse
     {
-        if ($project->approved_by) {
-            abort(403, 'Project is approved. Modifications are locked.');
-        }
-
         BoqItemComponent::whereHas('boqItem', fn ($q) => $q->where('project_id', $project->id))->delete();
         BoqItem::where('project_id', $project->id)->delete();
 
@@ -190,10 +124,6 @@ class BoqController extends Controller
             abort(403);
         }
 
-        if ($project->approved_by) {
-            abort(403, 'Project is approved. Modifications are locked.');
-        }
-
         $this->boqService->storeComponent($request->validated(), $boqItem);
 
         return redirect()->back()->with('success', 'Resource added successfully.');
@@ -206,10 +136,6 @@ class BoqController extends Controller
             abort(403, 'Component does not belong to this project.');
         }
 
-        if ($project->approved_by) {
-            abort(403, 'Project is approved. Modifications are locked.');
-        }
-
         $this->boqService->updateComponent($request->validated(), $boqComponent);
 
         return redirect()->back()->with('success', 'Resource updated successfully.');
@@ -219,10 +145,6 @@ class BoqController extends Controller
     {
         if ($boqComponent->boqItem->project_id !== $project->id) {
             abort(403, 'Component does not belong to this project.');
-        }
-
-        if ($project->approved_by) {
-            abort(403, 'Project is approved. Modifications are locked.');
         }
 
         $boqComponent->delete();

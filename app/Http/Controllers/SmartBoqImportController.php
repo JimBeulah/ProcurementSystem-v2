@@ -23,10 +23,6 @@ class SmartBoqImportController extends Controller
 
     public function analyze(Request $request, Project $project): JsonResponse
     {
-        if ($project->approved_by) {
-            abort(403, 'Project is approved. Modifications are locked.');
-        }
-
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls,csv|max:20480',
         ]);
@@ -64,10 +60,6 @@ class SmartBoqImportController extends Controller
 
     public function confirm(Request $request, Project $project): RedirectResponse
     {
-        if ($project->approved_by) {
-            abort(403, 'Project is approved. Modifications are locked.');
-        }
-
         $request->validate([
             'token'       => 'required|string|uuid',
             'mappings'    => 'required|array',

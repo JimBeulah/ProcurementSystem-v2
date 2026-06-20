@@ -19,7 +19,7 @@ import {
 import { toast } from 'sonner';
 
 export default function ProjectBoq() {
-    const { project, boqItems: initialItems, materials, units, isApproved, auth } = usePage().props;
+    const { project, boqItems: initialItems, materials, units } = usePage().props;
 
     const [searchTerm, setSearchTerm] = useState('');
     const [drawerItemId, setDrawerItemId] = useState(null);
@@ -71,33 +71,6 @@ export default function ProjectBoq() {
         router.delete(`/projects/${project.id}/boq/${deleteTarget.id}`, {
             onSuccess: () => {
                 setDeleteTarget(null);
-            }
-        });
-    };
-
-    const handleApprove = () => {
-        setConfirmModal({
-            isOpen: true,
-            type: 'confirm',
-            title: 'Approve BOQ',
-            message: 'Are you sure you want to approve this BOQ? This will lock all items from further editing.',
-            onConfirm: () => router.post(`/projects/${project.id}/boq/approve`)
-        });
-    };
-
-    const handleUnlock = () => {
-        setConfirmModal({
-            isOpen: true,
-            type: 'prompt',
-            title: 'Request Revision',
-            message: 'Please enter the reason for revision (e.g., Price Increase, Scope Change):',
-            inputPlaceholder: 'Reason for revision...',
-            onConfirm: (reason) => {
-                if (reason && reason.length >= 5) {
-                    router.post(`/projects/${project.id}/boq/revise`, { reason });
-                } else if (reason) {
-                    toast.error('Reason must be at least 5 characters.');
-                }
             }
         });
     };
@@ -263,9 +236,6 @@ export default function ProjectBoq() {
                         <div className="space-y-0.5 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                                 <h1 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Bill of Quantities</h1>
-                                {isApproved && (
-                                    <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider rounded-full border border-emerald-500/20">Approved</span>
-                                )}
                             </div>
                             <p className="text-xs text-slate-500 font-medium truncate max-w-[200px] sm:max-w-xs">
                                 Project: <span className="text-slate-800 dark:text-slate-200 font-bold">{project.name}</span> <span className="text-slate-400 mx-1">•</span> <span className="font-mono text-slate-400">#{project.id}</span>
@@ -285,33 +255,9 @@ export default function ProjectBoq() {
                             />
                         </div>
 
-                        {isApproved ? (
-                                <div className="flex items-center gap-2">
-                                    <div className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-xl text-xs font-bold flex items-center gap-2 border border-slate-200 dark:border-slate-700 h-10">
-                                        <span className="w-2 h-2 rounded-full bg-slate-400"></span> Locked
-                                    </div>
-                                    {['admin', 'project_manager'].includes(auth.user.role) && (
-                                        <button 
-                                            onClick={handleUnlock} 
-                                            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-amber-500 text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs font-bold transition-all shadow-sm active:scale-95 h-10"
-                                        >
-                                            <RefreshCcw size={14} /> <span className="whitespace-nowrap">Revision</span>
-                                        </button>
-                                    )}
-                                </div>
-                            ) : (
-                                ['admin', 'project_manager'].includes(auth.user.role) && (
-                                    <button onClick={handleApprove} className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 text-xs font-bold transition-all shadow-lg shadow-emerald-500/20 active:scale-95 h-10">
-                                        Approve BOQ
-                                    </button>
-                                )
-                            )}
-
-                            {!isApproved && (
-                                <button onClick={() => setIsWizardOpen(true)} className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-all shadow-lg shadow-purple-600/20 active:scale-95 h-10">
+                            <button onClick={() => setIsWizardOpen(true)} className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-all shadow-lg shadow-purple-600/20 active:scale-95 h-10">
                                     <Plus size={18} /> <span>Add Item</span>
                                 </button>
-                            )}
 
                             <div className="flex items-center gap-1 bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-xl border border-slate-200 dark:border-slate-700 h-10">
                                 <button onClick={() => setIsInfoModalOpen(true)} className="p-2 text-slate-500 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all shadow-sm hover:shadow" title="Project Info">
@@ -323,9 +269,7 @@ export default function ProjectBoq() {
                                 <button onClick={() => downloadBoqTemplate(project)} className="p-2 text-slate-500 hover:text-blue-600 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all shadow-sm hover:shadow" title="Download Template">
                                     <FileDown size={16} />
                                 </button>
-                                {!isApproved && (
-                                    <>
-                                        <label
+                                <label
                                             className="p-2 text-slate-500 hover:text-purple-600 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all shadow-sm hover:shadow cursor-pointer"
                                             title={smartImport.analyzing ? 'Analyzing file...' : 'Smart Import — any Excel format'}
                                         >
@@ -350,8 +294,6 @@ export default function ProjectBoq() {
                                                 <Trash2 size={16} />
                                             </button>
                                         )}
-                                    </>
-                                )}
                             </div>
                     </div>
                 </header>
@@ -418,24 +360,16 @@ export default function ProjectBoq() {
                                             <td className="py-3 px-2 text-center" onClick={e => e.stopPropagation()}>
                                                 <div className="flex items-center justify-center gap-1.5">
                                                     <button
-                                                        onClick={() => isApproved ? toast.info('BOQ is approved and locked. Request revision to edit.') : setEditItem(item)}
-                                                        title={isApproved ? "BOQ Locked" : "Edit Item"}
-                                                        className={`p-1.5 rounded-lg transition-all border shadow-sm hover:shadow active:scale-95 ${
-                                                            isApproved 
-                                                                ? 'bg-slate-50 dark:bg-slate-900/10 text-slate-400 border-slate-200/50 dark:border-slate-800/30 cursor-default' 
-                                                                : 'bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-100 dark:hover:bg-cyan-800/30 hover:text-cyan-700 dark:hover:text-cyan-300 border-cyan-200/50 dark:border-cyan-700/30'
-                                                        }`}
+                                                        onClick={() => setEditItem(item)}
+                                                        title="Edit Item"
+                                                        className="p-1.5 rounded-lg transition-all border shadow-sm hover:shadow active:scale-95 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-100 dark:hover:bg-cyan-800/30 hover:text-cyan-700 dark:hover:text-cyan-300 border-cyan-200/50 dark:border-cyan-700/30"
                                                     >
                                                         <Pencil size={14} />
                                                     </button>
                                                     <button
-                                                        onClick={() => isApproved ? toast.info('BOQ is approved and locked. Request revision to delete.') : setDeleteTarget(item)}
-                                                        title={isApproved ? "BOQ Locked" : "Delete Item"}
-                                                        className={`p-1.5 rounded-lg transition-all border shadow-sm hover:shadow active:scale-95 ${
-                                                            isApproved 
-                                                                ? 'bg-slate-50 dark:bg-slate-900/10 text-slate-400 border-slate-200/50 dark:border-slate-800/30 cursor-default' 
-                                                                : 'bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-800/30 hover:text-red-700 dark:hover:text-red-300 border-red-200/50 dark:border-red-700/30'
-                                                        }`}
+                                                        onClick={() => setDeleteTarget(item)}
+                                                        title="Delete Item"
+                                                        className="p-1.5 rounded-lg transition-all border shadow-sm hover:shadow active:scale-95 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-800/30 hover:text-red-700 dark:hover:text-red-300 border-red-200/50 dark:border-red-700/30"
                                                     >
                                                         <Trash2 size={14} />
                                                     </button>
@@ -502,14 +436,12 @@ export default function ProjectBoq() {
                                 <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
                                     <Layers size={14} className="text-purple-500" /> Resource Components
                                 </h3>
-                                {!isApproved && (
-                                    <button
+                                <button
                                         onClick={() => setResourceModal({ open: true, mode: 'add', data: { resource_type: 'MATERIAL', quantity_factor: 1, unit_rate: 0, no_of_persons: 1, hours: 0 } })}
                                         className="text-[10px] font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-purple-500 text-slate-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all shadow-sm"
                                     >
                                         <Plus size={12} /> Add Resource
                                     </button>
-                                )}
                             </div>
 
                             <div className="space-y-3">
@@ -528,25 +460,17 @@ export default function ProjectBoq() {
                                                     {comp.resource_type !== 'MATERIAL' && <div className="text-[10px] text-slate-400 font-mono mt-1">{comp.no_of_persons} Persons × {comp.hours} Hours</div>}
                                                 </div>
                                                 <div className="flex items-center gap-1 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button 
-                                                        onClick={() => isApproved ? toast.info('BOQ is approved and locked. Request revision to edit.') : setResourceModal({ open: true, mode: 'edit', data: comp })} 
-                                                        className={`p-1.5 rounded-md transition-all ${
-                                                            isApproved 
-                                                                ? 'text-slate-300 dark:text-slate-600 cursor-default' 
-                                                                : 'text-slate-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 hover:text-cyan-600'
-                                                        }`}
-                                                        title={isApproved ? "Locked" : "Edit Resource"}
+                                                    <button
+                                                        onClick={() => setResourceModal({ open: true, mode: 'edit', data: comp })}
+                                                        className="p-1.5 rounded-md transition-all text-slate-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 hover:text-cyan-600"
+                                                        title="Edit Resource"
                                                     >
                                                         <Pencil size={12} />
                                                     </button>
-                                                    <button 
-                                                        onClick={() => isApproved ? toast.info('BOQ is approved and locked. Request revision to delete.') : handleDeleteResource(comp)} 
-                                                        className={`p-1.5 rounded-md transition-all ${
-                                                            isApproved 
-                                                                ? 'text-slate-300 dark:text-slate-600 cursor-default' 
-                                                                : 'text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500'
-                                                        }`}
-                                                        title={isApproved ? "Locked" : "Delete Resource"}
+                                                    <button
+                                                        onClick={() => handleDeleteResource(comp)}
+                                                        className="p-1.5 rounded-md transition-all text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500"
+                                                        title="Delete Resource"
                                                     >
                                                         <Trash2 size={12} />
                                                     </button>

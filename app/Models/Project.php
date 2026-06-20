@@ -43,8 +43,6 @@ class Project extends Model
         'project_type',
         'contract_type',
         'payment_terms',
-        'approved_by',
-        'approved_at',
         'site_engineer_id',
     ];
 
@@ -59,18 +57,12 @@ class Project extends Model
             'target_start_date' => 'date',
             'target_end_date' => 'date',
             'duration_days' => 'integer',
-            'approved_at' => 'datetime',
         ];
     }
 
     public function client()
     {
         return $this->belongsTo(Client::class);
-    }
-
-    public function approver()
-    {
-        return $this->belongsTo(User::class, 'approved_by');
     }
 
     public function siteEngineer()

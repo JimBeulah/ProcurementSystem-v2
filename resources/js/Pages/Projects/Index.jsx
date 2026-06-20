@@ -31,7 +31,7 @@ export default function ProjectsIndex() {
         duration_days: '',
         total_floor_area: '', 
         carport_area: '', 
-        status: 'PLANNING',
+        status: 'ACTIVE',
         project_type: 'BUILDING', 
         appropriation: '', 
         source_of_fund: '',

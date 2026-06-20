@@ -94,8 +94,7 @@ export default function ProjectForm({
                                 value={data.status} 
                                 onChange={val => setData('status', val)} 
                                 options={[
-                                    { value: "PLANNING", label: "PLANNING" },
-                                    { value: "ACTIVE", label: "ACTIVE" }, 
+                                    { value: "ACTIVE", label: "ACTIVE" },
                                     { value: "ON_HOLD", label: "ON HOLD" }, 
                                     { value: "WARRANTY_PERIOD", label: "WARRANTY PERIOD" }, 
                                     { value: "COMPLETED", label: "COMPLETED" }

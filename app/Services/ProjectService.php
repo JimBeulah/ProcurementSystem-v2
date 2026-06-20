@@ -47,7 +47,7 @@ class ProjectService
     public function create(array $data): Project
     {
         if (empty($data['status'])) {
-            $data['status'] = 'PLANNING';
+            $data['status'] = 'ACTIVE';
         }
 
         return Project::create($data);

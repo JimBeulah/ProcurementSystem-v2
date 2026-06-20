@@ -24,7 +24,7 @@ class StoreProjectRequest extends FormRequest
             'target_end_date' => 'nullable|date|after_or_equal:target_start_date',
             'total_floor_area' => 'nullable|numeric|min:0',
             'carport_area' => 'nullable|numeric|min:0',
-            'status' => 'nullable|string|in:ACTIVE,PLANNING,COMPLETED,ON_HOLD,WARRANTY_PERIOD',
+            'status' => 'nullable|string|in:ACTIVE,COMPLETED,ON_HOLD,WARRANTY_PERIOD',
             'project_type' => ['nullable', 'string', Rule::exists('project_types', 'name')],
             'appropriation' => 'nullable|numeric|min:0',
             'source_of_fund' => 'nullable|string|max:255',
