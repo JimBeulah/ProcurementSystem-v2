@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import { Save, X, CheckCircle, Warehouse, TrendingUp } from 'lucide-react';
+import Combobox from '@/Components/UI/Combobox';
 
 // Threshold (%) above which a price variance warning is shown
 const VARIANCE_THRESHOLD = 5;
@@ -160,10 +161,13 @@ export default function CreatePurchaseOrder({ onSuccess, supplierReturn: propSup
                 <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6 rounded-xl grid grid-cols-2 gap-6">
                     <div>
                         <label className="text-xs text-slate-500 uppercase font-bold mb-1 block tracking-widest">Project</label>
-                        <select className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-blue-500 outline-none" value={formData.project_id} onChange={e => setFormData({ ...formData, project_id: e.target.value })} required>
-                            <option value="">Select Project...</option>
-                            {(projects || []).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                        </select>
+                        <Combobox
+                            value={formData.project_id}
+                            onChange={v => setFormData({ ...formData, project_id: v })}
+                            options={(projects || []).map(p => ({ value: p.id, label: p.name }))}
+                            placeholder="Select Project..."
+                            searchPlaceholder="Search projects..."
+                        />
                     </div>
                     <div>
                         <div className="flex justify-between items-end mb-1">
@@ -172,10 +176,16 @@ export default function CreatePurchaseOrder({ onSuccess, supplierReturn: propSup
                                 + Add New
                             </Link>
                         </div>
-                        <select className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white focus:border-blue-500 outline-none" value={formData.supplier_id} onChange={e => setFormData({ ...formData, supplier_id: e.target.value })}>
-                            <option value="">None (Internal Fulfill / Optional)</option>
-                            {(suppliers || []).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                        </select>
+                        <Combobox
+                            value={formData.supplier_id}
+                            onChange={v => setFormData({ ...formData, supplier_id: v })}
+                            options={[
+                                { value: '', label: 'None (Internal Fulfill / Optional)' },
+                                ...(suppliers || []).map(s => ({ value: s.id, label: s.name })),
+                            ]}
+                            placeholder="None (Internal Fulfill / Optional)"
+                            searchPlaceholder="Search suppliers..."
+                        />
                     </div>
                     <div className="col-span-2">
                         <label className="text-xs text-slate-500 uppercase font-bold mb-1 block tracking-widest">Remarks / Delivery Instructions</label>
