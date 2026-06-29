@@ -58,7 +58,7 @@ export default function AdminDashboard({ stats }) {
                                 <TrendingUp size={20} className="text-emerald-500" />
                                 Spend Analysis & Profit
                             </h3>
-                            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Budget utilization versus actual spend and generated profit/savings.</p>
+                            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Cumulative BOQ budget vs. cumulative PO spend. Savings line shows remaining unspent budget over time.</p>
                         </div>
 
                         <div className="h-[220px] md:h-[280px] w-full mt-2">
@@ -86,9 +86,9 @@ export default function AdminDashboard({ stats }) {
                                             formatter={(value) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(value)}
                                         />
                                         <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px', fontWeight: 600, color: '#3f3f46' }} />
-                                        <Bar dataKey="budget" name="Original Budget" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={24} />
-                                        <Bar dataKey="spend" name="Actual Spend" fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={24} />
-                                        <Line type="monotone" dataKey="profit" name="Profit / Savings" stroke="#10b981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                                        <Bar dataKey="budget" name="BOQ Budget (Cumulative)" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={24} />
+                                        <Bar dataKey="spend" name="PO Spend (Cumulative)" fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={24} />
+                                        <Line type="monotone" dataKey="profit" name="Remaining Savings" stroke="#10b981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
                                     </ComposedChart>
                                 </ResponsiveContainer>
                             ) : (

@@ -5,7 +5,7 @@ test.describe('Dashboard Navigation', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/login');
         await page.fill('input#username', 'admin');
-        await page.fill('input#password', 'password');
+        await page.fill('input#password', '123700');
         await page.click('button[type="submit"]');
         await page.waitForURL('**/dashboard*');
     });

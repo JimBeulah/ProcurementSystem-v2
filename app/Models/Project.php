@@ -135,9 +135,9 @@ class Project extends Model
 
     public function getTotalBudgetAttribute(): float
     {
-        return (float) BoqItemComponent::join('boq_items', 'boq_items.id', '=', 'boq_item_components.boq_item_id')
-            ->where('boq_items.project_id', $this->id)
-            ->sum('total_cost');
+        return (float) $this->boqItems()
+            ->selectRaw('SUM(quantity * (material_unit_price + labor_unit_price)) as total')
+            ->value('total') ?: 0;
     }
 
     public function getTotalActualSpendAttribute(): float

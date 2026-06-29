@@ -173,9 +173,12 @@ export default function PurchaseRequestsIndex() {
             )
         },
         {
-            accessorKey: 'material_name',
-            header: 'Material Name',
-            cell: ({ row }) => <span className="font-bold text-slate-900 dark:text-white">{row.original.material_name || 'N/A'}</span>
+            accessorKey: 'items',
+            header: 'Items',
+            cell: ({ row }) => {
+                const count = (row.original.items ?? []).length;
+                return <span className="font-bold text-slate-900 dark:text-white">{count} {count === 1 ? 'item' : 'items'}</span>;
+            }
         },
         {
             id: 'requester',

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\BoqItem;
 use App\Models\Disbursement;
 use App\Models\FinancialTransaction;
 use App\Models\InventoryItem;
@@ -28,20 +29,23 @@ class DashboardService
         });
 
         $spendAnalysis = $months->map(function ($date) {
-            $monthName = $date->format('M');
-            $startOfMonth = $date->copy()->startOfMonth();
             $endOfMonth = $date->copy()->endOfMonth();
 
-            // Total budget of projects created in this month
-            $budget = Project::whereBetween('created_at', [$startOfMonth, $endOfMonth])->sum('budget') ?: 0;
+            // Cumulative BOQ budget: quantity × (material+labor unit price) for all projects created up to this month
+            $budget = BoqItem::join('projects', 'projects.id', '=', 'boq_items.project_id')
+                ->where('projects.created_at', '<=', $endOfMonth)
+                ->whereNull('projects.deleted_at')
+                ->whereNull('boq_items.deleted_at')
+                ->selectRaw('SUM(boq_items.quantity * (boq_items.material_unit_price + boq_items.labor_unit_price)) as total')
+                ->value('total') ?: 0;
 
-            // Total spend of approved or delivered POs in this month
-            $spend = PurchaseOrder::whereIn('status', ['APPROVED', 'DELIVERED', 'PARTIALLY DELIVERED'])
-                ->whereBetween('order_date', [$startOfMonth, $endOfMonth])
+            // Cumulative spend: approved/partially-delivered/completed POs up to end of this month
+            $spend = PurchaseOrder::whereIn('status', ['APPROVED', 'PARTIALLY DELIVERED', 'COMPLETED'])
+                ->where('order_date', '<=', $endOfMonth)
                 ->sum('total_amount') ?: 0;
 
             return [
-                'month' => $monthName,
+                'month' => $date->format('M'),
                 'budget' => (float) $budget,
                 'spend' => (float) $spend,
                 'profit' => (float) ($budget - $spend),
@@ -78,17 +82,23 @@ class DashboardService
         })->toArray();
 
         $spendAnalysis = $months->map(function ($date) {
-            $monthName = $date->format('M');
-            $startOfMonth = $date->copy()->startOfMonth();
             $endOfMonth = $date->copy()->endOfMonth();
 
-            $budget = Project::whereBetween('created_at', [$startOfMonth, $endOfMonth])->sum('budget') ?: 0;
-            $spend = PurchaseOrder::whereIn('status', ['APPROVED', 'DELIVERED', 'PARTIALLY DELIVERED'])
-                ->whereBetween('order_date', [$startOfMonth, $endOfMonth])
+            // Cumulative BOQ budget: quantity × (material+labor unit price) for all projects created up to this month
+            $budget = BoqItem::join('projects', 'projects.id', '=', 'boq_items.project_id')
+                ->where('projects.created_at', '<=', $endOfMonth)
+                ->whereNull('projects.deleted_at')
+                ->whereNull('boq_items.deleted_at')
+                ->selectRaw('SUM(boq_items.quantity * (boq_items.material_unit_price + boq_items.labor_unit_price)) as total')
+                ->value('total') ?: 0;
+
+            // Cumulative spend: approved/partially-delivered/completed POs up to end of this month
+            $spend = PurchaseOrder::whereIn('status', ['APPROVED', 'PARTIALLY DELIVERED', 'COMPLETED'])
+                ->where('order_date', '<=', $endOfMonth)
                 ->sum('total_amount') ?: 0;
 
             return [
-                'month' => $monthName,
+                'month' => $date->format('M'),
                 'budget' => (float) $budget,
                 'spend' => (float) $spend,
                 'profit' => (float) ($budget - $spend),
@@ -111,7 +121,7 @@ class DashboardService
         return [
             'pendingPRs' => PurchaseRequest::where('status', 'PENDING')->count(),
             'totalOrders' => PurchaseOrder::count(),
-            'deliveredOrders' => PurchaseOrder::where('status', 'DELIVERED')->count(),
+            'deliveredOrders' => PurchaseOrder::where('status', 'COMPLETED')->count(),
         ];
     }
 

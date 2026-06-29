@@ -7,7 +7,7 @@ test.describe('Authentication', () => {
 
         // Fill in username and password
         await page.fill('input#username', 'admin');
-        await page.fill('input#password', 'password');
+        await page.fill('input#password', '123700');
 
         // Click the submit button
         await page.click('button[type="submit"]');
