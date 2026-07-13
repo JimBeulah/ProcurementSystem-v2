@@ -104,26 +104,6 @@ export default function ProjectManagerDashboard({ stats }) {
                             </div>
                         </Card>
 
-                        {/* Budget Utilization */}
-                        <Card className="bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50 shadow-sm p-5 rounded-3xl">
-                            <div className="flex justify-between items-center mb-4">
-                                <div>
-                                    <h3 className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Budget Utilization</h3>
-                                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Financial overview for active projects.</p>
-                                </div>
-                                <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-semibold rounded-full">This Quarter</span>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                {(stats?.budgetItems || [
-                                    { name: 'Skyline Tower', progress: 75, budget: '50M', color: 'bg-blue-500' },
-                                    { name: 'Seaside Villa', progress: 32, budget: '15M', color: 'bg-teal-500' },
-                                    { name: 'City Hardware', progress: 90, budget: '2M', color: 'bg-orange-500' },
-                                ]).map((item, i) => (
-                                    <ModernBudgetRow key={i} {...item} />
-                                ))}
-                            </div>
-                        </Card>
                     </div>
 
                     {/* Quick Actions Sidebar */}
@@ -178,27 +158,6 @@ function ModernStatCard({ title, value, icon, trend, accentColor }) {
     );
 }
 
-function ModernBudgetRow({ name, progress, budget, color = "bg-blue-500" }) {
-    return (
-        <div className="group">
-            <div className="flex justify-between mb-2 items-end">
-                <div>
-                    <p className="text-sm font-bold text-zinc-800 dark:text-zinc-200 leading-tight">{name}</p>
-                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">Budget: ₱{budget}</p>
-                </div>
-                <span className="text-xs font-black text-zinc-900 dark:text-white tracking-tight">{progress}%</span>
-            </div>
-            <div className="h-2 bg-zinc-100 dark:bg-zinc-800/50 rounded-full overflow-hidden border border-zinc-200/50 dark:border-zinc-800">
-                <div
-                    className={`h-full ${color} rounded-full transition-all duration-1000 ease-out relative`}
-                    style={{ width: `${progress}%` }}
-                >
-                    <div className="absolute inset-0 bg-white/20 w-full h-full animate-[shimmer_2s_infinite] -translate-x-full" style={{ backgroundImage: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)' }} />
-                </div>
-            </div>
-        </div>
-    );
-}
 
 function ModernQuickAction({ href, icon, label, brand }) {
     const brands = {
