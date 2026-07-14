@@ -289,7 +289,7 @@ export default function ProjectBoq() {
                                             }
                                             <input
                                                 type="file"
-                                                accept=".xlsx,.xls,.csv"
+                                                accept=".xlsx,.xls,.xlsm,.csv"
                                                 className="hidden"
                                                 onChange={handleSmartImport}
                                                 disabled={loading || smartImport.analyzing}
@@ -297,7 +297,7 @@ export default function ProjectBoq() {
                                         </label>
                                         <label className="p-2 text-slate-500 hover:text-emerald-600 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all shadow-sm hover:shadow cursor-pointer" title="Import BOQ (CSV or Excel)">
                                             <Upload size={16} />
-                                            <input type="file" accept=".csv,.xlsx" className="hidden" onChange={handleBulkUpload} disabled={loading} />
+                                            <input type="file" accept=".csv,.xlsx,.xlsm" className="hidden" onChange={handleBulkUpload} disabled={loading} />
                                         </label>
                                         {items.length > 0 && (
                                             <button onClick={handleClearAll} disabled={loading} className="p-2 text-slate-500 hover:text-red-600 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed" title="Clear All Items">
@@ -317,7 +317,7 @@ export default function ProjectBoq() {
 
                 <div className="bg-white/40 dark:bg-slate-800/40 backdrop-blur-xl border border-white/20 dark:border-slate-700/30 rounded-3xl overflow-hidden shadow-2xl shadow-black/5 flex-grow relative flex flex-col">
                     <div className="overflow-x-auto custom-scrollbar flex-grow">
-                        <table className="w-full text-left border-collapse min-w-[1000px]">
+                        <table className="w-full text-left border-collapse min-w-[1000px] table-fixed">
                             <thead className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10 shadow-sm">
                                 <tr className="border-b border-slate-200/60 dark:border-slate-700/60 text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">
                                     <th className="p-3 w-10 text-center text-slate-400">#</th>
@@ -345,13 +345,13 @@ export default function ProjectBoq() {
                                             onClick={() => setDrawerItemId(item.id)}
                                         >
                                             <td className="py-3 px-3 text-center text-slate-400 font-mono text-xs border-l-4 border-transparent group-hover:border-purple-500/50 transition-all">{idx + 1}</td>
-                                            <td className="py-3 px-3 font-semibold text-slate-900 dark:text-white truncate">
+                                            <td className="py-3 px-3 max-w-0 font-semibold text-slate-900 dark:text-white truncate">
                                                 <div className="flex items-center gap-2">
                                                     <button className={`p-1 rounded-md transition-all shrink-0 ${drawerItem?.id === item.id ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
                                                         <Layers size={14} />
                                                     </button>
-                                                    <div className="min-w-0">
-                                                        <div className="group-hover:text-purple-600 transition-colors truncate">{highlightMatch(item.item_description)}</div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <div className="group-hover:text-purple-600 transition-colors truncate" title={item.item_description}>{highlightMatch(item.item_description)}</div>
                                                         {item.is_carport && (
                                                             <span className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full inline-flex items-center gap-1 uppercase font-bold tracking-wider mt-1">
                                                                 <Car size={10} /> Carport

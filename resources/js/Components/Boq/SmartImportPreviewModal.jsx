@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { router } from '@inertiajs/react';
 import { X, AlertTriangle, CheckCircle, Upload } from 'lucide-react';
 import { applyMappingsToRows } from '@/Utils/boqFileUtils';
-import { classifyNature, NATURE_OPTIONS, NATURE_COLORS } from '@/Utils/boqNatureClassifier';
 
 const FIELD_OPTIONS = [
     { value: '',                 label: '-- Skip --' },
@@ -34,7 +34,6 @@ function ConfidenceBadge({ confidence }) {
 
 function ModalContent({ onClose, projectId, analyzeData }) {
     const [mappings, setMappings] = useState(analyzeData.mappings ?? []);
-    const [natureOverrides, setNatureOverrides] = useState({});
     const [submitting, setSubmitting] = useState(false);
 
     const { token, sampleRows = [], totalRows = 0 } = analyzeData;
@@ -43,12 +42,6 @@ function ModalContent({ onClose, projectId, analyzeData }) {
         () => applyMappingsToRows(sampleRows, mappings),
         [sampleRows, mappings]
     );
-
-    const rowNatures = useMemo(() => {
-        return previewItems.map((item, i) =>
-            natureOverrides[i] ?? classifyNature(item.itemDescription)
-        );
-    }, [previewItems, natureOverrides]);
 
     const canConfirm = mappings.some(m => m.mappedTo === 'itemDescription') &&
                        mappings.some(m => m.mappedTo === 'quantity');
@@ -65,7 +58,7 @@ function ModalContent({ onClose, projectId, analyzeData }) {
         setSubmitting(true);
         router.post(
             `/projects/${projectId}/boq/smart-import/confirm`,
-            { token, mappings, overrides: natureOverrides },
+            { token, mappings },
             {
                 onSuccess: () => onClose(),
                 onError:   () => setSubmitting(false),
@@ -73,8 +66,8 @@ function ModalContent({ onClose, projectId, analyzeData }) {
         );
     };
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    return createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
             <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
 
                 {/* Header */}
@@ -144,7 +137,6 @@ function ModalContent({ onClose, projectId, analyzeData }) {
                                             <th className="px-3 py-2 text-right font-semibold">Qty</th>
                                             <th className="px-3 py-2 text-right font-semibold">Mat. Cost</th>
                                             <th className="px-3 py-2 text-right font-semibold">Lab. Cost</th>
-                                            <th className="px-3 py-2 text-left font-semibold">Type</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -155,17 +147,6 @@ function ModalContent({ onClose, projectId, analyzeData }) {
                                                 <td className="px-3 py-2 text-right">{item.quantity}</td>
                                                 <td className="px-3 py-2 text-right">{item.materialUnitPrice.toLocaleString()}</td>
                                                 <td className="px-3 py-2 text-right">{item.laborUnitPrice.toLocaleString()}</td>
-                                                <td className="px-3 py-2">
-                                                    <select
-                                                        value={rowNatures[i]}
-                                                        onChange={e => setNatureOverrides(prev => ({ ...prev, [i]: e.target.value }))}
-                                                        className={`text-[10px] font-bold border rounded px-1.5 py-0.5 outline-none cursor-pointer ${NATURE_COLORS[rowNatures[i]]}`}
-                                                    >
-                                                        {NATURE_OPTIONS.map(opt => (
-                                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                                        ))}
-                                                    </select>
-                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -200,7 +181,8 @@ function ModalContent({ onClose, projectId, analyzeData }) {
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
 

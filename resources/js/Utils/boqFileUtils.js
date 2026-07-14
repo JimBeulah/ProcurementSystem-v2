@@ -42,12 +42,12 @@ export const parseBoqCsv = (file) => {
     return new Promise((resolve, reject) => {
         const fileName = file.name.toLowerCase();
 
-        if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+        if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls') || fileName.endsWith('.xlsm')) {
             parseExcelFile(file, resolve, reject);
         } else if (fileName.endsWith('.csv')) {
             parseCsvFile(file, resolve, reject);
         } else {
-            reject(new Error('Unsupported file format. Please use CSV or Excel (.xlsx).'));
+            reject(new Error('Unsupported file format. Please use CSV or Excel (.xlsx, .xls, .xlsm).'));
         }
     });
 };

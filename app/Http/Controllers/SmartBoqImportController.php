@@ -24,7 +24,7 @@ class SmartBoqImportController extends Controller
     public function analyze(Request $request, Project $project): JsonResponse
     {
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls,csv|max:20480',
+            'file' => 'required|file|mimes:xlsx,xls,xlsm,csv|max:20480',
         ]);
 
         $spreadsheet = IOFactory::load($request->file('file')->getRealPath());
