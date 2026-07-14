@@ -5,11 +5,13 @@ import { Package, MapPin, Calendar, Box, Building2, ClipboardList, Plus, Pencil 
 import DataTable from '@/Components/UI/DataTable';
 import Drawer from '@/Components/UI/Drawer';
 import Modal from '@/Components/UI/Modal';
+import Combobox from '@/Components/UI/Combobox';
 
 export default function InventoryIndex() {
     const { inventory, auth } = usePage().props;
     const items = React.useMemo(() => inventory || [], [inventory]);
     const [activeTab, setActiveTab] = useState('all'); // 'all', 'warehouse', 'projects'
+    const [selectedSite, setSelectedSite] = useState('all');
     const [selectedItem, setSelectedReport] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -70,40 +72,40 @@ export default function InventoryIndex() {
         return items;
     }, [items, activeTab]);
 
-    // For projects tab, group by project name and then consolidate identical materials
-    const groupedByProject = useMemo(() => {
-        if (activeTab !== 'projects') return {};
+    // For the projects tab, consolidate items sharing the same project + material into one row
+    const consolidatedProjectItems = useMemo(() => {
+        if (activeTab !== 'projects') return [];
 
-        // First group all items by their project name
-        const grouped = tabFiltered.reduce((acc, item) => {
+        const consolidated = {};
+        tabFiltered.forEach(item => {
             const projectName = item.project?.name || 'Unknown Project';
-            if (!acc[projectName]) acc[projectName] = [];
-            acc[projectName].push(item);
-            return acc;
-        }, {});
-
-        // Then for each project, merge items with the exact same material_name
-        Object.keys(grouped).forEach(projectName => {
-            const projectItems = grouped[projectName];
-            const consolidated = {};
-
-            projectItems.forEach(item => {
-                const name = item.material_name;
-                if (!consolidated[name]) {
-                    consolidated[name] = { ...item, quantity: Number(item.quantity) };
-                } else {
-                    consolidated[name].quantity += Number(item.quantity);
-                    if (new Date(item.last_updated) > new Date(consolidated[name].last_updated)) {
-                        consolidated[name].last_updated = item.last_updated;
-                    }
+            const key = `${projectName}|${item.material_name}`;
+            if (!consolidated[key]) {
+                consolidated[key] = { ...item, quantity: Number(item.quantity) };
+            } else {
+                consolidated[key].quantity += Number(item.quantity);
+                if (new Date(item.last_updated) > new Date(consolidated[key].last_updated)) {
+                    consolidated[key].last_updated = item.last_updated;
                 }
-            });
-
-            grouped[projectName] = Object.values(consolidated);
+            }
         });
 
-        return grouped;
+        return Object.values(consolidated);
     }, [tabFiltered, activeTab]);
+
+    // Distinct sites available in the projects tab, for the site filter dropdown
+    const siteOptions = useMemo(() => {
+        const names = new Set(consolidatedProjectItems.map(item => item.project?.name || 'Unknown Project'));
+        return [
+            { value: 'all', label: 'All Sites' },
+            ...Array.from(names).sort().map(name => ({ value: name, label: name })),
+        ];
+    }, [consolidatedProjectItems]);
+
+    const siteFilteredItems = useMemo(() => {
+        if (selectedSite === 'all') return consolidatedProjectItems;
+        return consolidatedProjectItems.filter(item => (item.project?.name || 'Unknown Project') === selectedSite);
+    }, [consolidatedProjectItems, selectedSite]);
 
     const columns = React.useMemo(() => [
         {
@@ -210,7 +212,10 @@ export default function InventoryIndex() {
                             return (
                                 <button
                                     key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
+                                    onClick={() => {
+                                        setActiveTab(tab.id);
+                                        if (tab.id !== 'projects') setSelectedSite('all');
+                                    }}
                                     className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 whitespace-nowrap ${isActive
                                         ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-cyan-400 shadow-sm ring-1 ring-slate-200 dark:ring-slate-600'
                                         : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
@@ -236,33 +241,36 @@ export default function InventoryIndex() {
                             />
                         </div>
                     ) : (
-                        <div className="space-y-8">
-                            {Object.keys(groupedByProject).length === 0 ? (
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between gap-4 flex-wrap">
+                                <Combobox
+                                    value={selectedSite}
+                                    onChange={setSelectedSite}
+                                    options={siteOptions}
+                                    icon={Building2}
+                                    searchPlaceholder="Search sites..."
+                                    className="w-full sm:w-64"
+                                />
+                                <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 ring-1 ring-inset ring-emerald-200/50 dark:ring-emerald-700/50 px-2.5 py-1 rounded-full">
+                                    {siteFilteredItems.length} item{siteFilteredItems.length === 1 ? '' : 's'}
+                                </span>
+                            </div>
+
+                            {siteFilteredItems.length === 0 ? (
                                 <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-12 text-center shadow-sm">
                                     <Building2 className="mx-auto mb-4 text-slate-300 dark:text-slate-600" size={48} />
                                     <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-1">No Project Inventory</h3>
                                     <p className="text-slate-500">There are currently no items matching your criteria assigned to any project sites.</p>
                                 </div>
                             ) : (
-                                Object.entries(groupedByProject).map(([projectName, projectItems]) => (
-                                    <div key={projectName} className="space-y-3 bg-white dark:bg-[#1e1e1e] p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                                        <div className="flex items-center justify-between px-2 mb-2">
-                                            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                                                <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                                                    <Building2 size={16} />
-                                                </div>
-                                                {projectName}
-                                            </h2>
-                                            <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 ring-1 ring-inset ring-emerald-200/50 dark:ring-emerald-700/50 px-2.5 py-1 rounded-full">{projectItems.length} items</span>
-                                        </div>
-                                        <DataTable
-                                            columns={columns.filter(col => col.id !== 'project')}
-                                            data={projectItems}
-                                            overflowVisible={true}
-                                            onRowClick={handleRowClick}
-                                        />
-                                    </div>
-                                ))
+                                <div className="bg-white dark:bg-[#1e1e1e] border border-slate-200 dark:border-slate-700 p-4 rounded-xl shadow-sm">
+                                    <DataTable
+                                        columns={selectedSite === 'all' ? columns : columns.filter(col => col.id !== 'project')}
+                                        data={siteFilteredItems}
+                                        overflowVisible={true}
+                                        onRowClick={handleRowClick}
+                                    />
+                                </div>
                             )}
                         </div>
                     )}

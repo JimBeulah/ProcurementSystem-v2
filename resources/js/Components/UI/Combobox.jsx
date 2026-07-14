@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Check, Search } from 'lucide-react';
 
-export default function Combobox({ value, onChange, options, placeholder = "Select...", searchPlaceholder = "Search...", className = "" }) {
+export default function Combobox({ value, onChange, options, icon: Icon, placeholder = "Select...", searchPlaceholder = "Search...", className = "" }) {
     const [isOpen, setIsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const containerRef = useRef(null);
@@ -40,15 +40,20 @@ export default function Combobox({ value, onChange, options, placeholder = "Sele
             <div
                 onClick={() => setIsOpen(!isOpen)}
                 className={`
-                    w-full px-3 py-2.5 text-left
-                    bg-white dark:bg-slate-900 
+                    w-full ${Icon ? 'pl-9 pr-3' : 'px-3'} py-2.5 text-left
+                    bg-white dark:bg-slate-900
                     border border-slate-200 dark:border-slate-700
                     hover:border-slate-300 dark:hover:border-slate-600
                     rounded-lg transition-all duration-150
                     text-sm text-slate-900 dark:text-white
-                    flex items-center justify-between cursor-pointer select-none
+                    flex items-center justify-between cursor-pointer select-none relative
                 `}
             >
+                {Icon && (
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                        <Icon size={14} />
+                    </div>
+                )}
                 <span className={`truncate ${!value && 'text-slate-500 font-normal'}`}>
                     {selectedLabel}
                 </span>
