@@ -1,5 +1,5 @@
 import { Head, useForm, Link } from '@inertiajs/react';
-import { Loader2, Hexagon, Mail, Lock } from 'lucide-react';
+import { Loader2, Mail, Lock } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import GuestLayout from '@/Layouts/GuestLayout';
@@ -31,11 +31,11 @@ export default function Login({ status }) {
                     {/* Logo Area */}
                     <div className="flex-none pt-8 pb-4 flex items-center justify-between">
                         <Link href="/" className="flex items-center gap-2 group">
-                            <div className="w-9 h-9 rounded-xl bg-[#0066FF] flex items-center justify-center shadow-md">
-                                <Hexagon className="text-white fill-white/20" size={20} />
+                            <div className="w-9 h-9 rounded-full overflow-hidden shadow-md">
+                                <img src="/buildora-logo.png" alt="Buildora" className="w-full h-full object-cover" />
                             </div>
                             <span className="text-xl font-bold tracking-tight text-slate-900">
-                                ProcureFlow
+                                Buildora
                             </span>
                         </Link>
                     </div>

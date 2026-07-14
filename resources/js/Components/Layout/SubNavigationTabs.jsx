@@ -62,12 +62,7 @@ export default function SubNavigationTabs({ items }) {
                                 )}
 
                                 {badgeCount > 0 && (
-                                    <span className={`
-                                        ml-1.5 inline-flex items-center justify-center min-w-[20px] h-5 rounded-full text-[10px] font-bold px-1.5
-                                        ${active
-                                            ? 'bg-blue-600/10 text-blue-600 dark:bg-blue-400/20 dark:text-blue-400'
-                                            : 'bg-red-500 text-white shadow-sm'}
-                                    `}>
+                                    <span className="ml-1.5 inline-flex items-center justify-center min-w-[20px] h-5 rounded-full text-[10px] font-bold px-1.5 bg-red-500 text-white shadow-sm">
                                         {badgeCount > 99 ? '99+' : badgeCount}
                                     </span>
                                 )}

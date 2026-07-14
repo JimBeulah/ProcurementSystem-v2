@@ -15,11 +15,11 @@ export default function AccountInactive() {
                     {/* Logo Area */}
                     <div className="flex-none pt-8 pb-4 flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <div className="w-9 h-9 rounded-xl bg-[#0066FF] flex items-center justify-center shadow-md">
-                                <Hexagon className="text-white fill-white/20" size={20} />
+                            <div className="w-9 h-9 rounded-full overflow-hidden shadow-md">
+                                <img src="/buildora-logo.png" alt="Buildora" className="w-full h-full object-cover" />
                             </div>
                             <span className="text-xl font-bold tracking-tight text-slate-900">
-                                ProcureFlow
+                                Buildora
                             </span>
                         </div>
                     </div>
@@ -68,7 +68,7 @@ export default function AccountInactive() {
 
                         <div className="text-center pt-8">
                             <p className="text-[14px] text-slate-400 font-medium">
-                                ProcureFlow v2.0 &bull; Security Protocol Active
+                                Buildora v2.0 &bull; Security Protocol Active
                             </p>
                         </div>
                     </div>

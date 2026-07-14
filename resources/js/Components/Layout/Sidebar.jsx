@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, usePage } from '@inertiajs/react';
 import { usePermissions } from '@/Hooks/usePermissions';
-import { Hexagon, X, ChevronLeft, ChevronRight, LayoutDashboard, Menu, Settings, LogOut } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, LayoutDashboard, Menu, Settings, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NAVIGATION_CONFIG } from '@/Config/Navigation';
 import ConfirmationModal from '@/Components/UI/ConfirmationModal';
@@ -104,8 +104,8 @@ export default function Sidebar({ isOpen, isCollapsed, onClose, toggleCollapse }
                     <div className={`flex items-center h-14 px-4 relative ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
                         <div className="flex items-center gap-3 overflow-hidden">
                             <Link href="/dashboard" className="flex items-center gap-3">
-                                <motion.div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20">
-                                    <Hexagon className="text-white fill-white/20" size={18} />
+                                <motion.div className="w-8 h-8 rounded-full overflow-hidden shrink-0 shadow-lg shadow-black/10">
+                                    <img src="/buildora-logo.png" alt="Buildora" className="w-full h-full object-cover" />
                                 </motion.div>
                                 <AnimatePresence initial={false}>
                                     {!isCollapsed && (
@@ -116,7 +116,7 @@ export default function Sidebar({ isOpen, isCollapsed, onClose, toggleCollapse }
                                             className="overflow-hidden"
                                         >
                                             <h1 className="text-lg font-bold text-foreground tracking-tight whitespace-nowrap">
-                                                ProcureFlow
+                                                Buildora
                                             </h1>
                                         </motion.div>
                                     )}

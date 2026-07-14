@@ -1,6 +1,6 @@
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { Loader2, Mail, Lock, User, Hexagon, AtSign } from 'lucide-react';
+import { Loader2, Mail, Lock, User, AtSign } from 'lucide-react';
 import { useState } from 'react';
 import AuthCarousel from '@/Components/AuthCarousel';
 
@@ -33,11 +33,11 @@ export default function Register() {
                     {/* Logo Area */}
                     <div className="flex-none pt-8 pb-4 flex items-center justify-between">
                         <Link href="/" className="flex items-center gap-2 group">
-                            <div className="w-9 h-9 rounded-xl bg-[#0066FF] flex items-center justify-center shadow-md">
-                                <Hexagon className="text-white fill-white/20" size={20} />
+                            <div className="w-9 h-9 rounded-full overflow-hidden shadow-md">
+                                <img src="/buildora-logo.png" alt="Buildora" className="w-full h-full object-cover" />
                             </div>
                             <span className="text-xl font-bold tracking-tight text-slate-900">
-                                ProcureFlow
+                                Buildora
                             </span>
                         </Link>
                     </div>
@@ -48,7 +48,7 @@ export default function Register() {
                                 Create your account
                             </h1>
                             <p className="text-[15px] text-slate-600">
-                                Get started with ProcureFlow today.
+                                Get started with Buildora today.
                             </p>
                         </div>
 

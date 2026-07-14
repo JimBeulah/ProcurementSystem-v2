@@ -1,6 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { Hexagon } from 'lucide-react';
 import { Toaster } from 'sonner';
 import FlashNotifications from '@/Components/FlashNotifications';
 import { ThemeToggle } from '@/Components/UI/ThemeToggle';
@@ -52,11 +51,11 @@ export default function GuestLayout({ children, bgImage, splitScreen = false }) 
             <div className="w-full max-w-[400px] relative z-10 flex flex-col items-center">
                 {/* Logo Section */}
                 <Link href="/" className="flex items-center gap-3 mb-8 group">
-                    <div className="w-12 h-12 rounded-[14px] bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center shadow-lg shadow-black/20 ring-1 ring-white/30 group-hover:scale-105 transition-transform duration-300">
-                        <Hexagon className="text-white fill-white/20" size={26} />
+                    <div className="w-12 h-12 rounded-full overflow-hidden shadow-lg shadow-black/20 ring-1 ring-white/30 group-hover:scale-105 transition-transform duration-300">
+                        <img src="/buildora-logo.png" alt="Buildora" className="w-full h-full object-cover" />
                     </div>
                     <span className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white drop-shadow-md">
-                        ProcureFlow
+                        Buildora
                     </span>
                 </Link>
 
