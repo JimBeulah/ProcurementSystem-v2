@@ -35,7 +35,7 @@ class PurchaseOrderPolicy
     {
         // Site engineers can only view POs for their assigned projects
         if ($user->hasRole('site_engineer')) {
-            return $order->project->site_engineer_id === $user->id;
+            return $order->project->isMember($user);
         }
 
         // Other roles rely on the 'view purchase orders' permission

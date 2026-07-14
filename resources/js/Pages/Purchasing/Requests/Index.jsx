@@ -39,7 +39,9 @@ export default function PurchaseRequestsIndex() {
     const list = requests?.data || [];
     const { can } = usePermissions();
 
-    const [showCreate, setShowCreate] = useState(false);
+    const [showCreate, setShowCreate] = useState(
+        () => new URLSearchParams(window.location.search).get('create') === 'true'
+    );
     const [selectedPr, setSelectedPr] = useState(null);
     const [showDrawer, setShowDrawer] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -55,18 +57,9 @@ export default function PurchaseRequestsIndex() {
     const [statusFilter, setStatusFilter] = useState(filters?.status || 'ALL');
 
     // Create Form State
-    const [projectId, setProjectId] = useState('');
-
-    // Handle URL parameters for contextual creation
-    useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('create') === 'true') {
-            setShowCreate(true);
-            if (params.get('projectId')) {
-                setProjectId(params.get('projectId'));
-            }
-        }
-    }, []);
+    const [projectId, setProjectId] = useState(
+        () => new URLSearchParams(window.location.search).get('projectId') || ''
+    );
     const [purpose, setPurpose] = useState('');
     const [remarks, setRemarks] = useState('');
     const [cart, setCart] = useState([]);

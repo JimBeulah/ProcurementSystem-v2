@@ -14,6 +14,7 @@ export default function DatabaseManagement({ is_vercel }) {
 
     const { data, setData, post, processing, errors, reset } = useForm({
         database_file: null,
+        confirmation: '',
     });
 
     const handleBackup = () => {
@@ -222,24 +223,19 @@ export default function DatabaseManagement({ is_vercel }) {
                         Please type <span className="font-mono font-bold text-red-600 select-all">RESET DATABASE</span> below to confirm.
                     </p>
                     
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         placeholder="Type confirmation here"
                         className="w-full mb-6 px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg dark:bg-slate-900 dark:text-white focus:ring-red-500 focus:border-red-500"
-                        onChange={(e) => {
-                            if (e.target.value === 'RESET DATABASE') {
-                                setData('confirm_reset_text', true);
-                            } else {
-                                setData('confirm_reset_text', false);
-                            }
-                        }}
+                        value={data.confirmation}
+                        onChange={(e) => setData('confirmation', e.target.value)}
                     />
 
                     <div className="flex justify-end gap-3">
                         <SecondaryButton onClick={() => setConfirmingReset(false)}>Cancel</SecondaryButton>
-                        <DangerButton 
-                            onClick={handleReset} 
-                            disabled={!data.confirm_reset_text || processing}
+                        <DangerButton
+                            onClick={handleReset}
+                            disabled={data.confirmation !== 'RESET DATABASE' || processing}
                         >
                             {processing ? 'Resetting...' : 'Yes, WIPE EVERYTHING'}
                         </DangerButton>

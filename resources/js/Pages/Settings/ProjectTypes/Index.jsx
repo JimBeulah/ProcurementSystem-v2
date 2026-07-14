@@ -151,7 +151,7 @@ export default function ProjectTypesIndex() {
                         <div className="py-16 text-center text-slate-400">
                             <Layers size={40} className="mx-auto mb-3 opacity-30" />
                             <p className="font-semibold">No project types yet.</p>
-                            <p className="text-sm mt-1">Click "Add Type" to create the first one.</p>
+                            <p className="text-sm mt-1">Click &quot;Add Type&quot; to create the first one.</p>
                         </div>
                     ) : (
                         <table className="w-full text-sm">

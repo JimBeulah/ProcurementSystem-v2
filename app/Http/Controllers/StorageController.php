@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class StorageController extends Controller
 {
@@ -22,12 +23,20 @@ class StorageController extends Controller
             return response()->json(['error' => 'Vercel Blob token not configured'], 500);
         }
 
-        if (! $request->hasFile('file')) {
-            return response()->json(['error' => 'No file provided'], 400);
-        }
+        $request->validate([
+            'file' => [
+                'required',
+                'file',
+                'max:10240',
+                'mimes:jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,csv',
+            ],
+        ]);
 
         $file = $request->file('file');
-        $filename = time().'-'.$file->getClientOriginalName();
+        $safeName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $safeName = Str::slug($safeName) ?: 'file';
+        $extension = $file->getClientOriginalExtension();
+        $filename = time().'-'.$safeName.($extension ? '.'.$extension : '');
 
         try {
             // Upload directly to Vercel Blob REST API

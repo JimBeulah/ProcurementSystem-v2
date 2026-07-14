@@ -2,17 +2,18 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use App\Models\User;
+use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
     public function run(): void
     {
         // Reset cached roles and permissions
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         $permissions = [
             // System
@@ -43,6 +44,7 @@ class RolesAndPermissionsSeeder extends Seeder
 
             // Purchase Requests
             'view purchase requests',
+            'create purchase requests',
             'manage purchase requests',
 
             // Purchase Orders
@@ -98,6 +100,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'approve material requests',
                 'reject material requests',
                 'view purchase requests',
+                'create purchase requests',
                 'manage purchase requests',
                 'view purchase orders',
                 'approve purchase orders',
@@ -113,6 +116,8 @@ class RolesAndPermissionsSeeder extends Seeder
                 'view boq',
                 'view material requests',
                 'create material requests',
+                'view purchase requests',
+                'create purchase requests',
                 'view site release',
                 'confirm site release',
             ],
@@ -138,6 +143,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'view boq',
                 'view material requests',
                 'view purchase requests',
+                'create purchase requests',
                 'view purchase orders',
                 'create purchase orders',
                 'view suppliers',

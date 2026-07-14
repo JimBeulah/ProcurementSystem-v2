@@ -106,6 +106,8 @@ class PurchaseRequestController extends Controller
 
     public function approve(PurchaseRequest $purchaseRequest): RedirectResponse
     {
+        $this->authorize('manage', $purchaseRequest);
+
         try {
             $warning = $this->service->approve($purchaseRequest);
 
@@ -123,6 +125,8 @@ class PurchaseRequestController extends Controller
 
     public function decline(PurchaseRequest $purchaseRequest): RedirectResponse
     {
+        $this->authorize('manage', $purchaseRequest);
+
         try {
             $this->service->decline($purchaseRequest);
 
@@ -134,6 +138,8 @@ class PurchaseRequestController extends Controller
 
     public function destroy(PurchaseRequest $purchaseRequest): RedirectResponse
     {
+        $this->authorize('manage', $purchaseRequest);
+
         $purchaseRequest->delete();
 
         return redirect()->back()->with('success', 'Purchase Request deleted.');
@@ -141,6 +147,8 @@ class PurchaseRequestController extends Controller
 
     public function print(PurchaseRequest $purchaseRequest)
     {
+        $this->authorize('view', $purchaseRequest);
+
         // Delegate PDF generation to the Service layer
         $pdf = $this->service->generatePdf($purchaseRequest);
 

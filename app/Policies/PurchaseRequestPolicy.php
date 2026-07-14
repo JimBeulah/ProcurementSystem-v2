@@ -34,7 +34,7 @@ class PurchaseRequestPolicy
         }
 
         if ($user->hasRole('site_engineer')) {
-            return $project->site_engineer_id === $user->id;
+            return $project->isMember($user);
         }
 
         return $user->hasAnyRole(['admin', 'project_manager', 'procurement_officer']);
@@ -43,7 +43,7 @@ class PurchaseRequestPolicy
     public function view(User $user, PurchaseRequest $purchaseRequest): bool
     {
         if ($user->hasRole('site_engineer')) {
-            return $purchaseRequest->project->site_engineer_id === $user->id;
+            return $purchaseRequest->project->isMember($user);
         }
 
         return true;

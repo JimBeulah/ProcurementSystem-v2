@@ -36,6 +36,7 @@ class ProfileTest extends TestCase
             ->actingAs($user)
             ->patch('/settings/profile', [
                 'name' => 'Test User',
+                'username' => $user->username,
                 'email' => 'test@example.com',
             ]);
 
@@ -58,6 +59,7 @@ class ProfileTest extends TestCase
             ->actingAs($user)
             ->patch('/settings/profile', [
                 'name' => 'Test User',
+                'username' => $user->username,
                 'email' => $user->email,
             ]);
 

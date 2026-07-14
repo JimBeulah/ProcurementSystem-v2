@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Symfony\Component\Process\Process;
@@ -96,7 +97,9 @@ class DatabaseManagementController extends Controller
         $process->run();
 
         if (! $process->isSuccessful()) {
-            return back()->with('error', 'Backup failed: '.$process->getErrorOutput());
+            Log::error('Database backup failed: '.$process->getErrorOutput());
+
+            return back()->with('error', 'Backup failed. Check the application logs for details.');
         }
 
         return response()->download($path)->deleteFileAfterSend(true);
@@ -173,14 +176,20 @@ class DatabaseManagementController extends Controller
         }
 
         if (! $process->isSuccessful()) {
-            return back()->with('error', 'Import failed: '.$process->getErrorOutput());
+            Log::error('Database import failed: '.$process->getErrorOutput());
+
+            return back()->with('error', 'Import failed. Check the application logs for details.');
         }
 
         return back()->with('success', 'Database imported successfully.');
     }
 
-    public function reset()
+    public function reset(Request $request)
     {
+        $request->validate([
+            'confirmation' => 'required|in:RESET DATABASE',
+        ]);
+
         try {
             Artisan::call('migrate:fresh', [
                 '--seed' => true,
@@ -189,7 +198,9 @@ class DatabaseManagementController extends Controller
 
             return back()->with('success', 'Database has been reset to initial state.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Reset failed: '.$e->getMessage());
+            Log::error('Database reset failed: '.$e->getMessage());
+
+            return back()->with('error', 'Reset failed. Check the application logs for details.');
         }
     }
 }

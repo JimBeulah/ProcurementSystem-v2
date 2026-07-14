@@ -194,7 +194,7 @@ export default function MRCreateModal({
 
                                 {rows.length === 0 && (
                                     <p className="text-[10px] text-slate-400 italic py-2">
-                                        No resources yet. Click "Add Resource" below.
+                                        No resources yet. Click &quot;Add Resource&quot; below.
                                     </p>
                                 )}
 
